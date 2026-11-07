@@ -3,7 +3,7 @@
 // FUNGSI: Mengelola Arena Kuis, Game Show, Duel & Bank Soal
 // ==========================================================
 
-function renderKuisPage(container) {
+function renderKuisOriginal(container) {
     let kelasOpts = AppState.db.kelas.map(k => `<option value="${k.id}">${k.kode}</option>`).join('');   
 
     container.innerHTML = `
