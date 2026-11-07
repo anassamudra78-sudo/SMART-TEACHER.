@@ -2,6 +2,37 @@
 // FILE: ui-kuis.js 
 // FUNGSI: Mengelola Arena Kuis, Game Show, Duel & Bank Soal
 // ==========================================================
+// ==========================================================
+// MENU HUB: PILIHAN MODE GAME (KUIS & DRAG DROP)
+// ==========================================================
+function renderKuisPage(container) {
+    container.innerHTML = `
+        <div class="max-w-4xl mx-auto p-6 mt-4 text-center fade-in">
+            <div class="inline-block bg-slate-800 text-amber-400 px-4 py-1.5 rounded-full font-bold text-xs mb-6 shadow-sm border border-amber-500/30">
+                <i class="fa-solid fa-gamepad mr-2"></i> SMART TEACHER GAME CENTER
+            </div>
+            <h1 class="text-3xl md:text-4xl font-black text-slate-800 dark:text-white mb-8">Pilih Mode Permainan</h1>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                
+                <!-- PILIHAN 1: KUIS ARENA (LAMA) -->
+                <div onclick="renderKuisOriginal(document.getElementById('main-content'))" class="bg-gradient-to-br from-orange-500 to-amber-600 hover:from-orange-400 hover:to-amber-500 text-white p-8 rounded-3xl shadow-[0_10px_20px_rgba(249,115,22,0.3)] cursor-pointer transition-all hover:-translate-y-2 active:scale-95 border border-orange-400/50 flex flex-col justify-center min-h-[250px]">
+                    <i class="fa-solid fa-trophy text-6xl mb-4 drop-shadow-lg text-white/90"></i>
+                    <h2 class="text-2xl font-black mb-2 tracking-wide">ARENA KUIS</h2>
+                    <p class="text-sm font-medium opacity-90 leading-relaxed">Kuis interaktif pilihan ganda, mode Single Player, dan Duel Head-to-Head!</p>
+                </div>
+
+                <!-- PILIHAN 2: DRAG & DROP (BARU) -->
+                <div onclick="bukaDragAndDropArena()" class="bg-gradient-to-br from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white p-8 rounded-3xl shadow-[0_10px_20px_rgba(79,70,229,0.3)] cursor-pointer transition-all hover:-translate-y-2 active:scale-95 border border-indigo-400/50 flex flex-col justify-center min-h-[250px]">
+                    <i class="fa-solid fa-hand-pointer text-6xl mb-4 drop-shadow-lg text-white/90"></i>
+                    <h2 class="text-2xl font-black mb-2 tracking-wide">DRAG & DROP</h2>
+                    <p class="text-sm font-medium opacity-90 leading-relaxed">Pilah kosakata, cocokkan pasangan, dan susun kalimat (Match, Sort, Build)!</p>
+                </div>
+
+            </div>
+        </div>
+    `;
+}
 
 function renderKuisOriginal(container) {
     let kelasOpts = AppState.db.kelas.map(k => `<option value="${k.id}">${k.kode}</option>`).join('');   
