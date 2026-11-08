@@ -76,7 +76,7 @@ function mulaiGameSort() {
                         let warnaTeks = kat.warna === 'cyan' ? 'text-cyan-400' : 'text-rose-400';
                         
                         return `
-                            <div class="keranjang-target ${warnaBg} border-2 border-dashed${warnaGaris} rounded-3xl p-6 flex flex-col items-center justify-center transition-all shadow-inner relative overflow-hidden min-h-[200px]" data-target="${kat.id}">
+                            <div class="keranjang-target ${warnaBg} border-2 border-dashed ${warnaGaris} rounded-3xl p-6 flex flex-col items-center justify-center transition-all shadow-inner relative overflow-hidden min-h-[200px]" data-target="${kat.id}">
                                 <i class="fa-solid fa-box-open text-4xl mb-2 ${warnaTeks} opacity-50"></i>
                                 <h2 class="text-3xl font-black ${warnaTeks} tracking-widest drop-shadow-md">${kat.judul}</h2>
                                 <p class="text-slate-400 text-sm font-bold uppercase tracking-widest mt-1">${kat.subjudul}</p>
@@ -159,4 +159,47 @@ function pasangSensorSort() {
                         setTimeout(() => selebrasiKemenanganSort(), 500);
                     }
                 } else {
-                    // SALAH KERANJANG!
+                    // SALAH KERANJANG! Kembalikan ke tempat asal
+                    balok.style.position = 'static';
+                    wadahAsal.appendChild(balok);
+                    if (typeof playSoundEffect === 'function') playSoundEffect('wrong'); 
+                    
+                    keranjangTarget.classList.add('bg-rose-900/50', 'border-rose-500', 'border-solid');
+                    keranjangTarget.classList.remove('border-dashed');
+                    setTimeout(() => {
+                        keranjangTarget.classList.remove('bg-rose-900/50', 'border-rose-500', 'border-solid');
+                        keranjangTarget.classList.add('border-dashed');
+                    }, 300);
+                }
+            } else {
+                // DILEPAS DI LUAR KERANJANG
+                balok.style.position = 'static';
+                wadahAsal.appendChild(balok);
+            }
+        });
+    });
+}
+
+function selebrasiKemenanganSort() {
+    let nilaiAkhir = Math.round(sortState.skor);
+    if (typeof playCelebrationAudio === 'function') {
+        playCelebrationAudio(nilaiAkhir);
+    }
+    const container = document.getElementById('main-content');
+    container.innerHTML = `
+        <div class="max-w-2xl mx-auto mt-10 p-8 bg-slate-900 rounded-[2.5rem] text-center border border-slate-700 shadow-[0_0_40px_rgba(16,185,129,0.2)] fade-in">
+            <i class="fa-solid fa-medal text-6xl text-amber-400 mb-6 animate-bounce drop-shadow-[0_0_15px_rgba(251,191,36,0.5)]"></i>
+            <h1 class="text-4xl font-black text-white mb-2">PENGELOMPOKKAN SELESAI!</h1>
+            
+            <div class="bg-slate-800 p-6 rounded-3xl mb-8 mt-6 border border-slate-700">
+                <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Nilai Akhir</p>
+                <p class="text-7xl font-black text-emerald-400 drop-shadow-[0_0_15px_rgba(16,185,129,0.4)]">${nilaiAkhir}</p>
+            </div>
+            
+            <div class="flex justify-center gap-4">
+                <button onclick="bukaDragAndDropArena()" class="bg-slate-700 hover:bg-slate-600 text-white font-bold py-3 px-6 rounded-2xl border border-slate-600 transition-colors">Menu Game</button>
+                <button onclick="mulaiGameSort()" class="bg-emerald-500 hover:bg-emerald-400 text-white font-black py-3 px-8 rounded-2xl shadow-[0_0_15px_rgba(16,185,129,0.4)] transition-transform">MAIN LAGI</button>
+            </div>
+        </div>
+    `;
+}
