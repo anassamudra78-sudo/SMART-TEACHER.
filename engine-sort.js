@@ -25,11 +25,17 @@ let sortState = {
 };
 
 function bukaSetupGame(jenisGame) {
-    if (jenisGame === 'sort') {
+    if (jenisGame === 'match') {
+        // Membuka Match & Drop
+        if (typeof mulaiGameMatch === 'function') mulaiGameMatch();
+    } else if (jenisGame === 'sort') {
+        // Membuka Sort & Drop
         sortState.layout = 'kiri-kanan'; 
-        // PERBAIKAN 1: Reset total (Deep Copy) status terjawab agar bersih saat Main Lagi
         sortState.dataSoal = sortState.dataSoalAsli.map(item => ({...item, terjawab: false})).sort(() => Math.random() - 0.5);
         mulaiGameSort();
+    } else if (jenisGame === 'build') {
+        // Membuka Build & Drop (Persiapan game ke-3 nanti)
+        if (typeof mulaiGameBuild === 'function') mulaiGameBuild();
     }
 }
 
