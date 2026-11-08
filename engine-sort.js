@@ -1,6 +1,6 @@
 // ==========================================================
 // FILE: engine-sort.js
-// FUNGSI: Mesin "Sort & Drop" (FIXED RESET STATE & SMOOTH DRAG)
+// FUNGSI: Mesin "Sort & Drop" (PERFECT DRAG & OVERLAY FIX)
 // ==========================================================
 
 let sortState = {
@@ -26,15 +26,12 @@ let sortState = {
 
 function bukaSetupGame(jenisGame) {
     if (jenisGame === 'match') {
-        // Membuka Match & Drop
         if (typeof mulaiGameMatch === 'function') mulaiGameMatch();
     } else if (jenisGame === 'sort') {
-        // Membuka Sort & Drop
         sortState.layout = 'kiri-kanan'; 
         sortState.dataSoal = sortState.dataSoalAsli.map(item => ({...item, terjawab: false})).sort(() => Math.random() - 0.5);
         mulaiGameSort();
     } else if (jenisGame === 'build') {
-        // Membuka Build & Drop (Persiapan game ke-3 nanti)
         if (typeof mulaiGameBuild === 'function') mulaiGameBuild();
     }
 }
@@ -50,7 +47,6 @@ function mulaiGameSort(isRenderUlang = false) {
     if (!isRenderUlang) {
         sortState.skor = 0;
         sortState.itemTerjawab = 0;
-        // PERBAIKAN 1: Reset total status terjawab setiap memulai sesi baru
         sortState.dataSoal = sortState.dataSoalAsli.map(item => ({...item, terjawab: false})).sort(() => Math.random() - 0.5);
     }
 
@@ -176,38 +172,38 @@ function pasangSensorSort() {
         let isDragging = false;
         let offsetX = 0;
         let offsetY = 0;
-        let initialWidth = 0;
-        let initialHeight = 0;
 
-        // PERBAIKAN 2: Menggunakan Pointer Events agar hitungan koordinat drag mulus (tidak nyentak)
         balok.addEventListener('pointerdown', function(e) {
             if (balok.getAttribute('data-terkunci') === 'true') return;
             
             isDragging = true;
             balok.setPointerCapture(e.pointerId);
             
-            // Kalkulasi offset agar posisi balok sesuai titik sentuh jari
+            // 1. Ambil ukuran kotak
             let rect = balok.getBoundingClientRect();
-            offsetX = e.clientX - rect.left;
-            offsetY = e.clientY - rect.top;
+            balok.style.width = rect.width + 'px';
+            balok.style.height = rect.height + 'px';
             
-            initialWidth = rect.width;
-            initialHeight = rect.height;
+            // 2. MAGIS JARI: Atur offset persis setengah lebar & tinggi agar nempel di TENGAN jari
+            offsetX = rect.width / 2;
+            offsetY = rect.height / 2;
+            
+            // 3. MAGIS Z-INDEX: Pindahkan balok ke body (layer teratas) agar melayang di atas semua kotak
+            document.body.appendChild(balok);
 
-            balok.style.zIndex = 9999;
-            balok.classList.add('scale-105', 'shadow-[0_10px_30px_rgba(0,0,0,0.5)]', 'border-indigo-400');
+            balok.style.position = 'fixed';
+            balok.style.left = (e.clientX - offsetX) + 'px';
+            balok.style.top = (e.clientY - offsetY) + 'px';
+            balok.style.zIndex = '999999';
+            
+            // Sedikit transparan agar target di bawahnya kelihatan
+            balok.classList.add('scale-110', 'shadow-[0_20px_50px_rgba(0,0,0,0.6)]', 'border-indigo-400');
+            balok.style.opacity = '0.9';
         });
 
         balok.addEventListener('pointermove', function(e) {
             if (!isDragging) return;
             e.preventDefault(); 
-            
-            // Terapkan position fixed hanya saat benar-benar mulai digeser untuk mencegah glitch
-            if (balok.style.position !== 'fixed') {
-                balok.style.width = initialWidth + 'px';
-                balok.style.height = initialHeight + 'px';
-                balok.style.position = 'fixed';
-            }
             
             balok.style.left = (e.clientX - offsetX) + 'px';
             balok.style.top = (e.clientY - offsetY) + 'px';
@@ -218,9 +214,10 @@ function pasangSensorSort() {
             isDragging = false;
             balok.releasePointerCapture(e.pointerId);
             
-            balok.classList.remove('scale-105', 'shadow-[0_10px_30px_rgba(0,0,0,0.5)]', 'border-indigo-400');
+            balok.classList.remove('scale-110', 'shadow-[0_20px_50px_rgba(0,0,0,0.6)]', 'border-indigo-400');
+            balok.style.opacity = '1';
             
-            // Deteksi area drop
+            // Sembunyikan sejenak untuk mengecek area drop di bawahnya
             balok.style.display = 'none';
             let elemenDiBawah = document.elementFromPoint(e.clientX, e.clientY);
             balok.style.display = 'flex';
@@ -234,6 +231,8 @@ function pasangSensorSort() {
                     let soalData = sortState.dataSoal.find(s => s.id === idSoal);
                     if(soalData) soalData.terjawab = true;
                     
+                    // Bersihkan styling inline sebelum re-render
+                    kembalikanStyling(balok);
                     mulaiGameSort(true);
                     
                     let tema = keranjangTarget.getAttribute('data-tema');
@@ -270,13 +269,17 @@ function pasangSensorSort() {
         });
     });
 
-    function kembalikanKeAsal(balok, wadahAsal, keranjangTarget) {
-        balok.style.position = 'relative';
-        balok.style.left = 'auto';
-        balok.style.top = 'auto';
-        balok.style.width = '100%';
+    function kembalikanStyling(balok) {
+        balok.style.position = '';
+        balok.style.left = '';
+        balok.style.top = '';
+        balok.style.width = '';
         balok.style.height = ''; 
-        balok.style.zIndex = '1';
+        balok.style.zIndex = '';
+    }
+
+    function kembalikanKeAsal(balok, wadahAsal, keranjangTarget) {
+        kembalikanStyling(balok);
         wadahAsal.appendChild(balok);
         
         if (typeof playSoundEffect === 'function') playSoundEffect('wrong'); 
