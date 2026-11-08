@@ -1,6 +1,6 @@
 // ==========================================================
 // FILE: engine-sort.js
-// FUNGSI: Mesin "Sort & Drop" (LOCKED GRID, INTERNAL SCROLL)
+// FUNGSI: Mesin "Sort & Drop" (FIXED RESET STATE & SMOOTH DRAG)
 // ==========================================================
 
 let sortState = {
@@ -27,7 +27,8 @@ let sortState = {
 function bukaSetupGame(jenisGame) {
     if (jenisGame === 'sort') {
         sortState.layout = 'kiri-kanan'; 
-        sortState.dataSoal = [...sortState.dataSoalAsli].sort(() => Math.random() - 0.5);
+        // PERBAIKAN 1: Reset total (Deep Copy) status terjawab agar bersih saat Main Lagi
+        sortState.dataSoal = sortState.dataSoalAsli.map(item => ({...item, terjawab: false})).sort(() => Math.random() - 0.5);
         mulaiGameSort();
     }
 }
@@ -43,12 +44,11 @@ function mulaiGameSort(isRenderUlang = false) {
     if (!isRenderUlang) {
         sortState.skor = 0;
         sortState.itemTerjawab = 0;
-        sortState.dataSoal = [...sortState.dataSoalAsli].sort(() => Math.random() - 0.5);
+        // PERBAIKAN 1: Reset total status terjawab setiap memulai sesi baru
+        sortState.dataSoal = sortState.dataSoalAsli.map(item => ({...item, terjawab: false})).sort(() => Math.random() - 0.5);
     }
 
     let isKiriKanan = sortState.layout === 'kiri-kanan';
-    
-    // PENGATURAN RUANG (LOCKED GRID)
     let layoutUtama = isKiriKanan ? 'flex-row' : 'flex-col';
     let porsiSoal = isKiriKanan ? 'w-5/12 h-full border-r' : 'w-full h-[45%] border-b';
     let porsiKeranjang = isKiriKanan ? 'w-7/12 h-full' : 'w-full h-[55%]';
@@ -59,7 +59,6 @@ function mulaiGameSort(isRenderUlang = false) {
             
             <div class="absolute top-1/4 left-1/4 w-[30%] h-[30%] bg-indigo-600/10 rounded-full blur-[100px] pointer-events-none z-0"></div>
             
-            <!-- HEADER KOMPAK (Tinggi Konstan) -->
             <div class="flex-none bg-slate-900 border border-slate-700/80 shadow-md rounded-xl px-4 py-2.5 flex justify-between items-center mb-3 shrink-0 relative z-10">
                 <div class="flex items-center gap-3">
                     <div class="w-9 h-9 bg-indigo-500/20 rounded-lg flex items-center justify-center border border-indigo-400/30 shrink-0">
@@ -84,12 +83,9 @@ function mulaiGameSort(isRenderUlang = false) {
                 </div>
             </div>
 
-            <!-- ARENA UTAMA (min-h-0 mencegah konten merusak tinggi layar) -->
             <div class="flex-1 flex ${layoutUtama} bg-slate-900/60 backdrop-blur-md border border-slate-700/60 rounded-2xl shadow-xl overflow-hidden relative z-10 min-h-0">
 
-                <!-- PANEL SOAL (Bisa scroll ke bawah jika soalnya banyak) -->
                 <div class="${porsiSoal} border-slate-700/50 flex flex-col min-h-0">
-                    
                     <div class="flex-none bg-slate-800/40 p-2.5 border-b border-slate-700/50 flex justify-between items-center px-4">
                         <h3 class="font-black text-slate-400 uppercase tracking-[0.2em] text-[10px]">Seret Objek</h3>
                         <span class="bg-indigo-500/20 text-indigo-300 text-[9px] font-black px-2 py-0.5 rounded border border-indigo-500/30 shrink-0">${sortState.dataSoal.length} Soal</span>
@@ -106,7 +102,7 @@ function mulaiGameSort(isRenderUlang = false) {
                                     : `<span class="font-arabic text-2xl md:text-3xl text-white pointer-events-none drop-shadow-md leading-none mb-1">${item.soal}</span>`;
                                 
                                 return `
-                                    <div class="balok-sort touch-none bg-slate-800 border border-slate-600 hover:border-indigo-400 rounded-xl p-2 flex flex-col items-center justify-center cursor-grab transition-all shadow-sm relative group h-16 md:h-20 w-full" data-id="${item.id}" data-kat="${item.kat}">
+                                    <div class="balok-sort touch-none bg-slate-800 border border-slate-600 hover:border-indigo-400 rounded-xl p-2 flex flex-col items-center justify-center cursor-grab transition-all shadow-sm relative group h-16 md:h-20 w-full" data-id="${item.id}" data-kat="${item.kat}" data-terkunci="false">
                                         ${visual}
                                         <span class="text-[9px] md:text-[10px] text-slate-400 font-bold pointer-events-none tracking-wider uppercase truncate w-full text-center mt-auto">${item.arti}</span>
                                     </div>
@@ -116,7 +112,6 @@ function mulaiGameSort(isRenderUlang = false) {
                     </div>
                 </div>
 
-                <!-- PANEL KERANJANG -->
                 <div class="${porsiKeranjang} p-3 sm:p-4 grid grid-cols-2 gap-3 sm:gap-4 min-h-0">
                     ${sortState.kategori.map(kat => {
                         let isCyan = kat.tema === 'cyan';
@@ -151,8 +146,7 @@ function mulaiGameSort(isRenderUlang = false) {
                                     <p class="text-slate-300/80 text-[8px] md:text-[9px] font-bold uppercase mt-1 tracking-widest">${kat.subjudul}</p>
                                 </div>
                                 
-                                <!-- Area ini yang akan scroll otomatis jika kotak jawaban penuh -->
-                                <div class="flex-1 overflow-y-auto p-2 md:p-3 flex flex-col gap-1.5 md:gap-2 relative z-10">
+                                <div class="isi-keranjang flex-1 overflow-y-auto p-2 md:p-3 flex flex-col gap-1.5 md:gap-2 relative z-10">
                                     <div class="absolute inset-0 flex items-center justify-center pointer-events-none opacity-[0.04] ${balokMasuk ? 'hidden' : ''}">
                                         <i class="fa-solid fa-box-open text-6xl md:text-8xl ${textColor}"></i>
                                     </div>
@@ -162,7 +156,6 @@ function mulaiGameSort(isRenderUlang = false) {
                         `;
                     }).join('')}
                 </div>
-
             </div>
         </div>
     `;
@@ -174,37 +167,63 @@ function pasangSensorSort() {
     const wadahAsal = document.getElementById('wadah-balok-sort');
     
     baloks.forEach(balok => {
-        let terkunci = false;
+        let isDragging = false;
+        let offsetX = 0;
+        let offsetY = 0;
+        let initialWidth = 0;
+        let initialHeight = 0;
 
-        balok.addEventListener('touchstart', function(e) {
-            if(terkunci) return;
+        // PERBAIKAN 2: Menggunakan Pointer Events agar hitungan koordinat drag mulus (tidak nyentak)
+        balok.addEventListener('pointerdown', function(e) {
+            if (balok.getAttribute('data-terkunci') === 'true') return;
+            
+            isDragging = true;
+            balok.setPointerCapture(e.pointerId);
+            
+            // Kalkulasi offset agar posisi balok sesuai titik sentuh jari
+            let rect = balok.getBoundingClientRect();
+            offsetX = e.clientX - rect.left;
+            offsetY = e.clientY - rect.top;
+            
+            initialWidth = rect.width;
+            initialHeight = rect.height;
+
             balok.style.zIndex = 9999;
             balok.classList.add('scale-105', 'shadow-[0_10px_30px_rgba(0,0,0,0.5)]', 'border-indigo-400');
-        }, {passive: false});
+        });
 
-        balok.addEventListener('touchmove', function(e) {
-            if(terkunci) return;
+        balok.addEventListener('pointermove', function(e) {
+            if (!isDragging) return;
             e.preventDefault(); 
-            let sentuhan = e.touches[0];
-            balok.style.position = 'fixed';
-            balok.style.left = (sentuhan.clientX - (balok.offsetWidth / 2)) + 'px';
-            balok.style.top = (sentuhan.clientY - (balok.offsetHeight / 2)) + 'px';
-        }, {passive: false});
+            
+            // Terapkan position fixed hanya saat benar-benar mulai digeser untuk mencegah glitch
+            if (balok.style.position !== 'fixed') {
+                balok.style.width = initialWidth + 'px';
+                balok.style.height = initialHeight + 'px';
+                balok.style.position = 'fixed';
+            }
+            
+            balok.style.left = (e.clientX - offsetX) + 'px';
+            balok.style.top = (e.clientY - offsetY) + 'px';
+        });
 
-        balok.addEventListener('touchend', function(e) {
-            if(terkunci) return;
+        balok.addEventListener('pointerup', function(e) {
+            if (!isDragging) return;
+            isDragging = false;
+            balok.releasePointerCapture(e.pointerId);
+            
             balok.classList.remove('scale-105', 'shadow-[0_10px_30px_rgba(0,0,0,0.5)]', 'border-indigo-400');
             
-            let sentuhan = e.changedTouches[0];
+            // Deteksi area drop
             balok.style.display = 'none';
-            let elemenDiBawah = document.elementFromPoint(sentuhan.clientX, sentuhan.clientY);
+            let elemenDiBawah = document.elementFromPoint(e.clientX, e.clientY);
             balok.style.display = 'flex';
 
             let keranjangTarget = elemenDiBawah ? elemenDiBawah.closest('.keranjang-target') : null;
 
             if (keranjangTarget) {
                 if (balok.getAttribute('data-kat') === keranjangTarget.getAttribute('data-target')) {
-                    terkunci = true;
+                    balok.setAttribute('data-terkunci', 'true');
                     let idSoal = balok.getAttribute('data-id');
                     let soalData = sortState.dataSoal.find(s => s.id === idSoal);
                     if(soalData) soalData.terjawab = true;
@@ -219,8 +238,10 @@ function pasangSensorSort() {
                         TargetElement.classList.remove('border-dashed');
                         TargetElement.classList.add('border-solid', `border-${targetWarna}-500`, `bg-${targetWarna}-900/40`);
                         setTimeout(() => {
-                            TargetElement.classList.add('border-dashed');
-                            TargetElement.classList.remove('border-solid', `border-${targetWarna}-500`, `bg-${targetWarna}-900/40`);
+                            if (TargetElement) {
+                                TargetElement.classList.add('border-dashed');
+                                TargetElement.classList.remove('border-solid', `border-${targetWarna}-500`, `bg-${targetWarna}-900/40`);
+                            }
                         }, 200);
                     }
                     
@@ -235,23 +256,36 @@ function pasangSensorSort() {
                         setTimeout(() => selebrasiKemenanganSort(), 400);
                     }
                 } else {
-                    balok.style.position = 'static';
-                    wadahAsal.appendChild(balok);
-                    if (typeof playSoundEffect === 'function') playSoundEffect('wrong'); 
-                    
-                    keranjangTarget.classList.remove('border-dashed');
-                    keranjangTarget.classList.add('border-solid', 'border-rose-500', 'bg-rose-950/50');
-                    setTimeout(() => {
-                        keranjangTarget.classList.add('border-dashed');
-                        keranjangTarget.classList.remove('border-solid', 'border-rose-500', 'bg-rose-950/50');
-                    }, 200);
+                    kembalikanKeAsal(balok, wadahAsal, keranjangTarget);
                 }
             } else {
-                balok.style.position = 'static';
-                wadahAsal.appendChild(balok);
+                kembalikanKeAsal(balok, wadahAsal, null);
             }
         });
     });
+
+    function kembalikanKeAsal(balok, wadahAsal, keranjangTarget) {
+        balok.style.position = 'relative';
+        balok.style.left = 'auto';
+        balok.style.top = 'auto';
+        balok.style.width = '100%';
+        balok.style.height = ''; 
+        balok.style.zIndex = '1';
+        wadahAsal.appendChild(balok);
+        
+        if (typeof playSoundEffect === 'function') playSoundEffect('wrong'); 
+        
+        if (keranjangTarget) {
+            keranjangTarget.classList.remove('border-dashed');
+            keranjangTarget.classList.add('border-solid', 'border-rose-500', 'bg-rose-950/50');
+            setTimeout(() => {
+                if (keranjangTarget) {
+                    keranjangTarget.classList.add('border-dashed');
+                    keranjangTarget.classList.remove('border-solid', 'border-rose-500', 'bg-rose-950/50');
+                }
+            }, 200);
+        }
+    }
 }
 
 function selebrasiKemenanganSort() {
