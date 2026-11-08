@@ -1,17 +1,17 @@
 // ==========================================================
 // FILE: engine-sort.js
-// FUNGSI: Mesin "Sort & Drop" (DINAMIS: BISA GANTI GAYA LAYOUT & KONTEN)
+// FUNGSI: Mesin "Sort & Drop" (FLEXIBLE LAYOUT, SOLID & SIMETRIS)
 // ==========================================================
 
 let sortState = {
     skor: 0,
     itemTerjawab: 0,
-    layout: 'kiri-kanan', // Default layout
+    layout: 'kiri-kanan', // Mode default
     kategori: [
-        { id: "isim", judul: "ISIM", subjudul: "(Kata Benda)", warna: "cyan" },
-        { id: "fiil", judul: "FI'IL", subjudul: "(Kata Kerja)", warna: "rose" }
+        { id: "isim", judul: "ISIM", subjudul: "Kata Benda", tema: "cyan" },
+        { id: "fiil", judul: "FI'IL", subjudul: "Kata Kerja", tema: "rose" }
     ],
-    // Data dicampur teks dan gambar (emoji) agar dinamis
+    // Mendukung teks dan gambar sekaligus
     dataSoalAsli: [
         { id: "s1", soal: "كِتَابٌ", arti: "Buku", kat: "isim", tipe: "teks" },
         { id: "s2", soal: "🏃", arti: "Berlari", kat: "fiil", tipe: "gambar" },
@@ -22,23 +22,20 @@ let sortState = {
         { id: "s7", soal: "🕌", arti: "Masjid", kat: "isim", tipe: "gambar" },
         { id: "s8", soal: "يَذْهَبُ", arti: "Pergi", kat: "fiil", tipe: "teks" }
     ],
-    dataSoal: [] // Data yang sedang dimainkan
+    dataSoal: [] 
 };
 
 function bukaSetupGame(jenisGame) {
-    if (jenisGame === 'match') {
-        if (typeof mulaiGameMatch === 'function') mulaiGameMatch();
-    } else if (jenisGame === 'sort') {
+    if (jenisGame === 'sort') {
         sortState.layout = 'kiri-kanan'; 
         sortState.dataSoal = [...sortState.dataSoalAsli].sort(() => Math.random() - 0.5);
         mulaiGameSort();
     }
 }
 
-// Fungsi untuk mengganti layout secara langsung
 function ubahGayaLayout(gayaBaru) {
     sortState.layout = gayaBaru;
-    mulaiGameSort(true); // render ulang tanpa mereset skor/data
+    mulaiGameSort(true); 
 }
 
 function mulaiGameSort(isRenderUlang = false) {
@@ -50,110 +47,126 @@ function mulaiGameSort(isRenderUlang = false) {
         sortState.dataSoal = [...sortState.dataSoalAsli].sort(() => Math.random() - 0.5);
     }
 
-    // Penentuan Class CSS berdasarkan Layout yang dipilih
+    // PENGATURAN GRID SIMETRIS BERDASARKAN MODE
     let classBungkusUtama = sortState.layout === 'kiri-kanan' 
         ? 'flex flex-col lg:flex-row items-stretch' 
-        : 'flex flex-col'; // Atas-Bawah
+        : 'flex flex-col'; 
         
     let classWadahSoal = sortState.layout === 'kiri-kanan' 
-        ? 'w-full lg:w-4/12' 
+        ? 'w-full lg:w-5/12' 
         : 'w-full';
 
     let classWadahKeranjang = sortState.layout === 'kiri-kanan' 
-        ? 'w-full lg:w-8/12 grid grid-cols-1 sm:grid-cols-2' 
-        : 'w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4';
+        ? 'w-full lg:w-7/12 grid grid-cols-1 md:grid-cols-2' 
+        : 'w-full grid grid-cols-1 md:grid-cols-2';
 
     let classGridBalok = sortState.layout === 'kiri-kanan'
-        ? 'grid grid-cols-2'
+        ? 'grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-2'
         : 'flex flex-wrap justify-center';
 
     container.innerHTML = `
-        <div class="max-w-7xl mx-auto px-4 md:px-6 pt-2 pb-10 mt-1 select-none fade-in relative">
+        <div class="max-w-7xl mx-auto px-4 md:px-6 pt-4 pb-12 select-none fade-in relative">
             
-            <!-- Efek Cahaya Latar -->
-            <div class="absolute top-0 left-1/4 w-80 h-80 bg-emerald-500/10 rounded-full blur-[100px] pointer-events-none"></div>
+            <!-- CAHAYA LATAR SOLID -->
+            <div class="absolute top-0 left-1/4 w-[40%] h-[40%] bg-indigo-600/10 rounded-full blur-[100px] pointer-events-none z-0"></div>
             
-            <!-- HEADER & PANEL KONTROL GAYA -->
-            <div class="flex flex-col md:flex-row justify-between items-center bg-slate-900 p-3 md:p-4 rounded-2xl shadow-[0_4px_20px_rgba(0,0,0,0.3)] mb-6 border border-slate-700 relative z-10 gap-4">
+            <!-- HEADER & KONTROL LAYOUT -->
+            <div class="bg-slate-900 border border-slate-700 shadow-xl rounded-2xl p-4 flex flex-col md:flex-row justify-between items-center mb-6 md:mb-8 relative z-10 gap-4">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg border border-indigo-400/50">
+                        <i class="fa-solid fa-layer-group text-white text-lg"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-lg md:text-xl font-black text-white tracking-wide leading-none">SORT & DROP</h2>
+                    </div>
+                </div>
                 
-                <h2 class="text-base md:text-xl font-black text-white flex items-center gap-2 drop-shadow-md">
-                    <i class="fa-solid fa-layer-group text-emerald-400"></i>SORT & DROP
-                </h2>
-                
-                <!-- TOGGLE GAYA LAYOUT -->
-                <div class="flex items-center bg-slate-800 p-1 rounded-xl border border-slate-700">
-                    <button onclick="ubahGayaLayout('kiri-kanan')" class="px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${sortState.layout === 'kiri-kanan' ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-400 hover:text-white'}">Kiri-Kanan</button>
-                    <button onclick="ubahGayaLayout('atas-bawah')" class="px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${sortState.layout === 'atas-bawah' ? 'bg-emerald-600 text-white shadow-md' : 'text-slate-400 hover:text-white'}">Atas-Bawah</button>
+                <!-- TOMBOL GAYA LAYOUT -->
+                <div class="flex items-center bg-slate-950 p-1 rounded-xl border border-slate-800 shadow-inner">
+                    <button onclick="ubahGayaLayout('kiri-kanan')" class="px-5 py-2 rounded-lg text-xs font-bold transition-all ${sortState.layout === 'kiri-kanan' ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-500 hover:text-white'}">Kiri-Kanan</button>
+                    <button onclick="ubahGayaLayout('atas-bawah')" class="px-5 py-2 rounded-lg text-xs font-bold transition-all ${sortState.layout === 'atas-bawah' ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-500 hover:text-white'}">Atas-Bawah</button>
                 </div>
 
-                <div class="flex items-center gap-3">
-                    <div class="font-bold text-emerald-400 bg-slate-800 px-4 py-1.5 rounded-xl border border-slate-700 shadow-inner">Nilai: <span id="skor-sort" class="font-black text-white ml-1">${Math.round(sortState.skor)}</span></div>
-                    <button onclick="bukaDragAndDropArena()" class="bg-slate-700 hover:bg-rose-600 text-slate-200 px-4 py-1.5 rounded-xl font-bold transition-colors border border-slate-600">Keluar</button>
+                <div class="flex items-center gap-4">
+                    <div class="bg-slate-950 border border-slate-800 rounded-xl px-4 py-2 flex items-center shadow-inner">
+                        <span class="text-xs font-bold text-slate-400 mr-2 uppercase">Skor</span>
+                        <span id="skor-sort" class="text-xl font-black text-amber-400 leading-none">${Math.round(sortState.skor)}</span>
+                    </div>
+                    <button onclick="bukaDragAndDropArena()" class="bg-slate-800 hover:bg-rose-600 text-slate-300 hover:text-white w-10 h-10 rounded-xl font-bold transition-all border border-slate-700 flex items-center justify-center">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
                 </div>
             </div>
 
-            <!-- LAYOUT UTAMA (Dinamis berubah kelas CSS-nya) -->
-            <div class="${classBungkusUtama} gap-6 relative z-10">
+            <!-- LAYOUT UTAMA (Dinamis berubah posisi tapi tetap simetris) -->
+            <div class="${classBungkusUtama} gap-6 lg:gap-8 relative z-10">
                 
-                <!-- AREA KATA (ITEMS TO SORT) -->
-                <div class="${classWadahSoal} bg-slate-900/90 backdrop-blur-md p-4 md:p-6 rounded-3xl border border-slate-700 shadow-[0_8px_30px_rgba(0,0,0,0.4)] flex flex-col">
-                    <h3 class="text-center font-bold text-slate-400 mb-4 uppercase tracking-widest text-[10px] md:text-xs border-b border-slate-700/80 pb-3 flex items-center justify-center gap-2">
-                        <i class="fa-solid fa-hand-pointer text-indigo-400"></i> Seret Objek ke Kategori
-                    </h3>
+                <!-- WADAH SOAL -->
+                <div class="${classWadahSoal} bg-slate-900/80 backdrop-blur-md border border-slate-700/80 rounded-[2rem] p-5 shadow-xl h-fit">
+                    <div class="flex items-center justify-between mb-5 pb-4 border-b border-slate-700/50">
+                        <h3 class="font-black text-slate-400 uppercase tracking-widest text-[10px] md:text-xs">Seret Objek Ini</h3>
+                    </div>
                     
-                    <div class="${classGridBalok} gap-3" id="wadah-balok-sort">
-                        ${sortState.dataSoal.map((item, index) => {
-                            if(item.terjawab) return ''; // Sembunyikan jika sudah dirender di keranjang
+                    <div class="${classGridBalok} gap-3 md:gap-4" id="wadah-balok-sort">
+                        ${sortState.dataSoal.map(item => {
+                            if(item.terjawab) return ''; 
 
-                            let kontenVisual = item.tipe === 'gambar' 
+                            let isGambar = item.tipe === 'gambar';
+                            let visual = isGambar 
                                 ? `<span class="text-4xl md:text-5xl drop-shadow-md mb-1 pointer-events-none">${item.soal}</span>` 
-                                : `<span class="font-arabic text-2xl md:text-3xl drop-shadow-md leading-none mb-1 pointer-events-none">${item.soal}</span>`;
+                                : `<span class="font-arabic text-3xl md:text-4xl text-white group-hover:scale-110 transition-transform pointer-events-none drop-shadow-md leading-none mb-1 md:mb-2">${item.soal}</span>`;
                             
-                            let w = item.tipe === 'gambar' ? 'bg-slate-800 border-slate-600' : 'bg-indigo-600 border-indigo-500';
-                            let classUkuran = sortState.layout === 'kiri-kanan' ? 'w-full' : 'w-24 md:w-28';
+                            let wClass = isGambar ? 'bg-slate-800 border-slate-600' : 'bg-slate-800 border-slate-600 hover:border-indigo-500';
+                            let sizeClass = sortState.layout === 'kiri-kanan' ? 'w-full h-[100px]' : 'w-[100px] h-[100px] md:w-[120px] md:h-[120px]';
 
                             return `
-                                <div class="balok-sort touch-none ${w} border-2 text-white rounded-xl md:rounded-2xl p-3 shadow-lg cursor-grab transition-transform relative overflow-hidden flex flex-col items-center justify-center min-h-[80px] ${classUkuran}" data-id="${item.id}" data-kat="${item.kat}">
-                                    ${kontenVisual}
-                                    <span class="text-[10px] font-bold text-white/70 pointer-events-none tracking-wide">${item.arti}</span>
+                                <div class="balok-sort touch-none ${wClass} border-2 rounded-2xl p-3 flex flex-col items-center justify-center cursor-grab transition-all shadow-lg hover:shadow-indigo-500/20 relative group overflow-hidden ${sizeClass}" data-id="${item.id}" data-kat="${item.kat}">
+                                    ${visual}
+                                    <span class="text-[10px] md:text-xs text-slate-400 font-bold pointer-events-none tracking-widest uppercase">${item.arti}</span>
                                 </div>
                             `;
                         }).join('')}
                     </div>
                 </div>
 
-                <!-- AREA KERANJANG KATEGORI -->
+                <!-- WADAH KATEGORI -->
                 <div class="${classWadahKeranjang} gap-5 md:gap-6" id="area-kategori">
                     ${sortState.kategori.map(kat => {
-                        let warnaGaris = kat.warna === 'cyan' ? 'border-cyan-500' : 'border-rose-500';
-                        let warnaHeaderBg = kat.warna === 'cyan' ? 'bg-cyan-950' : 'bg-rose-950';
-                        let warnaTeks = kat.warna === 'cyan' ? 'text-cyan-400' : 'text-rose-400';
-                        let warnaWadahDalam = kat.warna === 'cyan' ? 'bg-cyan-950/20' : 'bg-rose-950/20';
+                        let isCyan = kat.tema === 'cyan';
+                        let bgHeader = isCyan ? 'bg-cyan-950/80' : 'bg-rose-950/80';
+                        let borderColor = isCyan ? 'border-cyan-500/40' : 'border-rose-500/40';
+                        let textColor = isCyan ? 'text-cyan-400' : 'text-rose-400';
+                        let dropZoneBg = isCyan ? 'bg-cyan-950/20' : 'bg-rose-950/20';
                         
-                        // Render ulang balok yang sudah masuk ke keranjang ini
                         let balokMasuk = sortState.dataSoal.filter(s => s.terjawab && s.kat === kat.id).map(b => {
-                            let kontenGepeng = b.tipe === 'gambar' ? `<span class="text-xl">${b.soal}</span>` : `<span class="font-arabic text-lg text-white">${b.soal}</span>`;
+                            let itemVisual = b.tipe === 'gambar' 
+                                ? `<span class="text-xl md:text-2xl">${b.soal}</span>` 
+                                : `<span class="font-arabic text-xl md:text-2xl text-white">${b.soal}</span>`;
+                                
                             return `
-                                <div class="bg-slate-800 border border-emerald-500 text-emerald-400 rounded-xl px-3 py-1.5 shadow-sm flex items-center justify-between transition-all w-full md:w-[48%]">
-                                    <div class="flex items-center gap-2">
-                                        ${kontenGepeng}
-                                        <span class="text-[10px] text-slate-400">(${b.arti})</span>
+                                <div class="w-full bg-slate-900 border-l-4 ${isCyan ? 'border-cyan-500' : 'border-rose-500'} border-y border-r border-slate-700 rounded-xl p-3 md:p-4 shadow-sm flex items-center justify-between transition-all">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-10 h-10 rounded-lg bg-slate-800 flex items-center justify-center border border-slate-600 shadow-inner">
+                                            ${itemVisual}
+                                        </div>
+                                        <span class="text-xs font-bold text-slate-300 tracking-wide uppercase">${b.arti}</span>
                                     </div>
-                                    <i class="fa-solid fa-check-circle text-emerald-500 text-sm"></i>
+                                    <i class="fa-solid fa-circle-check ${textColor} text-lg"></i>
                                 </div>
                             `;
                         }).join('');
 
                         return `
-                            <div class="keranjang-target bg-slate-900 border-2 ${warnaGaris} rounded-3xl flex flex-col transition-all shadow-[0_8px_30px_rgba(0,0,0,0.3)] relative overflow-hidden h-full min-h-[200px]" data-target="${kat.id}">
+                            <div class="keranjang-target flex flex-col rounded-[2rem] border-2 border-dashed ${borderColor} ${dropZoneBg} overflow-hidden shadow-inner transition-all relative min-h-[300px] md:min-h-[400px]" data-target="${kat.id}" data-tema="${kat.tema}">
                                 
-                                <div class="${warnaHeaderBg} border-b ${warnaGaris} p-3 text-center shadow-md">
-                                    <h2 class="text-xl md:text-2xl font-black ${warnaTeks} tracking-widest drop-shadow-md">${kat.judul}</h2>
+                                <div class="${bgHeader} border-b ${borderColor} p-4 text-center relative z-10 shadow-md">
+                                    <h2 class="text-2xl font-black ${textColor} tracking-[0.15em] drop-shadow-md mb-1">${kat.judul}</h2>
+                                    <p class="text-slate-300 text-[10px] font-bold uppercase tracking-widest">${kat.subjudul}</p>
                                 </div>
                                 
-                                <div class="isi-keranjang flex-1 ${warnaWadahDalam} p-3 flex flex-row flex-wrap gap-2 content-start transition-colors relative z-0">
-                                    <div class="placeholder-teks absolute inset-0 flex items-center justify-center pointer-events-none opacity-10 ${balokMasuk ? 'hidden' : ''}">
-                                        <i class="fa-solid fa-box-open text-5xl ${warnaTeks}"></i>
+                                <div class="isi-keranjang flex-1 p-4 md:p-5 flex flex-col gap-3 relative z-10">
+                                    <div class="placeholder-icon absolute inset-0 flex items-center justify-center pointer-events-none opacity-[0.05] z-0 ${balokMasuk ? 'hidden' : ''}">
+                                        <i class="fa-solid fa-box-open text-7xl md:text-8xl ${textColor}"></i>
                                     </div>
                                     ${balokMasuk}
                                 </div>
@@ -178,7 +191,7 @@ function pasangSensorSort() {
         balok.addEventListener('touchstart', function(e) {
             if(terkunci) return;
             balok.style.zIndex = 9999;
-            balok.classList.add('scale-110', 'shadow-2xl');
+            balok.classList.add('scale-105', 'shadow-[0_20px_50px_rgba(0,0,0,0.5)]', 'ring-4', 'ring-indigo-500/50');
         }, {passive: false});
 
         balok.addEventListener('touchmove', function(e) {
@@ -192,7 +205,7 @@ function pasangSensorSort() {
 
         balok.addEventListener('touchend', function(e) {
             if(terkunci) return;
-            balok.classList.remove('scale-110', 'shadow-2xl');
+            balok.classList.remove('scale-105', 'shadow-[0_20px_50px_rgba(0,0,0,0.5)]', 'ring-4', 'ring-indigo-500/50');
             
             let sentuhan = e.changedTouches[0];
             balok.style.display = 'none';
@@ -204,15 +217,26 @@ function pasangSensorSort() {
             if (keranjangTarget) {
                 if (balok.getAttribute('data-kat') === keranjangTarget.getAttribute('data-target')) {
                     terkunci = true;
-                    balok.style.position = 'static';
-                    
                     let idSoal = balok.getAttribute('data-id');
                     let soalData = sortState.dataSoal.find(s => s.id === idSoal);
                     if(soalData) soalData.terjawab = true;
                     
-                    // Trigger render ulang agar tampilannya rapi sesuai mode layout
-                    mulaiGameSort(true); 
-
+                    // Render ulang agar animasi chip solid terjadi sempurna
+                    mulaiGameSort(true);
+                    
+                    let tema = keranjangTarget.getAttribute('data-tema');
+                    let targetWarna = tema === 'cyan' ? 'cyan' : 'rose';
+                    let TargetElement = document.querySelector(`.keranjang-target[data-target="${soalData.kat}"]`);
+                    
+                    if (TargetElement) {
+                        TargetElement.classList.remove('border-dashed');
+                        TargetElement.classList.add('border-solid', `border-${targetWarna}-500`, `bg-${targetWarna}-900/30`);
+                        setTimeout(() => {
+                            TargetElement.classList.add('border-dashed');
+                            TargetElement.classList.remove('border-solid', `border-${targetWarna}-500`, `bg-${targetWarna}-900/30`);
+                        }, 400);
+                    }
+                    
                     let nilaiPerSoal = 100 / sortState.dataSoal.length;
                     sortState.skor += nilaiPerSoal;
                     sortState.itemTerjawab++;
@@ -221,16 +245,19 @@ function pasangSensorSort() {
                     if (typeof playSoundEffect === 'function') playSoundEffect('correct'); 
 
                     if (sortState.itemTerjawab === sortState.dataSoal.length) {
-                        setTimeout(() => selebrasiKemenanganSort(), 500);
+                        setTimeout(() => selebrasiKemenanganSort(), 600);
                     }
                 } else {
                     balok.style.position = 'static';
                     wadahAsal.appendChild(balok);
                     if (typeof playSoundEffect === 'function') playSoundEffect('wrong'); 
                     
-                    let wadahDalam = keranjangTarget.querySelector('.isi-keranjang');
-                    wadahDalam.classList.add('bg-rose-900/50');
-                    setTimeout(() => wadahDalam.classList.remove('bg-rose-900/50'), 300);
+                    keranjangTarget.classList.remove('border-dashed');
+                    keranjangTarget.classList.add('border-solid', 'border-rose-500', 'bg-rose-950/50');
+                    setTimeout(() => {
+                        keranjangTarget.classList.add('border-dashed');
+                        keranjangTarget.classList.remove('border-solid', 'border-rose-500', 'bg-rose-950/50');
+                    }, 300);
                 }
             } else {
                 balok.style.position = 'static';
@@ -248,16 +275,16 @@ function selebrasiKemenanganSort() {
     container.innerHTML = `
         <div class="max-w-2xl mx-auto mt-10 p-8 bg-slate-900 rounded-[2.5rem] text-center border border-slate-700 shadow-[0_0_40px_rgba(16,185,129,0.2)] fade-in">
             <i class="fa-solid fa-medal text-6xl text-amber-400 mb-6 animate-bounce drop-shadow-[0_0_15px_rgba(251,191,36,0.5)]"></i>
-            <h1 class="text-4xl font-black text-white mb-2">PENGELOMPOKKAN SELESAI!</h1>
+            <h1 class="text-4xl md:text-5xl font-black text-white mb-2 tracking-tight">SORTING SELESAI!</h1>
             
             <div class="bg-slate-800 p-6 rounded-3xl mb-8 mt-6 border border-slate-700">
-                <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Nilai Akhir</p>
-                <p class="text-7xl font-black text-emerald-400 drop-shadow-[0_0_15px_rgba(16,185,129,0.4)]">${nilaiAkhir}</p>
+                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-1">Nilai Akhir</p>
+                <p class="text-7xl font-black text-emerald-400 drop-shadow-md">${nilaiAkhir}</p>
             </div>
             
             <div class="flex justify-center gap-4">
-                <button onclick="bukaDragAndDropArena()" class="bg-slate-700 hover:bg-slate-600 text-white font-bold py-3 px-6 rounded-2xl border border-slate-600 transition-colors">Menu Game</button>
-                <button onclick="bukaSetupGame('sort')" class="bg-emerald-500 hover:bg-emerald-400 text-white font-black py-3 px-8 rounded-2xl shadow-[0_0_15px_rgba(16,185,129,0.4)] transition-transform">MAIN LAGI</button>
+                <button onclick="bukaDragAndDropArena()" class="bg-slate-800 hover:bg-slate-700 text-white font-bold py-3.5 px-6 rounded-2xl border border-slate-600 transition-colors shadow-sm text-sm uppercase tracking-widest">Menu Utama</button>
+                <button onclick="bukaSetupGame('sort')" class="bg-emerald-500 hover:bg-emerald-400 text-white font-black py-3.5 px-8 rounded-2xl shadow-[0_4px_15px_rgba(16,185,129,0.4)] transition-transform text-sm uppercase tracking-widest">MAIN LAGI</button>
             </div>
         </div>
     `;
