@@ -216,7 +216,9 @@ function tambahKeDaftar() {
 }
 
 function prosesSoalMassal() {
-    const teks = document.getElementById('massal-input').value.trim();
+    const teksInput = document.getElementById('massal-input');
+    const teks = teksInput ? teksInput.value.trim() : '';
+    
     if(!teks) return showAlert('Peringatan', 'Kotak input masih kosong!', 'error');
 
     const blokSoal = teks.split(/\n\s*\n/);
@@ -259,7 +261,8 @@ function prosesSoalMassal() {
     });
 
     if(jumlahBerhasil > 0) {
-        document.getElementById('massal-input').value = '';
+        // PENGAMAN: Cek dulu apakah kotaknya ada sebelum dikosongkan
+        if (teksInput) teksInput.value = '';
         simpanKeLocalStorage();
         showAlert('Berhasil', `${jumlahBerhasil} soal berhasil dimasukkan ke Bank Soal.`, 'success');
     } else {
@@ -279,7 +282,10 @@ function bacaFileSoal(event) {
             const arrayBuffer = e.target.result;
             mammoth.extractRawText({ arrayBuffer: arrayBuffer })
                 .then(function(result) {
-                    document.getElementById('massal-input').value = result.value;
+                    // PENGAMAN: Cek dulu kotak massal-input
+                    let textKotak = document.getElementById('massal-input');
+                    if (textKotak) textKotak.value = result.value;
+                    
                     showAlert('Berhasil', 'File Word berhasil dibaca! Silakan klik tombol "Masukkan ke Bank Soal".', 'success');
                 })
                 .catch(function(err) {
@@ -306,7 +312,11 @@ function bacaFileSoal(event) {
                     }
                     teksPdf += pageText + '\n\n';
                 }
-                document.getElementById('massal-input').value = teksPdf;
+                
+                // PENGAMAN: Cek dulu kotak massal-input
+                let textKotak = document.getElementById('massal-input');
+                if (textKotak) textKotak.value = teksPdf;
+                
                 showAlert('Berhasil', 'File PDF berhasil dibaca! Silakan klik tombol "Masukkan ke Bank Soal".', 'success');
             }).catch(function(err) {
                 showAlert('Error', 'Gagal membaca file PDF: ' + err.message, 'error');
@@ -351,7 +361,11 @@ function bacaFileSoal(event) {
                 
                 if (jumlahBerhasil > 0) {
                     simpanKeLocalStorage();
-                    document.getElementById('massal-input').value = 'Berhasil! ' + jumlahBerhasil + ' soal telah ditambahkan dari Excel.';
+                    
+                    // INI PENGAMAN UTAMANYA: Cek dulu sebelum menulis laporan
+                    let textKotak = document.getElementById('massal-input');
+                    if (textKotak) textKotak.value = 'Berhasil! ' + jumlahBerhasil + ' soal telah ditambahkan dari Excel.';
+                    
                     showAlert('Berhasil', `${jumlahBerhasil} soal dari Excel sukses dimasukkan ke Bank Soal!`, 'success');
                 } else {
                     showAlert('Error', 'Data Excel kosong atau format tidak sesuai template.', 'error');
@@ -365,7 +379,6 @@ function bacaFileSoal(event) {
         showAlert('Error', 'Format file tidak didukung. Harap pilih .xlsx, .docx, atau .pdf', 'error');
     }
 }
-
 function mulaiKuisBerdasarkanRentang() {
     if (AppState.kuis.bankSoalManual.length === 0) {
         return showAlert('Peringatan', 'Bank soal masih kosong! Silakan import atau masukkan soal terlebih dahulu.', 'error');
