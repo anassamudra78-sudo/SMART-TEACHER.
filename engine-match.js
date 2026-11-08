@@ -1,6 +1,6 @@
 // ==========================================================
 // FILE: engine-match.js
-// FUNGSI: Mesin Game "Match & Drop" (Skor Maksimal 100 Proporsional)
+// FUNGSI: Mesin Game "Match & Drop" (Skor Maksimal 100)
 // ==========================================================
 
 let matchState = {
@@ -122,12 +122,12 @@ function pasangSensorSederhana() {
                     kotakTarget.classList.replace('border-slate-300', 'border-emerald-500');
                     kotakTarget.classList.add('terisi', 'bg-emerald-50');
                     
-                    // RUMUS NILAI OTOMATIS: 100 dibagi jumlah soal
+                    // RUMUS NILAI: 100 dibagi jumlah soal
                     let nilaiPerSoal = 100 / matchState.dataSoal.length;
                     matchState.skor += nilaiPerSoal;
                     matchState.pasanganTerjawab++;
                     
-                    // Gunakan Math.round agar tidak ada nilai koma-koma yang aneh (misal 33.3)
+                    // Tampilkan skor bulat di atas layar
                     document.getElementById('skor-match').innerText = Math.round(matchState.skor);
                     
                     if (typeof playSoundEffect === 'function') playSoundEffect('correct'); 
