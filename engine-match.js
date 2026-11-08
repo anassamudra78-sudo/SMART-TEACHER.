@@ -1,6 +1,6 @@
 // ==========================================================
 // FILE: engine-match.js
-// FUNGSI: Mesin Game "Match & Drop" (FIX TAMPILAN TERPOTONG & GAMBAR 404)
+// FUNGSI: Mesin Game "Match & Drop" (Desain Bersih & Anti Gambar Rusak)
 // ==========================================================
 
 let matchState = {
@@ -8,10 +8,9 @@ let matchState = {
     pasanganTerjawab: 0,
     dataSoal: [
         { id: "p1", tipe: "teks", soal: "كِتَابٌ", arti: "Buku" },
-        // Menggunakan gambar dari server Wikipedia yang kebal blokir (Anti 404)
-        { id: "p2", tipe: "gambar", soal: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a1/Mallard2.jpg/150px-Mallard2.jpg", arti: "بَطَّةٌ" },
+        { id: "p2", tipe: "gambar", soal: "🦆", arti: "بَطَّةٌ" }, // Memakai Emoji agar mustahil gagal dimuat
         { id: "p3", tipe: "teks", soal: "مَدْرَسَةٌ", arti: "Sekolah" },
-        { id: "p4", tipe: "gambar", soal: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1f/Oryctolagus_cuniculus_Rcdo.jpg/150px-Oryctolagus_cuniculus_Rcdo.jpg", arti: "أَرْنَبٌ" }
+        { id: "p4", tipe: "gambar", soal: "🐇", arti: "أَرْنَبٌ" } // Memakai Emoji agar mustahil gagal dimuat
     ]
 };
 
@@ -27,29 +26,36 @@ function mulaiGameMatch() {
     let soalAcak = [...matchState.dataSoal].sort(() => Math.random() - 0.5);
     let artiAcak = [...matchState.dataSoal].sort(() => Math.random() - 0.5);
 
-    // Penambahan pb-32 (padding bawah) agar bisa digeser/scroll kalau layar sempit
     container.innerHTML = `
         <div class="max-w-6xl mx-auto p-4 mt-2 select-none touch-none fade-in pb-32">
             
-            <div class="flex justify-between items-center bg-white p-3 md:p-4 rounded-xl shadow-sm mb-4 border border-slate-200">
+            <!-- HEADER -->
+            <div class="flex justify-between items-center bg-white p-3 md:p-4 rounded-2xl shadow-sm mb-6 border border-slate-200">
                 <h2 class="text-lg md:text-xl font-black text-blue-600 flex items-center gap-2"><i class="fa-solid fa-puzzle-piece"></i>MATCH & DROP</h2>
-                <div class="font-bold text-amber-500 bg-amber-50 px-4 py-1 rounded-xl border border-amber-200 shadow-inner">Nilai: <span id="skor-match" class="font-black text-amber-600 text-lg">0</span></div>
-                <button onclick="bukaDragAndDropArena()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-1 rounded-xl font-bold transition-colors">Keluar</button>
+                <div class="font-bold text-amber-500 bg-amber-50 px-5 py-2 rounded-xl border border-amber-200 shadow-inner">Nilai: <span id="skor-match" class="font-black text-amber-600 text-xl">0</span></div>
+                <button onclick="bukaDragAndDropArena()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-5 py-2 rounded-xl font-bold transition-colors">Keluar</button>
             </div>
 
-            <div class="flex flex-col md:flex-row gap-4 md:gap-6 bg-slate-50 p-4 md:p-6 rounded-2xl border border-slate-200 shadow-md">
+            <div class="flex flex-col md:flex-row gap-6 bg-slate-50 p-5 md:p-8 rounded-3xl border border-slate-200 shadow-md">
                 
-                <!-- WADAH KIRI (Lebih Ramping) -->
+                <!-- WADAH KIRI (PILIH BALOK) -->
                 <div class="w-full md:w-1/2 flex flex-col" id="wadah-kiri">
-                    <h3 class="text-center font-bold text-slate-400 mb-3 uppercase tracking-widest text-xs border-b-2 border-slate-200 pb-2">Pilih Balok</h3>
-                    <div class="grid grid-cols-2 gap-3">
+                    <h3 class="text-center font-black text-slate-400 mb-4 uppercase tracking-widest text-xs border-b-2 border-slate-200 pb-3">Pilih Balok</h3>
+                    <div class="grid grid-cols-2 gap-4">
                         ${soalAcak.map(item => {
-                            let isiKartu = item.tipe === 'gambar' 
-                                ? `<img src="${item.soal}" class="h-14 md:h-16 w-auto object-contain pointer-events-none drop-shadow-md" alt="gambar" onerror="this.onerror=null; this.src='https://upload.wikimedia.org/wikipedia/commons/thumb/a/ac/No_image_available.svg/150px-No_image_available.svg.png';">` 
-                                : `<span class="pointer-events-none select-none drop-shadow-md font-arabic text-3xl md:text-4xl">${item.soal}</span>`;
+                            let isGambar = item.tipe === 'gambar';
+                            // Jika gambar/emoji ukurannya besar, jika teks pakai font Arab
+                            let isiKartu = isGambar 
+                                ? `<span class="pointer-events-none select-none drop-shadow-sm text-6xl md:text-7xl">${item.soal}</span>` 
+                                : `<span class="pointer-events-none select-none drop-shadow-md font-arabic text-3xl md:text-5xl">${item.soal}</span>`;
+                            
+                            // Jika gambar latar PUTIH, jika teks latar BIRU
+                            let cssKartu = isGambar
+                                ? `bg-white border-2 border-slate-300 text-slate-800`
+                                : `bg-blue-500 text-white border-2 border-blue-400`;
                             
                             return `
-                                <div class="kartu-soal bg-blue-500 text-white border-2 border-blue-400 rounded-xl flex justify-center items-center h-20 md:h-24 shadow-md transition-transform cursor-grab relative overflow-hidden" data-id="${item.id}">
+                                <div class="kartu-soal ${cssKartu} rounded-2xl flex justify-center items-center h-24 md:h-28 shadow-md transition-transform cursor-grab relative overflow-hidden" data-id="${item.id}" data-tipe="${item.tipe}">
                                     ${isiKartu}
                                 </div>
                             `;
@@ -57,16 +63,18 @@ function mulaiGameMatch() {
                     </div>
                 </div>
 
-                <div class="hidden md:block w-px bg-slate-200 mx-1"></div>
+                <div class="hidden md:block w-px bg-slate-200 mx-2"></div>
 
-                <!-- WADAH KANAN (Lebih Ramping agar 4 kotak muat) -->
+                <!-- WADAH KANAN (KOTAK TARGET) -->
                 <div class="w-full md:w-1/2 flex flex-col">
-                    <h3 class="text-center font-bold text-slate-400 mb-3 uppercase tracking-widest text-xs border-b-2 border-slate-200 pb-2">Pasangkan ke Kotak</h3>
-                    <div class="flex flex-col gap-3">
+                    <h3 class="text-center font-black text-slate-400 mb-4 uppercase tracking-widest text-xs border-b-2 border-slate-200 pb-3">Pasangkan ke Kotak</h3>
+                    <div class="flex flex-col gap-4">
                         ${artiAcak.map(item => `
-                            <div class="flex items-center gap-3 bg-white p-2 rounded-xl shadow-sm border border-slate-100">
-                                <div class="kotak-target w-24 md:w-28 h-16 md:h-20 bg-slate-50 border-2 border-dashed border-slate-300 rounded-lg flex items-center justify-center transition-all shrink-0 relative" data-target="${item.id}"></div>
-                                <div class="flex-1 bg-slate-800 text-white font-bold p-2 rounded-lg text-center h-16 md:h-20 flex items-center justify-center shadow-inner ${item.arti.match(/[\u0600-\u06FF]/) ? 'font-arabic text-2xl md:text-3xl' : 'text-lg'}">
+                            <div class="flex items-center gap-3 bg-white p-2 rounded-2xl shadow-sm border border-slate-200">
+                                <!-- Kotak Tujuan yang Kosong -->
+                                <div class="kotak-target w-28 md:w-32 h-20 md:h-24 bg-slate-50 border-2 border-dashed border-slate-300 rounded-xl flex items-center justify-center transition-all shrink-0 relative p-1" data-target="${item.id}"></div>
+                                <!-- Teks Sasaran -->
+                                <div class="flex-1 bg-slate-100 text-slate-700 font-bold p-2 rounded-xl text-center h-20 md:h-24 flex items-center justify-center border border-slate-200 shadow-inner ${item.arti.match(/[\u0600-\u06FF]/) ? 'font-arabic text-3xl md:text-4xl' : 'text-lg md:text-xl'}">
                                     ${item.arti}
                                 </div>
                             </div>
@@ -90,7 +98,7 @@ function pasangSensorSederhana() {
         kartu.addEventListener('touchstart', function(e) {
             if(terkunci) return;
             kartu.style.zIndex = 9999;
-            kartu.classList.add('scale-105', 'shadow-2xl');
+            kartu.classList.add('scale-110', 'shadow-2xl');
         }, {passive: false});
 
         kartu.addEventListener('touchmove', function(e) {
@@ -104,7 +112,7 @@ function pasangSensorSederhana() {
 
         kartu.addEventListener('touchend', function(e) {
             if(terkunci) return;
-            kartu.classList.remove('scale-105', 'shadow-2xl');
+            kartu.classList.remove('scale-110', 'shadow-2xl');
             
             let sentuhan = e.changedTouches[0];
             kartu.style.display = 'none';
@@ -117,14 +125,17 @@ function pasangSensorSederhana() {
                 if (kartu.getAttribute('data-id') === kotakTarget.getAttribute('data-target')) {
                     terkunci = true;
                     kartu.style.position = 'static';
-                    kartu.classList.remove('bg-blue-500', 'border-blue-400');
-                    kartu.classList.add('bg-emerald-500', 'border-emerald-400', 'w-full', 'h-full');
-                    kartu.innerHTML += `<div class="absolute -top-1 -right-1 bg-white text-emerald-600 rounded-full w-6 h-6 flex items-center justify-center text-xs shadow-md border border-emerald-500"><i class="fa-solid fa-check"></i></div>`;
+                    
+                    let tipe = kartu.getAttribute('data-tipe');
+                    kartu.className = 'kartu-soal flex justify-center items-center w-full h-full rounded-xl transition-all relative shadow-sm ' + 
+                                      (tipe === 'gambar' ? 'bg-emerald-50 border-2 border-emerald-400' : 'bg-emerald-500 text-white border-2 border-emerald-400');
+                                      
+                    kartu.innerHTML += `<div class="absolute -top-2 -right-2 bg-white text-emerald-600 rounded-full w-7 h-7 flex items-center justify-center text-sm shadow-md border-2 border-emerald-500"><i class="fa-solid fa-check"></i></div>`;
                     
                     kotakTarget.innerHTML = '';
                     kotakTarget.appendChild(kartu);
                     kotakTarget.classList.remove('border-dashed', 'border-slate-300', 'bg-slate-50');
-                    kotakTarget.classList.add('border-solid', 'border-emerald-500', 'bg-emerald-50', 'terisi');
+                    kotakTarget.classList.add('border-solid', 'border-emerald-500', 'bg-emerald-100', 'terisi');
                     
                     let nilaiPerSoal = 100 / matchState.dataSoal.length;
                     matchState.skor += nilaiPerSoal;
