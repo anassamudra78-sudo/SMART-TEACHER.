@@ -1438,7 +1438,7 @@ function eksekusiUndianMewah(mode, pemenang1, pemenang2 = null, daftarSemuaSiswa
 
     const overlay = document.createElement('div');
     overlay.id = 'layar-undian-v2';
-    overlay.className = 'fixed inset-0 z-[9999] bg-slate-950/95 flex items-center justify-center backdrop-blur-md transition-opacity';
+    overlay.className = 'fixed inset-0 z-50 bg-slate-950/95 flex items-center justify-center backdrop-blur-md transition-opacity';
     
     if (mode === 'single') {
         overlay.innerHTML = `
@@ -1559,7 +1559,7 @@ function mulaiHitungMundur(detikTunggu) {
     const overlayCount = document.createElement('div');
     overlayCount.id = 'layar-hitung-mundur';
     // Saya naikkan z-index menjadi 99999 agar animasi 321 selalu tampil paling depan
-    overlayCount.className = 'fixed inset-0 z-[99999] bg-slate-950 flex flex-col items-center justify-center transition-all duration-300';
+    overlayCount.className = 'fixed inset-0 z-50 bg-slate-950 flex flex-col items-center justify-center transition-all duration-300';
     
     overlayCount.innerHTML = `
         <h2 class="text-slate-400 font-bold text-xl uppercase tracking-[0.3em] mb-8">Persiapan Kuis</h2>
@@ -2051,50 +2051,29 @@ function renderDragDropPage(container) {
 
 let gameDndTerpilih = '';
 
-// Trik membuat main-content fullscreen 100% tanpa membuat elemen ganda
+// Mengatur layar penuh menggunakan Class Tailwind murni (z-40)
 function amankanLayarPenuhDragDrop() {
     const mc = document.getElementById('main-content');
     if (!mc) return null;
     
-    // Jadikan main-content fullscreen menutupi segalanya
-    mc.style.position = 'fixed';
-    mc.style.top = '0';
-    mc.style.left = '0';
-    mc.style.right = '0';
-    mc.style.bottom = '0';
+    // Hapus sisa style manual jika ada
+    mc.removeAttribute('style'); 
     
-    // INI PERBAIKANNYA: Turunkan z-index jadi 9900 agar tidak menutupi Undian (9999)
-    mc.style.zIndex = '9900'; 
+    // Tambahkan class native Tailwind
+    mc.classList.add('fixed', 'inset-0', 'z-40', 'bg-slate-950', 'overflow-y-auto');
     
-    mc.style.backgroundColor = '#020617';
-    mc.style.overflowY = 'auto';
-    mc.style.padding = '0'; // Hilangkan padding sisa bawaan
-    mc.style.margin = '0';
-
-    // Penanda sakti agar sistem Hitung Mundur tahu kita sedang di Drag & Drop
     window.isDragDropMode = true; 
-    
     return mc;
 }
-// Mengembalikan main-content ke ukuran normal saat keluar
+
 function keluarFullscreenDnd() {
     window.isDragDropMode = false;
     const mc = document.getElementById('main-content');
     if (mc) {
-        mc.style.position = '';
-        mc.style.top = '';
-        mc.style.left = '';
-        mc.style.right = '';
-        mc.style.bottom = '';
-        mc.style.zIndex = '';
-        mc.style.backgroundColor = '';
-        mc.style.overflowY = '';
-        mc.style.padding = '';
-        mc.style.margin = '';
+        mc.classList.remove('fixed', 'inset-0', 'z-40', 'bg-slate-950', 'overflow-y-auto');
     }
     if (typeof switchTab === 'function') switchTab('dragdrop');
 }
-
 function bukaLobiDragDrop(jenisGame) {
     gameDndTerpilih = jenisGame;
     const container = amankanLayarPenuhDragDrop();
