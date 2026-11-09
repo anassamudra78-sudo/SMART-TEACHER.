@@ -40,10 +40,16 @@ function hitungSkalaOtomatisSort(jumlahSoal, isKiriKanan) {
     }
 }
 
+// Fungsi Universal Anti-Bentrok
 function bukaSetupGame(jenisGame) {
-    if (jenisGame === 'sort') mulaiGameSort();
+    if (jenisGame === 'match' && typeof mulaiGameMatch === 'function') {
+        mulaiGameMatch();
+    } else if (jenisGame === 'sort' && typeof mulaiGameSort === 'function') {
+        mulaiGameSort();
+    } else if (jenisGame === 'build' && typeof mulaiGameBuild === 'function') {
+        mulaiGameBuild();
+    }
 }
-
 function ubahGayaLayoutSort(gayaBaru) {
     sortState.layout = gayaBaru;
     mulaiGameSort(true); 
