@@ -766,33 +766,35 @@ function setModeKuisLobby(mode) {
 }
 
 function updateLobbySiswa() {
-    const kelasId = document.getElementById('lobby-kelas').value;
+    const kelasEl = document.getElementById('lobby-kelas');
+    if (!kelasEl) return; // Langsung berhenti aman jika sedang tidak di halaman Kuis Arena
+    
+    const kelasId = kelasEl.value;
     const selectSiswa = document.getElementById('lobby-siswa');
     const selectA = document.getElementById('lobby-pemain-a');
     const selectB = document.getElementById('lobby-pemain-b');
 
-    if (kelasId) {
-        AppState.kuis.kelasAktif = kelasId;
-        localStorage.setItem('ST_LAST_KELAS', kelasId);
-    }
-
-    if(!kelasId) {
+    if (!kelasId) {
         if (selectSiswa) selectSiswa.innerHTML = '<option value="">-- Pilih Kelas Terlebih Dahulu --</option>';
         if (selectA) selectA.innerHTML = '<option value="">-- Pemain A --</option>';
         if (selectB) selectB.innerHTML = '<option value="">-- Pemain B --</option>';
         return;
     }
 
-    let siswaKelas = AppState.db.siswa.filter(s => s.kelasId === kelasId);
-    let opts = siswaKelas.map(s => `<option value="${s.id}">${s.nama}</option>`).join('');
+    if (AppState.db && AppState.db.siswa) {
+        let siswaKelas = AppState.db.siswa.filter(s => s.kelasId === kelasId);
+        let opts = siswaKelas.map(s => `<option value="${s.id}">${s.nama}</option>`).join('');
 
-    if (selectSiswa) selectSiswa.innerHTML = `<option value="">-- Pilih Siswa yang Mengerjakan --</option>${opts}`;
-    if (selectA) selectA.innerHTML = `<option value="">-- Pilih Pemain 1 (Biru) --</option>${opts}`;
-    if (selectB) selectB.innerHTML = `<option value="">-- Pilih Pemain 2 (Merah) --</option>${opts}`;
-    
-    if (AppState.kuis.siswaAktif && selectSiswa) selectSiswa.value = AppState.kuis.siswaAktif;
-    if (AppState.kuis.pemainA_Id && selectA) selectA.value = AppState.kuis.pemainA_Id;
-    if (AppState.kuis.pemainB_Id && selectB) selectB.value = AppState.kuis.pemainB_Id;
+        if (selectSiswa) selectSiswa.innerHTML = '<option value="">-- Pilih Siswa --</option>' + opts;
+        if (selectA) selectA.innerHTML = '<option value="">-- Pemain 1 (Biru) --</option>' + opts;
+        if (selectB) selectB.innerHTML = '<option value="">-- Pemain 2 (Merah) --</option>' + opts;
+    }
+
+    if (AppState.kuis) {
+        if (AppState.kuis.siswaAktif && selectSiswa) selectSiswa.value = AppState.kuis.siswaAktif;
+        if (AppState.kuis.pemainA_id && selectA) selectA.value = AppState.kuis.pemainA_id;
+        if (AppState.kuis.pemainb_id && selectB) selectB.value = AppState.kuis.pemainb_id;
+    }
 }
 
 function mulaiKuisSebenarnya() {
