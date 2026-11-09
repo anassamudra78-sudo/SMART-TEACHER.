@@ -1,11 +1,12 @@
 // ==========================================================
 // FILE: engine-sort.js
-// FUNGSI: Mesin Game "Sort & Drop" (DARK MODE ELEGANT + SMOOTH DRAG)
+// FUNGSI: Mesin Game "Sort & Drop" (ATAS-BAWAH + NO INNER BOX + SMOOTH DRAG)
 // ==========================================================
 
 let sortState = {
     skor: 0,
     itemTerjawab: 0,
+    layout: 'kiri-kanan', // Default layout
     kategori: [
         { id: "isim", judul: "ISIM", subjudul: "Kata Benda", tema: "cyan" },
         { id: "fiil", judul: "FI'IL", subjudul: "Kata Kerja", tema: "emerald" }
@@ -23,14 +24,16 @@ let sortState = {
     dataSoal: []
 };
 
-function hitungSkalaOtomatisSort(jumlahSoal) {
+function hitungSkalaOtomatisSort(jumlahSoal, layoutMode) {
+    let isKiriKanan = layoutMode === 'kiri-kanan';
     if (jumlahSoal <= 8) {
         return {
             tinggiKotak: "h-14 md:h-16",
             teksArab: "text-2xl md:text-3xl",
             teksEmoji: "text-4xl",
             gap: "gap-2 md:gap-3",
-            gridKiri: "grid-cols-2 md:grid-cols-2",
+            // Jika Atas-Bawah, balok soal berjejer 4 ke samping agar tidak panjang ke bawah
+            gridKiri: isKiriKanan ? "grid-cols-2" : "grid-cols-4", 
         };
     } else {
         return {
@@ -38,7 +41,8 @@ function hitungSkalaOtomatisSort(jumlahSoal) {
             teksArab: "text-xl",
             teksEmoji: "text-2xl md:text-3xl",
             gap: "gap-2",
-            gridKiri: "grid-cols-3 md:grid-cols-4",
+            // Jika Atas-Bawah dan soal banyak, balok soal berjejer 6-8 ke samping
+            gridKiri: isKiriKanan ? "grid-cols-3" : "grid-cols-5 md:grid-cols-6 lg:grid-cols-8",
         };
     }
 }
@@ -53,6 +57,11 @@ function bukaSetupGame(jenisGame) {
     }
 }
 
+function ubahGayaLayoutSort(gayaBaru) {
+    sortState.layout = gayaBaru;
+    mulaiGameSort(true); 
+}
+
 function mulaiGameSort(isRenderUlang = false) {
     const container = document.getElementById('main-content');
     if (!isRenderUlang) {
@@ -61,27 +70,50 @@ function mulaiGameSort(isRenderUlang = false) {
         sortState.dataSoal = sortState.dataSoalAsli.map(item => ({...item, terjawab: false})).sort(() => Math.random() - 0.5);
     }
 
-    let skala = hitungSkalaOtomatisSort(sortState.dataSoal.length);
+    let isKiriKanan = sortState.layout === 'kiri-kanan';
+    let skala = hitungSkalaOtomatisSort(sortState.dataSoal.length, sortState.layout);
+
+    // Pengaturan Layout Dinamis
+    let classWadahUtama = isKiriKanan ? 'flex-col lg:flex-row' : 'flex-col';
+    let classKiri = isKiriKanan ? 'w-full lg:w-5/12' : 'w-full';
+    let classKanan = isKiriKanan ? 'w-full lg:w-7/12' : 'w-full';
+    let pembatas = isKiriKanan 
+        ? '<div class="hidden lg:block w-px bg-slate-700/50 mx-1 z-10"></div>' 
+        : '<div class="w-full h-px bg-slate-700/50 my-2 z-10"></div>';
 
     container.innerHTML = `
         <div class="max-w-7xl mx-auto p-2 md:p-4 mt-2 select-none fade-in pb-20">
             
-            <!-- HEADER (TEMA GELAP) -->
-            <div class="flex justify-between items-center bg-slate-900 p-3 md:p-4 rounded-2xl shadow-[0_4px_20px_rgba(0,0,0,0.3)] mb-4 border border-slate-700">
-                <h2 class="text-base md:text-xl font-black text-white flex items-center gap-2 drop-shadow-md"><i class="fa-solid fa-layer-group text-amber-400"></i>SORT & DROP</h2>
-                <div class="font-bold text-amber-400 bg-slate-800 px-4 py-1 md:py-2 rounded-xl border border-slate-700 shadow-inner">Nilai: <span id="skor-sort" class="font-black text-white text-lg md:text-xl ml-1">${Math.round(sortState.skor)}</span></div>
-                <button onclick="bukaDragAndDropArena()" class="bg-slate-700 hover:bg-slate-600 text-slate-200 px-4 py-1 md:py-2 rounded-xl font-bold transition-colors border border-slate-600">Keluar</button>
+            <!-- HEADER -->
+            <div class="flex flex-wrap justify-between items-center bg-slate-900 p-3 md:p-4 rounded-2xl shadow-[0_4px_20px_rgba(0,0,0,0.3)] mb-4 border border-slate-700 gap-3 relative z-10">
+                
+                <h2 class="text-base md:text-xl font-black text-white flex items-center gap-2 drop-shadow-md shrink-0">
+                    <i class="fa-solid fa-layer-group text-amber-400"></i><span class="hidden sm:block">SORT & DROP</span>
+                </h2>
+                
+                <!-- TOMBOL SWITCHER LAYOUT -->
+                <div class="flex items-center bg-slate-950 p-1 rounded-lg border border-slate-800 shrink-0 shadow-inner">
+                    <button onclick="ubahGayaLayoutSort('kiri-kanan')" class="px-3 md:px-5 py-1.5 rounded-md text-[10px] md:text-xs font-bold transition-all ${isKiriKanan ? 'bg-amber-600 text-slate-900 shadow-md' : 'text-slate-500 hover:text-white'}">Kiri-Kanan</button>
+                    <button onclick="ubahGayaLayoutSort('atas-bawah')" class="px-3 md:px-5 py-1.5 rounded-md text-[10px] md:text-xs font-bold transition-all ${!isKiriKanan ? 'bg-amber-600 text-slate-900 shadow-md' : 'text-slate-500 hover:text-white'}">Atas-Bawah</button>
+                </div>
+
+                <div class="flex items-center gap-2 md:gap-4 shrink-0">
+                    <div class="font-bold text-amber-400 bg-slate-800 px-3 md:px-4 py-1.5 md:py-2 rounded-xl border border-slate-700 shadow-inner flex items-center">
+                        <span class="text-[9px] md:text-xs text-slate-400 mr-2 uppercase hidden sm:block">Nilai:</span> 
+                        <span id="skor-sort" class="font-black text-white text-base md:text-xl leading-none">${Math.round(sortState.skor)}</span>
+                    </div>
+                    <button onclick="bukaDragAndDropArena()" class="bg-slate-700 hover:bg-slate-600 text-slate-200 px-3 md:px-4 py-1.5 md:py-2 rounded-xl font-bold transition-colors border border-slate-600 text-[10px] md:text-sm">Keluar</button>
+                </div>
             </div>
 
-            <!-- PAPAN MAIN (TEMA GELAP SAMA DENGAN MATCH) -->
-            <div class="flex flex-col lg:flex-row gap-4 md:gap-6 bg-[#0f172a] p-4 md:p-6 rounded-3xl border border-slate-800 shadow-[0_8px_30px_rgba(0,0,0,0.4)] relative overflow-hidden">
+            <!-- PAPAN MAIN -->
+            <div class="flex ${classWadahUtama} gap-4 md:gap-6 bg-[#0f172a] p-4 md:p-6 rounded-3xl border border-slate-800 shadow-[0_8px_30px_rgba(0,0,0,0.4)] relative overflow-hidden">
                 
-                <!-- Efek cahaya samar di latar -->
                 <div class="absolute top-0 left-1/4 w-96 h-96 bg-cyan-500/10 rounded-full blur-[100px] pointer-events-none"></div>
                 <div class="absolute bottom-0 right-1/4 w-96 h-96 bg-emerald-500/10 rounded-full blur-[100px] pointer-events-none"></div>
 
                 <!-- WADAH KIRI (PILIH BALOK) -->
-                <div class="w-full lg:w-5/12 flex flex-col z-10" id="wadah-kiri-sort">
+                <div class="${classKiri} flex flex-col z-10" id="wadah-kiri-sort">
                     <div class="flex justify-between items-center border-b border-slate-700/50 pb-2 mb-4">
                         <h3 class="font-bold text-slate-400 uppercase tracking-widest text-xs">Pilih Balok</h3>
                         <span class="bg-slate-800 text-slate-300 text-[10px] font-bold px-2 py-0.5 rounded border border-slate-700">${sortState.dataSoal.length} Soal</span>
@@ -105,10 +137,10 @@ function mulaiGameSort(isRenderUlang = false) {
                     </div>
                 </div>
 
-                <div class="hidden lg:block w-px bg-slate-700/50 mx-1 z-10"></div>
+                ${pembatas}
 
                 <!-- WADAH KANAN (KATEGORI) -->
-                <div class="w-full lg:w-7/12 flex flex-col z-10">
+                <div class="${classKanan} flex flex-col z-10">
                     <h3 class="text-center font-bold text-slate-400 mb-4 uppercase tracking-widest text-xs border-b border-slate-700/50 pb-2">Kelompokkan ke Kotak</h3>
                     
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 h-full min-h-[300px]">
@@ -116,17 +148,15 @@ function mulaiGameSort(isRenderUlang = false) {
                             let isCyan = kat.tema === 'cyan';
                             let colorTheme = isCyan ? 'cyan' : 'emerald';
                             
-                            // Mengubah wujud balok yang sudah masuk keranjang menjadi lebih compact
+                            // MENGHILANGKAN KOTAK BACKGROUND PADA TEKS DI DALAM KERANJANG
                             let balokMasuk = sortState.dataSoal.filter(s => s.terjawab && s.kat === kat.id).map(b => {
-                                let visual = b.tipe === 'gambar' ? b.soal : b.soal;
-                                let fontClass = b.tipe === 'gambar' ? 'text-sm' : 'font-arabic text-base';
+                                let visual = b.soal;
+                                let fontClass = b.tipe === 'gambar' ? 'text-base' : 'font-arabic text-xl';
                                 
                                 return `
                                     <div class="w-[calc(50%-4px)] lg:w-[calc(50%-6px)] bg-slate-800 border-l-4 border-${colorTheme}-500 border-y border-r border-slate-700 rounded-lg p-1.5 flex items-center gap-2 shadow-sm">
-                                        <div class="w-6 h-6 rounded bg-slate-900 flex items-center justify-center shrink-0 border border-slate-700">
-                                            <span class="${fontClass} text-white">${visual}</span>
-                                        </div>
-                                        <span class="text-[9px] font-bold text-slate-300 uppercase truncate">${b.arti}</span>
+                                        <span class="${fontClass} text-white drop-shadow-md shrink-0 w-6 text-center leading-none">${visual}</span>
+                                        <span class="text-[9px] font-bold text-slate-300 uppercase truncate border-l border-slate-600 pl-2 ml-1">${b.arti}</span>
                                     </div>
                                 `;
                             }).join('');
@@ -138,7 +168,6 @@ function mulaiGameSort(isRenderUlang = false) {
                                         <p class="text-[8px] md:text-[9px] text-slate-400 uppercase font-bold tracking-wider">${kat.subjudul}</p>
                                     </div>
                                     
-                                    <!-- Area isi bisa otomatis scroll kalau soalnya sangat banyak -->
                                     <div class="area-drop-sort flex-1 p-2 md:p-3 flex flex-wrap content-start gap-1.5 md:gap-2 overflow-y-auto relative z-10">
                                         <div class="absolute inset-0 flex items-center justify-center pointer-events-none opacity-[0.03] ${balokMasuk ? 'hidden' : ''}">
                                             <i class="fa-solid fa-box-open text-6xl text-${colorTheme}-500"></i>
@@ -168,7 +197,7 @@ function pasangSensorSort() {
         kartu.addEventListener('touchstart', function(e) {
             if(terkunci) return;
             
-            // JURUS MELAYANG (Seperti Match)
+            // JURUS MELAYANG
             kolomKiriUtama.style.zIndex = '9999';
             kolomKiriUtama.style.position = 'relative';
             
@@ -182,7 +211,7 @@ function pasangSensorSort() {
             let sentuhan = e.touches[0];
             kartu.style.position = 'fixed';
             
-            // JURUS TENGAH JARI (Seperti Match)
+            // JURUS TENGAH JARI
             kartu.style.left = (sentuhan.clientX - (kartu.offsetWidth / 2)) + 'px';
             kartu.style.top = (sentuhan.clientY - (kartu.offsetHeight / 2)) + 'px';
         }, {passive: false});
@@ -217,7 +246,6 @@ function pasangSensorSort() {
                         kotakTarget.classList.remove('border-solid', `border-${tema}-500`, `bg-${tema}-900/30`);
                     }, 200);
 
-                    // Re-render keranjang agar balok terpasang otomatis
                     mulaiGameSort(true);
                     
                     let nilaiPerSoal = 100 / sortState.dataSoal.length;
