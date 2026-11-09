@@ -1,6 +1,6 @@
 // ==========================================================
 // FILE: engine-sort.js
-// FUNGSI: Mesin "Sort & Drop" (KIRI-KANAN ORIGINAL & ATAS-BAWAH COMPACT)
+// FUNGSI: Mesin "Sort & Drop" (KIRI-KANAN ORIGINAL & ATAS-BAWAH TINGGI PAS)
 // ==========================================================
 
 let sortState = {
@@ -80,7 +80,7 @@ function mulaiGameSort(isRenderUlang = false) {
 
     let classPapan = isKiriKanan
         ? "flex flex-col lg:flex-row gap-4 md:gap-6 bg-[#0f172a] p-4 md:p-6 rounded-3xl border border-slate-800 shadow-[0_8px_30px_rgba(0,0,0,0.4)] relative overflow-hidden"
-        : "flex flex-col gap-2 md:gap-3 bg-[#0f172a] p-3 rounded-3xl border border-slate-800 shadow-[0_8px_30px_rgba(0,0,0,0.4)] relative overflow-hidden";
+        : "flex flex-col gap-2 md:gap-3 bg-[#0f172a] p-3 md:p-4 rounded-3xl border border-slate-800 shadow-[0_8px_30px_rgba(0,0,0,0.4)] relative overflow-hidden";
 
     let classWadahKiri = isKiriKanan ? "w-full lg:w-5/12 flex flex-col z-10" : "w-full flex flex-col z-10";
     let classWadahKanan = isKiriKanan ? "w-full lg:w-7/12 flex flex-col z-10" : "w-full flex flex-col z-10";
@@ -105,7 +105,7 @@ function mulaiGameSort(isRenderUlang = false) {
 
     let gridKategori = isKiriKanan
         ? "grid grid-cols-1 md:grid-cols-2 gap-4 h-full min-h-[300px]"
-        : "grid grid-cols-1 md:grid-cols-2 gap-3 h-full min-h-[160px]";
+        : "grid grid-cols-1 md:grid-cols-2 gap-3 h-full min-h-[230px] md:min-h-[250px]"; // <-- INI YANG DILEBARKAN (1-2 cm ke bawah, tetap ada space)
 
     container.innerHTML = `
         <div class="${classContainer}">
@@ -179,7 +179,7 @@ function mulaiGameSort(isRenderUlang = false) {
 
                             let areaDropSort = isKiriKanan 
                                 ? `area-drop-sort flex-1 p-2 md:p-3 flex flex-wrap content-start gap-1.5 md:gap-2 overflow-y-auto relative z-10`
-                                : `area-drop-sort flex-1 p-1.5 flex flex-wrap content-start gap-1.5 overflow-y-auto relative z-10`;
+                                : `area-drop-sort flex-1 p-1.5 md:p-2 flex flex-wrap content-start gap-1.5 overflow-y-auto relative z-10`;
 
                             let balokMasuk = sortState.dataSoal.filter(s => s.terjawab && s.kat === kat.id).map(b => {
                                 let visual = b.soal;
