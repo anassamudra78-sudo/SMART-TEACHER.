@@ -2046,75 +2046,115 @@ function renderDragDropPage(container) {
 }
 
 // =========================================================================
-// FUNGSI MEMBUKA LOBI DRAG & DROP (FULLSCREEN MURNI & TERINTEGRASI)
+// SISTEM PAYUNG GLOBAL: TOP BAR PERMANEN UNTUK LOBI & SEMUA GAME DND
 // =========================================================================
 
 let gameDndTerpilih = '';
 
-// Mengatur layar penuh menggunakan Class Tailwind murni (z-40)
+// 1. Fungsi Pencipta Top Bar Induk (Berdiri Bebas di Luar Game)
+function pasangTopBarGlobalDnd(namaGame) {
+    let topBar = document.getElementById('dnd-global-topbar');
+    if (!topBar) {
+        topBar = document.createElement('div');
+        topBar.id = 'dnd-global-topbar';
+        // CSS: Posisi Fixed (terkunci di atas layar), z-index tertinggi menembus apapun!
+        topBar.className = 'fixed top-0 left-0 w-full bg-slate-900 border-b border-slate-800 p-3 sm:p-4 flex flex-wrap gap-3 justify-between items-center z-[99999] shadow-xl';
+        document.body.appendChild(topBar);
+    }
+
+    // Isi dari Top Bar Payung Global
+    topBar.innerHTML = `
+        <div class="flex items-center space-x-3 ml-2 sm:ml-4">
+            <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-orange-500 text-white flex items-center justify-center font-black shadow-lg">
+                <i class="fa-solid fa-gamepad text-xl sm:text-2xl"></i>
+            </div>
+            <div>
+                <h1 class="text-sm sm:text-lg font-black text-white leading-tight uppercase">SMART DRAG & DROP ARENA</h1>
+                <p id="topbar-dnd-subtitle" class="text-[10px] sm:text-xs text-orange-400 font-bold">MODE: ${namaGame}</p>
+            </div>
+        </div>
+        
+        <div class="flex items-center space-x-2 mr-2 sm:mr-4">
+            <div class="hidden sm:flex items-center space-x-2">
+                <button class="bg-rose-500/10 text-rose-400 border border-rose-500/20 px-3 py-1.5 rounded-xl text-xs font-bold flex items-center">
+                    <i class="fa-solid fa-stopwatch mr-1.5"></i> <span id="dnd-global-timer">15s</span>
+                </button>
+                <button class="bg-amber-500/10 text-amber-400 border border-amber-500/20 px-3 py-1.5 rounded-xl text-xs font-bold flex items-center">
+                    <i class="fa-solid fa-star mr-1.5"></i> SKOR: <span id="dnd-global-skor">0</span>
+                </button>
+                <button id="dnd-global-musik" onclick="if(typeof toggleBGMPlay === 'function') toggleBGMPlay()" class="bg-emerald-500 hover:bg-emerald-400 text-slate-900 px-3 py-1.5 rounded-xl text-xs font-black flex items-center transition-colors">
+                    <i class="fa-solid fa-volume-high mr-1.5"></i> Musik Nyala
+                </button>
+            </div>
+            <button onclick="keluarFullscreenDnd()" class="bg-slate-800 hover:bg-rose-600 text-slate-300 hover:text-white px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl text-xs font-bold border border-slate-700 hover:border-rose-500 transition-all flex items-center">
+                <i class="fa-solid fa-arrow-right-from-bracket mr-1.5"></i> Keluar
+            </button>
+        </div>
+    `;
+}
+
+// 2. Fungsi Amankan Layar Konten
 function amankanLayarPenuhDragDrop() {
     const mc = document.getElementById('main-content');
     if (!mc) return null;
     
-    // Hapus sisa style manual jika ada
-    mc.removeAttribute('style'); 
+    mc.style.position = 'fixed';
+    mc.style.top = '0';
+    mc.style.left = '0';
+    mc.style.right = '0';
+    mc.style.bottom = '0';
+    mc.style.zIndex = '99000'; // Di bawah Top Bar Global
+    mc.style.backgroundColor = '#020617';
+    mc.style.overflowY = 'auto';
     
-    // Tambahkan class native Tailwind
-    mc.classList.add('fixed', 'inset-0', 'z-40', 'bg-slate-950', 'overflow-y-auto');
-    
+    // PENTING: Beri jarak/padding atas agar game tidak tertimpa/tersembunyi di balik Top Bar!
+    mc.style.padding = '80px 0 0 0'; 
+    mc.style.margin = '0';
+
     window.isDragDropMode = true; 
     return mc;
 }
 
+// 3. Fungsi Keluar & Pembersihan Layar
 function keluarFullscreenDnd() {
     window.isDragDropMode = false;
+    
+    // HANCURKAN Top Bar Global saat keluar dari area Drag & Drop
+    const topBar = document.getElementById('dnd-global-topbar');
+    if (topBar) topBar.remove();
+
     const mc = document.getElementById('main-content');
     if (mc) {
-        mc.classList.remove('fixed', 'inset-0', 'z-40', 'bg-slate-950', 'overflow-y-auto');
+        mc.style.position = '';
+        mc.style.top = '';
+        mc.style.left = '';
+        mc.style.right = '';
+        mc.style.bottom = '';
+        mc.style.zIndex = '';
+        mc.style.backgroundColor = '';
+        mc.style.overflowY = '';
+        mc.style.padding = '';
+        mc.style.margin = '';
     }
     if (typeof switchTab === 'function') switchTab('dragdrop');
 }
+
+// 4. Pembentukan Lobi (Tanpa Top Bar di Dalamnya)
 function bukaLobiDragDrop(jenisGame) {
     gameDndTerpilih = jenisGame;
+    let namaGame = jenisGame === 'match' ? 'MATCH & DROP' : (jenisGame === 'sort' ? 'SORT & DROP' : 'BUILD & DROP');
+    
+    // PASANG PAYUNG GLOBALNYA!
+    pasangTopBarGlobalDnd(namaGame);
+
     const container = amankanLayarPenuhDragDrop();
     if (!container) return;
 
-    let namaGame = jenisGame === 'match' ? 'MATCH & DROP' : (jenisGame === 'sort' ? 'SORT & DROP' : 'BUILD & DROP');
     let kelasOpts = AppState.db.kelas.map(k => `<option value="${k.id}">${k.kode}</option>`).join('');
     let mapelOpts = AppState.db.mapel.map(m => `<option value="${m.id}">${m.nama}</option>`).join('');
 
+    // Sekarang container (main-content) hanya fokus mencetak form Lobi saja
     container.innerHTML = `
-        <!-- TOP BAR DND - FULLSCREEN WIDTH -->
-        <div class="bg-slate-900 border-b border-slate-800 p-3 sm:p-4 flex flex-wrap gap-3 justify-between items-center sticky top-0 z-50 shadow-xl w-full">
-            <div class="flex items-center space-x-3 ml-2 sm:ml-4">
-                <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-orange-500 text-white flex items-center justify-center font-black shadow-lg">
-                    <i class="fa-solid fa-gamepad text-xl sm:text-2xl"></i>
-                </div>
-                <div>
-                    <h1 class="text-sm sm:text-lg font-black text-white leading-tight uppercase">SMART DRAG & DROP ARENA</h1>
-                    <p class="text-[10px] sm:text-xs text-orange-400 font-bold">Persiapan: ${namaGame}</p>
-                </div>
-            </div>
-            
-            <div class="flex items-center space-x-2 mr-2 sm:mr-4">
-                <div class="hidden sm:flex items-center space-x-2">
-                    <button class="bg-rose-500/10 text-rose-400 border border-rose-500/20 px-3 py-1.5 rounded-xl text-xs font-bold flex items-center">
-                        <i class="fa-solid fa-stopwatch mr-1.5"></i> 15s
-                    </button>
-                    <button class="bg-amber-500/10 text-amber-400 border border-amber-500/20 px-3 py-1.5 rounded-xl text-xs font-bold flex items-center">
-                        <i class="fa-solid fa-star mr-1.5"></i> SKOR: 0
-                    </button>
-                    <button class="bg-emerald-500 hover:bg-emerald-400 text-slate-900 px-3 py-1.5 rounded-xl text-xs font-black flex items-center transition-colors">
-                        <i class="fa-solid fa-volume-high mr-1.5"></i> Musik Nyala
-                    </button>
-                </div>
-                <button onclick="keluarFullscreenDnd()" class="bg-slate-800 hover:bg-rose-600 text-slate-300 hover:text-white px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl text-xs font-bold border border-slate-700 hover:border-rose-500 transition-all flex items-center">
-                    <i class="fa-solid fa-arrow-right-from-bracket mr-1.5"></i> Keluar
-                </button>
-            </div>
-        </div>
-
-        <!-- AREA FORM LOBI TENGAH -->
         <div class="max-w-xl mx-auto p-4 select-none fade-in pb-12 mt-4 sm:mt-8 w-full">
             <div class="bg-slate-900/95 p-6 sm:p-8 rounded-[2rem] border-2 border-amber-500/30 shadow-2xl relative overflow-hidden text-center z-20">
                 
@@ -2177,8 +2217,6 @@ function bukaLobiDragDrop(jenisGame) {
                             <option value="">-- Tidak Disimpan (Hanya Latihan) --</option>
                             <option value="Tugas (TP/Bab 1)">Tugas (TP/Bab 1)</option>
                             <option value="Sumatif (TP/Bab 1)">Sumatif (TP/Bab 1)</option>
-                            <option value="Tugas (TP/Bab 2)">Tugas (TP/Bab 2)</option>
-                            <option value="Sumatif (TP/Bab 2)">Sumatif (TP/Bab 2)</option>
                         </select>
                     </div>
 
@@ -2214,7 +2252,6 @@ function bukaLobiDragDrop(jenisGame) {
         }, 50);
     }
 }
-
 // -------------------------------------------------------------
 // TIMER HITUNG MUNDUR (DENGAN KECERDASAN PELACAK LOBI DND)
 // -------------------------------------------------------------
