@@ -66,10 +66,16 @@ function hitungSkalaOtomatis(jumlahSoal) {
     }
 }
 
+// Fungsi Universal Anti-Bentrok
 function bukaSetupGame(jenisGame) {
-    if (jenisGame === 'match') mulaiGameMatch();
+    if (jenisGame === 'match' && typeof mulaiGameMatch === 'function') {
+        mulaiGameMatch();
+    } else if (jenisGame === 'sort' && typeof mulaiGameSort === 'function') {
+        mulaiGameSort();
+    } else if (jenisGame === 'build' && typeof mulaiGameBuild === 'function') {
+        mulaiGameBuild();
+    }
 }
-
 function mulaiGameMatch() {
     const container = document.getElementById('main-content');
     matchState.skor = 0;
