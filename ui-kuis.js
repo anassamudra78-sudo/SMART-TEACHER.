@@ -2061,18 +2061,17 @@ function tutupLobiDnd() {
     if(exit && document.fullscreenElement) exit.call(document).catch(e => console.log(e));
 }
 
+// 1. Membuka Lobi Persiapan DnD
 function bukaLobiPersiapanDnd(jenisGame) {
     gameDndTerpilih = jenisGame;
-    
     const modal = document.getElementById('dnd-arena-modal');
     const body = document.getElementById('dnd-arena-body');
     
-    if (!modal || !body) return alert("Error: Kamar Modal belum dipasang!");
+    if (!modal || !body) return showAlert("Error", "Kamar Modal DnD belum dipasang!");
     modal.classList.remove('hidden');
 
-    let kelasOpts = AppState.db.kelas.map(k => `<option value="${k.id}">${k.kode}</option>`).join('');
-    let mapelOpts = AppState.db.mapel.map(m => `<option value="${m.id}">${m.nama}</option>`).join('');
-    
+    let kelasOpts = AppState.db && AppState.db.kelas ? AppState.db.kelas.map(k => `<option value="${k.id}">${k.kode}</option>`).join('') : '';
+    let mapelOpts = AppState.db && AppState.db.mapel ? AppState.db.mapel.map(m => `<option value="${m.id}">${m.nama}</option>`).join('') : '';
     let namaGameDisplay = jenisGame === 'match' ? 'MATCH & DROP' : (jenisGame === 'sort' ? 'SORT & DROP' : 'BUILD & DROP');
 
     body.innerHTML = `
@@ -2082,15 +2081,6 @@ function bukaLobiPersiapanDnd(jenisGame) {
             </div>
             <h3 class="text-xl font-black text-white mb-1">Identitas Pemain</h3>
             <p class="text-xs text-slate-400 mb-4">Mode: <span class="font-bold text-amber-400 uppercase">${namaGameDisplay}</span></p>
-            
-            <div class="grid grid-cols-2 gap-2 p-1 bg-slate-800 rounded-xl mb-4 border border-slate-700">
-                <button type="button" class="py-2 text-xs font-extrabold rounded-lg bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-md">
-                    <i class="fa-solid fa-user mr-1"></i> Single Player
-                </button>
-                <button type="button" class="py-2 text-xs font-extrabold rounded-lg text-slate-400 hover:text-white">
-                    <i class="fa-solid fa-bolt text-amber-400 mr-1"></i> Mode Duel
-                </button>
-            </div>
             
             <div class="space-y-3 text-left">
                 <div>
@@ -2117,14 +2107,9 @@ function bukaLobiPersiapanDnd(jenisGame) {
                 </div>
                 <div>
                     <label class="text-[11px] font-bold text-slate-300 block mb-1">3. Nama Siswa</label>
-                    <div class="flex space-x-2 mb-1.5">
-                        <select id="lobby-dnd-siswa" class="flex-1 p-2 rounded-xl bg-slate-800 text-white border border-slate-700 outline-none focus:border-amber-500 text-xs">
-                            <option value="">-- Pilih Kelas Dulu --</option>
-                        </select>
-                        <button type="button" onclick="undiPemainDndSpin()" class="bg-gradient-to-r from-yellow-400 to-amber-500 text-slate-900 font-black px-3 rounded-xl shadow transition-all flex items-center shrink-0 text-xs">
-                            <i class="fa-solid fa-dice mr-1"></i> Undi
-                        </button>
-                    </div>
+                    <select id="lobby-dnd-siswa" class="w-full p-2 rounded-xl bg-slate-800 text-white border border-slate-700 outline-none focus:border-amber-500 text-xs mb-1.5">
+                        <option value="">-- Pilih Kelas Dulu --</option>
+                    </select>
                     <input type="text" id="lobby-dnd-manual" placeholder="Atau ketik nama manual..." class="w-full p-2 rounded-xl bg-slate-800 text-white border border-slate-700 outline-none focus:border-amber-500 text-xs">
                 </div>
                 <div>
@@ -2144,134 +2129,34 @@ function bukaLobiPersiapanDnd(jenisGame) {
             </button>
         </div>
     `;
-
-    if (AppState.kuis && AppState.kuis.kelasAktif) {
-        setTimeout(() => {
-            const selKelas = document.getElementById('lobby-dnd-kelas');
-            if (selKelas) {
-                selKelas.value = AppState.kuis.kelasAktif;
-                updateLobbySiswaDnd();
-            }
-        }, 50);
-    }
 }
-// FUNGSI PEMBANTU LOBI (Pastikan menggantikan yang lama)
+
+// 2. Update Siswa khusus DnD (Terisolasi dari Kuis Arena)
 function updateLobbySiswaDnd() {
-    const kelasId = document.getElementById('lobby-dnd-kelas').value;
+    const selectKelas = document.getElementById('lobby-dnd-kelas');
     const selectSiswa = document.getElementById('lobby-dnd-siswa');
-    
-    if (kelasId && AppState.kuis) {
-        AppState.kuis.kelasAktif = kelasId;
-        localStorage.setItem('ST_LAST_KELAS', kelasId);
-    }
-    
+    if (!selectKelas || !selectSiswa) return;
+
+    const kelasId = selectKelas.value;
     if (!kelasId) {
-        if (selectSiswa) selectSiswa.innerHTML = '<option value="">-- Pilih Kelas Dulu --</option>';
+        selectSiswa.innerHTML = '<option value="">-- Pilih Kelas Dulu --</option>';
         return;
     }
-    let siswaKelas = AppState.db.siswa.filter(s => s.kelasId === kelasId);
-    let opts = siswaKelas.map(s => `<option value="${s.id}">${s.nama}</option>`).join('');
-    if (selectSiswa) selectSiswa.innerHTML = `<option value="">-- Pilih Siswa --</option>${opts}`;
-}
 
-function undiPemainDndSpin() {
-    const klsId = document.getElementById('lobby-dnd-kelas').value;
-    if (!klsId) return showAlert('Peringatan', 'Pilih kelas terlebih dahulu!');
-    const listSiswa = AppState.db.siswa.filter(s => s.kelasId === klsId);
-    if (listSiswa.length === 0) return showAlert('Peringatan', 'Belum ada siswa!');
-    
-    let pemenang = listSiswa[Math.floor(Math.random() * listSiswa.length)];
-    document.getElementById('lobby-dnd-siswa').value = pemenang.id;
-    if (typeof eksekusiUndianMewah === 'function') eksekusiUndianMewah('single', pemenang.nama, null, listSiswa.map(s => s.nama));
-}
-// -------------------------------------------------------------
-// TIMER HITUNG MUNDUR (DENGAN KECERDASAN PELACAK LOBI DND)
-// -------------------------------------------------------------
-function mulaiHitungMundur(detikTunggu) {
-    const overlayCount = document.createElement('div');
-    overlayCount.id = 'layar-hitung-mundur';
-    overlayCount.className = 'fixed inset-0 z-50 bg-slate-950 flex flex-col items-center justify-center transition-all duration-300';
-    
-    overlayCount.innerHTML = `
-        <h2 class="text-slate-400 font-bold text-xl uppercase tracking-[0.3em] mb-8">Persiapan Kuis</h2>
-        <div id="angka-mundur" class="text-[12rem] lg:text-[18rem] font-black text-amber-500 leading-none" style="text-shadow: 0 0 25px rgba(245,158,11,0.4);">
-            ${detikTunggu}
-        </div>
-    `;
-    document.body.appendChild(overlayCount);
-
-    const angkaEl = document.getElementById('angka-mundur');
-    let sisaDetik = detikTunggu;
-    const ctx = getAudioCtx(); 
-
-    function playBeepShort() {
-        if (ctx.state === 'running') {
-            try {
-                const osc = ctx.createOscillator();
-                const gain = ctx.createGain();
-                osc.type = 'square'; 
-                osc.frequency.setValueAtTime(600, ctx.currentTime);
-                gain.gain.setValueAtTime(0.5, ctx.currentTime); 
-                gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.1);
-                osc.connect(gain);
-                gain.connect(ctx.destination);
-                osc.start();
-                osc.stop(ctx.currentTime + 0.1);
-            } catch(e) {}
-        }
+    if (AppState.db && AppState.db.siswa) {
+        let siswaKelas = AppState.db.siswa.filter(s => s.kelasId === kelasId);
+        selectSiswa.innerHTML = '<option value="">-- Pilih Siswa --</option>' + 
+            siswaKelas.map(s => `<option value="${s.id}">${s.nama}</option>`).join('');
     }
-
-    function playBeepLong() {
-        if (ctx.state === 'running') {
-            try {
-                const osc = ctx.createOscillator();
-                const gain = ctx.createGain();
-                osc.type = 'square'; 
-                osc.frequency.setValueAtTime(800, ctx.currentTime); 
-                gain.gain.setValueAtTime(0.8, ctx.currentTime); 
-                gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.8); 
-                osc.connect(gain);
-                gain.connect(ctx.destination);
-                osc.start();
-                osc.stop(ctx.currentTime + 0.8);
-            } catch(e) {}
-        }
-    }
-
-    playBeepShort(); 
-
-    let timerMundur = setInterval(() => {
-        sisaDetik--;
-        
-        if (sisaDetik > 0) {
-            angkaEl.innerText = sisaDetik;
-            angkaEl.style.transform = 'scale(1.2)';
-            setTimeout(() => angkaEl.style.transform = 'scale(1)', 150);
-            playBeepShort();
-            
-        } else {
-            clearInterval(timerMundur);
-            overlayCount.style.background = "#020617"; 
-            angkaEl.innerText = "MULAI!";
-            angkaEl.className = "text-[6rem] lg:text-[10rem] font-black text-emerald-500 tracking-widest";
-            angkaEl.style.textShadow = "0 0 35px rgba(16,185,129,0.5)"; 
-            playBeepLong();
-
-            setTimeout(() => {
-                overlayCount.remove();
-                
-                // --- DETEKSI PINTAR: APAKAH KITA DI DRAG & DROP ATAU KUIS? ---
-                if (window.isDragDropMode) {
-                    if (typeof masukKeArenaGameDnd === 'function') masukKeArenaGameDnd();
-                } else {
-                    if (typeof mulaiKuisSebenarnya === 'function') mulaiKuisSebenarnya(); 
-                }
-                
-            }, 800);
-        }
-    }, 1000);
 }
 
+// 3. Menutup Lobi DnD
+function tutupLobiDnd() {
+    const modal = document.getElementById('dnd-arena-modal');
+    if (modal) modal.classList.add('hidden');
+}
+
+// 4. Masuk ke Arena Game DnD (Aman dari error null & mendukung mode manual)
 function masukKeArenaGameDnd() {
     const durasiEl = document.getElementById('lobby-dnd-durasi');
     const kelasEl = document.getElementById('lobby-dnd-kelas');
@@ -2279,12 +2164,12 @@ function masukKeArenaGameDnd() {
     const manualEl = document.getElementById('lobby-dnd-manual');
     const kategoriEl = document.getElementById('lobby-dnd-kategori');
     
-    const durasi = durasiEl ? durasiEl.value : 15;
+    const durasi = durasiEl ? durasiEl.value : '15';
     const kelasId = kelasEl ? kelasEl.value : '';
     const siswaId = siswaEl ? siswaEl.value : '';
     const manualName = manualEl ? manualEl.value.trim() : '';
     
-    // KELONGGARAN CERDAS: Validasi lolos jika KETIK MANUAL terisi ATAU (K Kelas & Siswa dipilih)
+    // Validasi fleksibel: nama manual ATAU pilihan kelas/siswa
     if (!manualName && (!kelasId || !siswaId)) {
         return showAlert("Peringatan", "Harap pilih Kelas dan Siswa, ATAU ketik nama manual di kolom yang tersedia!");
     }
@@ -2295,17 +2180,14 @@ function masukKeArenaGameDnd() {
         if (siswa) namaPemain = siswa.nama;
     }
 
-    // Simpan ke State Global
     AppState.dnd = AppState.dnd || {};
-    AppState.dnd.waktuPerSoal = parseInt(durasi);
-    AppState.dnd.pemain = namaPemain || 'Tamu / Manual';
+    AppState.dnd.waktuPerSoal = parseInt(durasi) || 15;
+    AppState.dnd.pemain = namaPemain || 'Siswa';
     AppState.dnd.kelasId = kelasId;
     AppState.dnd.kategori = kategoriEl ? kategoriEl.value : '';
     
-    // Tutup Lobi Modal
     tutupLobiDnd();
 
-    // Jalankan hitung mundur lalu mulai game
     if (typeof mulaiHitungMundur === 'function') {
         mulaiHitungMundur(3, () => {
             jalankanEngineGameDndAktif();
@@ -2314,16 +2196,15 @@ function masukKeArenaGameDnd() {
         jalankanEngineGameDndAktif();
     }
 }
-// Fungsi untuk membuka halaman Drag & Drop Arena dari tombol menu
-function bukaDragAndDropArena() {
-    const container = document.getElementById('main-content');
-    
-    // Cek dan buka halaman Drag & Drop
-    if (typeof renderDragDropPage === 'function') {
-        renderDragDropPage(container);
-    } else if (typeof switchTab === 'function') {
-        switchTab('dragdrop');
+
+function jalankanEngineGameDndAktif() {
+    if (gameDndTerpilih === 'match' && typeof mulaiGameMatch === 'function') {
+        mulaiGameMatch();
+    } else if (gameDndTerpilih === 'sort' && typeof mulaiGameSort === 'function') {
+        mulaiGameSort();
+    } else if (gameDndTerpilih === 'build' && typeof mulaiGameBuild === 'function') {
+        mulaiGameBuild();
     } else {
-        console.error("Fungsi renderDragDropPage tidak ditemukan.");
+        showAlert("Informasi", "Memulai mode game: " + gameDndTerpilih);
     }
 }
