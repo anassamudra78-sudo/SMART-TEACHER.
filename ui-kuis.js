@@ -2093,48 +2093,25 @@ function pasangTopBarGlobalDnd(namaGame) {
     `;
 }
 
-// 2. Fungsi Amankan Layar Konten
 function amankanLayarPenuhDragDrop() {
     const mc = document.getElementById('main-content');
     if (!mc) return null;
     
-    mc.style.position = 'fixed';
-    mc.style.top = '0';
-    mc.style.left = '0';
-    mc.style.right = '0';
-    mc.style.bottom = '0';
-    mc.style.zIndex = '99000'; // Di bawah Top Bar Global
-    mc.style.backgroundColor = '#020617';
-    mc.style.overflowY = 'auto';
+    // Hapus semua inline style paksaan
+    mc.removeAttribute('style'); 
+    // Gunakan z-40 standar Tailwind
+    mc.classList.add('fixed', 'inset-0', 'z-40', 'bg-slate-950', 'overflow-y-auto', 'w-full');
     
-    // PENTING: Beri jarak/padding atas agar game tidak tertimpa/tersembunyi di balik Top Bar!
-    mc.style.padding = '80px 0 0 0'; 
-    mc.style.margin = '0';
-
     window.isDragDropMode = true; 
     return mc;
 }
 
-// 3. Fungsi Keluar & Pembersihan Layar
 function keluarFullscreenDnd() {
     window.isDragDropMode = false;
-    
-    // HANCURKAN Top Bar Global saat keluar dari area Drag & Drop
-    const topBar = document.getElementById('dnd-global-topbar');
-    if (topBar) topBar.remove();
-
     const mc = document.getElementById('main-content');
     if (mc) {
-        mc.style.position = '';
-        mc.style.top = '';
-        mc.style.left = '';
-        mc.style.right = '';
-        mc.style.bottom = '';
-        mc.style.zIndex = '';
-        mc.style.backgroundColor = '';
-        mc.style.overflowY = '';
-        mc.style.padding = '';
-        mc.style.margin = '';
+        mc.classList.remove('fixed', 'inset-0', 'z-40', 'bg-slate-950', 'overflow-y-auto', 'w-full');
+        mc.removeAttribute('style');
     }
     if (typeof switchTab === 'function') switchTab('dragdrop');
 }
@@ -2258,7 +2235,7 @@ function bukaLobiDragDrop(jenisGame) {
 function mulaiHitungMundur(detikTunggu) {
     const overlayCount = document.createElement('div');
     overlayCount.id = 'layar-hitung-mundur';
-    overlayCount.className = 'fixed inset-0 z-[99999] bg-slate-950 flex flex-col items-center justify-center transition-all duration-300';
+    overlayCount.className = 'fixed inset-0 z-50 bg-slate-950 flex flex-col items-center justify-center transition-all duration-300';
     
     overlayCount.innerHTML = `
         <h2 class="text-slate-400 font-bold text-xl uppercase tracking-[0.3em] mb-8">Persiapan Kuis</h2>
