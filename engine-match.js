@@ -1,6 +1,6 @@
 // ==========================================================
 // FILE: engine-match.js
-// FUNGSI: Mesin Game "Match & Drop" (DARK MODE TEMA KUIS)
+// FUNGSI: Mesin Game "Match & Drop" (DARK MODE + SKOR BERTAHAP)
 // ==========================================================
 
 let matchState = {
@@ -18,9 +18,6 @@ let matchState = {
     ]
 };
 
-// ==========================================================
-// FUNGSI KECERDASAN UKURAN (AUTO-SCALING)
-// ==========================================================
 function hitungSkalaOtomatis(jumlahSoal) {
     if (jumlahSoal <= 4) {
         return {
@@ -85,22 +82,16 @@ function mulaiGameMatch() {
 
     container.innerHTML = `
         <div class="max-w-7xl mx-auto p-2 md:p-4 mt-2 select-none fade-in pb-20">
-            
-            <!-- HEADER (TEMA GELAP) -->
             <div class="flex justify-between items-center bg-slate-900 p-3 md:p-4 rounded-2xl shadow-[0_4px_20px_rgba(0,0,0,0.3)] mb-4 border border-slate-700">
                 <h2 class="text-base md:text-xl font-black text-white flex items-center gap-2 drop-shadow-md"><i class="fa-solid fa-puzzle-piece text-emerald-400"></i>MATCH & DROP</h2>
                 <div class="font-bold text-emerald-400 bg-slate-800 px-4 py-1 md:py-2 rounded-xl border border-slate-700 shadow-inner">Nilai: <span id="skor-match" class="font-black text-white text-lg md:text-xl ml-1">0</span></div>
                 <button onclick="bukaDragAndDropArena()" class="bg-slate-700 hover:bg-slate-600 text-slate-200 px-4 py-1 md:py-2 rounded-xl font-bold transition-colors border border-slate-600">Keluar</button>
             </div>
 
-            <!-- PAPAN MAIN (TEMA GELAP) -->
             <div class="flex flex-col lg:flex-row gap-4 md:gap-6 bg-[#0f172a] p-4 md:p-6 rounded-3xl border border-slate-800 shadow-[0_8px_30px_rgba(0,0,0,0.4)] relative overflow-hidden">
-                
-                <!-- Efek cahaya samar di latar -->
                 <div class="absolute top-0 left-1/4 w-96 h-96 bg-indigo-500/10 rounded-full blur-[100px] pointer-events-none"></div>
                 <div class="absolute bottom-0 right-1/4 w-96 h-96 bg-emerald-500/10 rounded-full blur-[100px] pointer-events-none"></div>
 
-                <!-- WADAH KIRI (PILIH BALOK) -->
                 <div class="w-full lg:w-5/12 flex flex-col z-10" id="wadah-kiri">
                     <h3 class="text-center font-bold text-slate-400 mb-4 uppercase tracking-widest text-xs border-b border-slate-700/50 pb-2">Pilih Balok</h3>
                     <div class="grid ${skala.gridKiri} ${skala.gap}">
@@ -110,15 +101,13 @@ function mulaiGameMatch() {
                                 ? `<div class="w-full h-full flex items-center justify-center pointer-events-none p-1"><span class="drop-shadow-lg ${skala.teksEmoji}">${item.soal}</span></div>` 
                                 : `<div class="w-full h-full flex items-center justify-center pointer-events-none p-1"><span class="drop-shadow-lg font-arabic ${skala.teksArab} text-center leading-none text-white">${item.soal}</span></div>`;
                             
-                            // =========================================================
-                            // SUNTIKAN 1: MENGHILANGKAN BACKGROUND BIRU PADA BALOK TEKS
-                            // =========================================================
                             let cssKartu = isGambar
                                 ? `bg-slate-800 border-2 border-slate-600 text-slate-200`
                                 : `bg-slate-800 border-2 border-slate-600 text-white`; 
                             
+                            // Tambahkan data-salah="0" sebagai perekam jumlah salah
                             return `
-                                <div class="kartu-soal ${cssKartu} touch-none rounded-xl md:rounded-2xl flex justify-center items-center ${skala.tinggiKotak} shadow-lg transition-transform cursor-grab relative overflow-hidden" data-id="${item.id}" data-tipe="${item.tipe}">
+                                <div class="kartu-soal ${cssKartu} touch-none rounded-xl md:rounded-2xl flex justify-center items-center ${skala.tinggiKotak} shadow-lg transition-transform cursor-grab relative overflow-hidden" data-id="${item.id}" data-tipe="${item.tipe}" data-salah="0">
                                     ${isiKartu}
                                 </div>
                             `;
@@ -128,28 +117,21 @@ function mulaiGameMatch() {
 
                 <div class="hidden lg:block w-px bg-slate-700/50 mx-1 z-10"></div>
 
-                <!-- WADAH KANAN (KOTAK TARGET) -->
                 <div class="w-full lg:w-7/12 flex flex-col z-10">
                     <h3 class="text-center font-bold text-slate-400 mb-4 uppercase tracking-widest text-xs border-b border-slate-700/50 pb-2">Pasangkan ke Kotak</h3>
                     <div class="grid ${skala.gridKanan} ${skala.gap}">
                         ${artiAcak.map(item => `
                             <div class="flex items-stretch gap-2 bg-slate-800 p-1.5 md:p-2 rounded-xl md:rounded-2xl shadow-md border border-slate-700 ${skala.tinggiKotak}">
-                                
-                                <!-- Kotak Tujuan -->
                                 <div class="kotak-target ${skala.lebarDrop} bg-slate-900 border-2 border-dashed border-slate-600 rounded-lg flex items-center justify-center transition-all shrink-0 relative p-1 overflow-hidden" data-target="${item.id}"></div>
-                                
-                                <!-- Teks Jawaban -->
                                 <div class="flex-1 bg-slate-700/50 text-slate-200 font-bold p-1 md:p-2 rounded-lg flex items-center justify-center border border-slate-600/50 shadow-inner overflow-hidden">
                                     <span class="text-center leading-tight break-words w-full px-1 ${item.arti.match(/[\u0600-\u06FF]/) ? 'font-arabic ' + skala.teksArab : skala.teksIndo}">
                                         ${item.arti}
                                     </span>
                                 </div>
-
                             </div>
                         `).join('')}
                     </div>
                 </div>
-
             </div>
         </div>
     `;
@@ -159,10 +141,6 @@ function mulaiGameMatch() {
 function pasangSensorSederhana() {
     const kartus = document.querySelectorAll('.kartu-soal');
     const wadahKiri = document.getElementById('wadah-kiri').querySelector('.grid');
-    
-    // =========================================================
-    // SUNTIKAN 2: DEKLARASI PEMBUNGKUS KOLOM KIRI
-    // =========================================================
     const kolomKiriUtama = document.getElementById('wadah-kiri');
     
     kartus.forEach(kartu => {
@@ -170,13 +148,8 @@ function pasangSensorSederhana() {
 
         kartu.addEventListener('touchstart', function(e) {
             if(terkunci) return;
-            
-            // =========================================================
-            // SUNTIKAN 2: NAIKKAN LAPISAN KOLOM KIRI SAAT DISENTUH
-            // =========================================================
             kolomKiriUtama.style.zIndex = '9999';
             kolomKiriUtama.style.position = 'relative';
-            
             kartu.style.zIndex = 9999;
             kartu.classList.add('scale-105', 'shadow-2xl');
         }, {passive: false});
@@ -192,12 +165,7 @@ function pasangSensorSederhana() {
 
         kartu.addEventListener('touchend', function(e) {
             if(terkunci) return;
-            
-            // =========================================================
-            // SUNTIKAN 2: KEMBALIKAN LAPISAN KOLOM KIRI SAAT DILEPAS
-            // =========================================================
             kolomKiriUtama.style.zIndex = '10';
-            
             kartu.classList.remove('scale-105', 'shadow-2xl');
             
             let sentuhan = e.changedTouches[0];
@@ -222,10 +190,19 @@ function pasangSensorSederhana() {
                     kotakTarget.classList.remove('border-dashed', 'border-slate-600', 'bg-slate-900', 'p-1');
                     kotakTarget.classList.add('border-solid', 'border-emerald-500', 'bg-emerald-900/30', 'terisi');
                     
-                    let nilaiPerSoal = 100 / matchState.dataSoal.length;
-                    matchState.skor += nilaiPerSoal;
-                    matchState.pasanganTerjawab++;
+                    // ==========================================
+                    // SISTEM PENALTI 2: Kurangi Poin Bertahap (25% tiap salah)
+                    // ==========================================
+                    let salahCount = parseInt(kartu.getAttribute('data-salah')) || 0;
+                    let nilaiBawaan = 100 / matchState.dataSoal.length; 
+                    let persenPotongan = 0.25; 
                     
+                    // Nilai didapat minimal 0 (tidak bisa minus)
+                    let nilaiDidapat = Math.max(0, nilaiBawaan - (salahCount * (nilaiBawaan * persenPotongan)));
+                    matchState.skor += nilaiDidapat;
+                    // ==========================================
+
+                    matchState.pasanganTerjawab++;
                     document.getElementById('skor-match').innerText = Math.round(matchState.skor);
                     if (typeof playSoundEffect === 'function') playSoundEffect('correct'); 
 
@@ -236,6 +213,12 @@ function pasangSensorSederhana() {
                     kartu.style.position = 'static';
                     wadahKiri.appendChild(kartu);
                     if (typeof playSoundEffect === 'function') playSoundEffect('wrong'); 
+                    
+                    // ==========================================
+                    // SISTEM PENALTI 2: Tambah hitungan salah ke memori balok
+                    // ==========================================
+                    let salahCount = parseInt(kartu.getAttribute('data-salah')) || 0;
+                    kartu.setAttribute('data-salah', salahCount + 1);
                     
                     kotakTarget.classList.add('bg-rose-900/50', 'border-rose-500');
                     setTimeout(() => kotakTarget.classList.remove('bg-rose-900/50', 'border-rose-500'), 300);
@@ -250,9 +233,8 @@ function pasangSensorSederhana() {
 
 function selebrasiKemenangan() {
     let nilaiAkhir = Math.round(matchState.skor);
-    if (typeof playCelebrationAudio === 'function') {
-        playCelebrationAudio(nilaiAkhir);
-    }
+    if (typeof playCelebrationAudio === 'function') playCelebrationAudio(nilaiAkhir);
+    
     const container = document.getElementById('main-content');
     container.innerHTML = `
         <div class="max-w-2xl mx-auto mt-10 p-8 bg-slate-900 rounded-[2.5rem] text-center border border-slate-700 shadow-[0_0_40px_rgba(16,185,129,0.2)] fade-in">
