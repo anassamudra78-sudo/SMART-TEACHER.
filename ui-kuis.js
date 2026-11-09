@@ -2208,3 +2208,16 @@ function jalankanEngineGameDndAktif() {
         showAlert("Informasi", "Memulai mode game: " + gameDndTerpilih);
     }
 }
+// Fungsi untuk membuka halaman utama Drag & Drop dari menu navigasi
+function bukaDragAndDropArena() {
+    const container = document.getElementById('main-content');
+    if (!container) return;
+    
+    if (typeof renderDragDropPage === 'function') {
+        renderDragDropPage(container);
+    } else if (typeof switchTab === 'function') {
+        switchTab('dragdrop');
+    } else {
+        showAlert("Informasi", "Halaman Drag & Drop belum dimuat.");
+    }
+}
