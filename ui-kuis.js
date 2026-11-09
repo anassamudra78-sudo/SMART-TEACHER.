@@ -2034,61 +2034,55 @@ function renderDragDropPage(container) {
 }
 
 // =========================================================================
-// FUNGSI MEMBUKA LOBI DRAG & DROP (100% FULLSCREEN TANPA TOP-BAR GANGGUAN)
+// FUNGSI MEMBUKA LOBI DRAG & DROP (100% IDENTIK KUIS ARENA)
 // =========================================================================
 
 let gameDndTerpilih = '';
 
-// FUNGSI PENGHANCUR TOP-BAR (Membuat layar penuh menutupi header bawaan)
 function amankanLayarPenuhDragDrop() {
-    const mc = document.getElementById('main-content');
-    if (mc) {
-        // Trik Inline CSS: Memaksa area konten melayang menutupi seluruh layar!
-        mc.style.position = 'fixed';
-        mc.style.top = '0';
-        mc.style.left = '0';
-        mc.style.right = '0';
-        mc.style.bottom = '0';
-        mc.style.zIndex = '9999';
-        mc.style.backgroundColor = '#020617'; // Warna latar bg-slate-950
-        mc.style.overflowY = 'auto';
-        
-        // Cegat tombol keluar: Agar saat pindah menu (Keluar Game), layar kembali normal
-        if (!window.hookSwitchTabDnd) {
-            const switchTabAsli = window.switchTab;
-            if (typeof switchTabAsli === 'function') {
-                window.switchTab = function(tabId) {
-                    mc.style.position = '';
-                    mc.style.top = '';
-                    mc.style.left = '';
-                    mc.style.right = '';
-                    mc.style.bottom = '';
-                    mc.style.zIndex = '';
-                    mc.style.backgroundColor = '';
-                    mc.style.overflowY = '';
-                    switchTabAsli(tabId);
-                };
-            }
-            window.hookSwitchTabDnd = true;
+    const body = document.body;
+    const oldHtml = body.innerHTML; // Simpan struktur lama jika diperlukan
+    
+    // Alih-alih numpang di main-content, kita buat div baru yang benar-benar FULLSCREEN
+    const fullscreenDiv = document.createElement('div');
+    fullscreenDiv.id = 'dnd-fullscreen-arena';
+    fullscreenDiv.className = 'fixed inset-0 z-[9999] bg-slate-950 overflow-y-auto w-full h-full';
+    
+    // Trik agar saat di-close kembali ke keadaan semula
+    if (!window.hookSwitchTabDndFull) {
+        const switchTabAsli = window.switchTab;
+        if (typeof switchTabAsli === 'function') {
+            window.switchTab = function(tabId) {
+                const fsDiv = document.getElementById('dnd-fullscreen-arena');
+                if (fsDiv) fsDiv.remove();
+                switchTabAsli(tabId);
+            };
         }
+        window.hookSwitchTabDndFull = true;
     }
+    
+    // Pastikan tidak ada duplikat div yang sama sebelum menambah yang baru
+    const oldFsDiv = document.getElementById('dnd-fullscreen-arena');
+    if(oldFsDiv) oldFsDiv.remove();
+    
+    body.appendChild(fullscreenDiv);
+    return fullscreenDiv;
 }
 
 function bukaLobiDragDrop(jenisGame) {
     gameDndTerpilih = jenisGame;
-    const container = document.getElementById('main-content');
     
-    // 1. EKSEKUSI PENGHILANG TOP BAR SIALAN ITU (BERLAKU UNTUK LOBI & DALAM GAME)
-    amankanLayarPenuhDragDrop();
+    // BIKIN LAYAR FULLSCREEN MURNI
+    const container = amankanLayarPenuhDragDrop();
     
     let namaGame = jenisGame === 'match' ? 'MATCH & DROP' : (jenisGame === 'sort' ? 'SORT & DROP' : 'BUILD & DROP');
     let kelasOpts = AppState.db.kelas.map(k => `<option value="${k.id}">${k.kode}</option>`).join('');
     let mapelOpts = AppState.db.mapel.map(m => `<option value="${m.id}">${m.nama}</option>`).join('');
 
     container.innerHTML = `
-        <!-- TOP BAR DND (SEKARANG AKAN BERADA PALING ATAS KARENA FULLSCREEN) -->
-        <div class="bg-slate-900 border-b border-slate-800 p-3 sm:p-4 flex flex-wrap gap-3 justify-between items-center sticky top-0 z-50 shadow-xl">
-            <div class="flex items-center space-x-3">
+        <!-- TOP BAR DND - FULLSCREEN WIDTH -->
+        <div class="bg-slate-900 border-b border-slate-800 p-3 sm:p-4 flex flex-wrap gap-3 justify-between items-center sticky top-0 z-50 shadow-xl w-full">
+            <div class="flex items-center space-x-3 ml-2 sm:ml-4">
                 <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-orange-500 text-white flex items-center justify-center font-black shadow-lg">
                     <i class="fa-solid fa-gamepad text-xl sm:text-2xl"></i>
                 </div>
@@ -2098,7 +2092,7 @@ function bukaLobiDragDrop(jenisGame) {
                 </div>
             </div>
             
-            <div class="flex items-center space-x-2">
+            <div class="flex items-center space-x-2 mr-2 sm:mr-4">
                 <div class="hidden sm:flex items-center space-x-2">
                     <button class="bg-rose-500/10 text-rose-400 border border-rose-500/20 px-3 py-1.5 rounded-xl text-xs font-bold flex items-center">
                         <i class="fa-solid fa-stopwatch mr-1.5"></i> 15s
@@ -2110,79 +2104,74 @@ function bukaLobiDragDrop(jenisGame) {
                         <i class="fa-solid fa-volume-high mr-1.5"></i> Musik Nyala
                     </button>
                 </div>
-                <button onclick="switchTab('dragdrop')" class="bg-slate-800 hover:bg-rose-600 text-slate-300 hover:text-white px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl text-xs font-bold border border-slate-700 hover:border-rose-500 transition-all flex items-center">
+                <button onclick="keluarFullscreenDnd()" class="bg-slate-800 hover:bg-rose-600 text-slate-300 hover:text-white px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl text-xs font-bold border border-slate-700 hover:border-rose-500 transition-all flex items-center">
                     <i class="fa-solid fa-arrow-right-from-bracket mr-1.5"></i> Keluar
                 </button>
             </div>
         </div>
 
-        <!-- AREA FORM LOBI TENGAH -->
-        <div class="max-w-2xl mx-auto p-4 select-none fade-in pb-12 mt-4 sm:mt-6">
-            <!-- BINGKAI KUNING TEBAL SEPERTI KUIS ARENA -->
-            <div class="bg-slate-900 p-6 sm:p-8 rounded-[2rem] border-2 border-amber-500/50 shadow-2xl relative overflow-hidden">
+        <!-- AREA FORM LOBI TENGAH - UKURAN DIPERKECIL AGAR PROPORSIONAL (max-w-xl) -->
+        <div class="max-w-xl mx-auto p-4 select-none fade-in pb-12 mt-4 sm:mt-8 w-full">
+            <div class="bg-slate-900/95 p-6 sm:p-8 rounded-[2rem] border-2 border-amber-500/30 shadow-2xl relative overflow-hidden text-center z-20">
                 
-                <div class="text-center mb-6">
-                    <i class="fa-solid fa-user-graduate text-5xl text-amber-400 mb-3 animate-bounce"></i>
-                    <h3 class="text-xl sm:text-2xl font-black text-white">Identitas Pemain & Mode Game</h3>
-                    <p class="text-xs text-slate-400 mt-1">Pilih mode game dan pemain untuk memulai permainan!</p>
+                <i class="fa-solid fa-user-graduate text-5xl text-amber-400 mb-4 animate-bounce"></i>
+                <h3 class="text-2xl font-black text-white mb-1">Identitas Pemain & Mode Game</h3>
+                <p class="text-xs text-slate-400 mb-5">Pilih mode game dan pemain untuk memulai permainan!</p>
+
+                <!-- Tombol Mode Single & Duel (Ukuran & gaya sama persis Kuis Arena) -->
+                <div class="grid grid-cols-2 gap-2 p-1.5 bg-slate-800 rounded-2xl mb-5 border border-slate-700">
+                    <button class="py-2.5 text-xs font-extrabold rounded-xl transition-all bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-md flex items-center justify-center">
+                        <i class="fa-solid fa-user mr-1.5"></i> Single Player
+                    </button>
+                    <button class="py-2.5 text-xs font-extrabold rounded-xl transition-all text-slate-400 hover:text-white flex items-center justify-center">
+                        <i class="fa-solid fa-bolt text-amber-400 mr-1.5"></i> Mode Duel (2 Siswa)
+                    </button>
                 </div>
 
-                <div class="space-y-5 text-left">
-                    <!-- Tombol Mode Single & Duel -->
-                    <div class="grid grid-cols-2 gap-3 mb-4 bg-slate-800 p-1.5 rounded-2xl border border-slate-700">
-                        <button class="bg-emerald-500 text-white font-bold py-2.5 rounded-xl text-sm flex items-center justify-center gap-2 shadow-md">
-                            <i class="fa-solid fa-user"></i> Single Player
-                        </button>
-                        <button class="bg-slate-800 text-slate-400 hover:text-white font-bold py-2.5 rounded-xl text-sm flex items-center justify-center gap-2 transition-colors">
-                            <i class="fa-solid fa-bolt text-amber-400"></i> Mode Duel (2 Siswa)
-                        </button>
-                    </div>
-
-                    <div class="relative mb-2">
-                        <div class="absolute -top-3 left-1/2 -translate-x-1/2 bg-slate-900 px-2 flex items-center gap-1.5">
-                            <div class="w-2 h-2 rounded-full bg-rose-500"></div>
-                            <span class="text-[10px] font-bold text-slate-300 uppercase tracking-wider">Durasi Waktu Per Soal</span>
-                        </div>
-                        <div class="border border-slate-700 rounded-2xl p-1">
-                            <select class="w-full bg-transparent text-slate-300 text-xs px-3 py-2.5 outline-none cursor-not-allowed" disabled>
-                                <option>15 Detik (Default)</option>
-                            </select>
-                        </div>
+                <div class="space-y-4 text-left mt-3">
+                    <!-- DURASI DIBUKA KUNCINYA AGAR BISA DIPILIH -->
+                    <div>
+                        <label class="text-xs font-bold text-slate-300 block mb-1">⏱️ Durasi Waktu Per Soal</label>
+                        <select id="lobby-dnd-durasi" class="w-full p-2.5 rounded-xl bg-slate-800 text-white border border-slate-700 outline-none focus:border-amber-500 text-xs">
+                            <option value="10">10 Detik</option>
+                            <option value="15" selected>15 Detik (Default)</option>
+                            <option value="30">30 Detik</option>
+                            <option value="60">60 Detik</option>
+                        </select>
                     </div>
 
                     <div>
-                        <label class="text-xs font-bold text-slate-300 ml-1 mb-1.5 block">1. Pilih Kelas</label>
-                        <select id="lobby-dnd-kelas" onchange="updateLobbySiswaDnd()" class="w-full bg-slate-800 border border-slate-700 text-white text-xs rounded-xl px-4 py-3 outline-none focus:border-amber-500 transition-colors">
+                        <label class="text-xs font-bold text-slate-300 block mb-1">1. Pilih Kelas</label>
+                        <select id="lobby-dnd-kelas" onchange="updateLobbySiswaDnd()" class="w-full p-2.5 rounded-xl bg-slate-800 text-white border border-slate-700 outline-none focus:border-amber-500 text-xs transition-colors">
                             <option value="">-- Pilih Kelas --</option>
                             ${kelasOpts}
                         </select>
                     </div>
                     
                     <div>
-                        <label class="text-xs font-bold text-slate-300 ml-1 mb-1.5 block">2. Mata Pelajaran</label>
-                        <select id="lobby-dnd-mapel" class="w-full bg-slate-800 border border-slate-700 text-white text-xs rounded-xl px-4 py-3 outline-none focus:border-amber-500 transition-colors">
+                        <label class="text-xs font-bold text-slate-300 block mb-1">2. Mata Pelajaran</label>
+                        <select id="lobby-dnd-mapel" class="w-full p-2.5 rounded-xl bg-slate-800 text-white border border-slate-700 outline-none focus:border-amber-500 text-xs transition-colors">
                             <option value="">-- Pilih Mapel --</option>
                             ${mapelOpts}
                         </select>
                     </div>
 
                     <div>
-                        <label class="text-xs font-bold text-slate-300 ml-1 mb-1.5 block">3. Nama Siswa</label>
-                        <div class="flex gap-2 mb-2">
-                            <select id="lobby-dnd-siswa" class="flex-1 bg-slate-800 border border-slate-700 text-white text-xs rounded-xl px-4 py-3 outline-none focus:border-amber-500 transition-colors">
+                        <label class="text-xs font-bold text-slate-300 block mb-1">3. Nama Siswa</label>
+                        <div class="flex space-x-2 mb-2">
+                            <select id="lobby-dnd-siswa" class="flex-1 p-2.5 rounded-xl bg-slate-800 text-white border border-slate-700 outline-none focus:border-amber-500 text-xs transition-colors">
                                 <option value="">-- Pilih Kelas Terlebih Dahulu --</option>
                             </select>
-                            <!-- TOMBOL UNDI KUNING MENCOLOK -->
-                            <button onclick="undiPemainDndSpin()" class="bg-gradient-to-r from-yellow-400 to-amber-500 hover:from-yellow-300 hover:to-amber-400 text-slate-900 font-black px-4 rounded-xl shadow-lg flex items-center gap-1.5 transition-all text-xs">
-                                <i class="fa-solid fa-dice text-base"></i> Undi
+                            <button onclick="undiPemainDndSpin()" class="bg-gradient-to-r from-yellow-400 to-amber-500 hover:from-yellow-300 hover:to-amber-400 text-slate-900 font-black px-3.5 rounded-xl shadow-lg transition-all flex items-center shrink-0 text-xs">
+                                <i class="fa-solid fa-dice text-base mr-1"></i> Undi
                             </button>
                         </div>
-                        <input type="text" id="lobby-dnd-manual" placeholder="Atau ketik nama manual..." class="w-full bg-slate-800 border border-slate-700 text-white text-xs rounded-xl px-4 py-3 outline-none focus:border-amber-500 transition-colors">
+                        <input type="text" id="lobby-dnd-manual" placeholder="Atau ketik nama manual..." class="w-full p-2.5 rounded-xl bg-slate-800 text-white border border-slate-700 outline-none focus:border-amber-500 text-xs transition-colors">
                     </div>
 
                     <div>
-                        <label class="text-xs font-bold text-slate-300 ml-1 mb-1.5 block">4. Simpan Nilai ke Kategori (Opsional)</label>
-                        <select id="lobby-dnd-kategori" class="w-full bg-slate-800 border border-slate-700 text-white text-xs rounded-xl px-4 py-3 outline-none focus:border-amber-500 transition-colors">
+                        <label class="text-xs font-bold text-slate-300 block mb-1">4. Simpan Nilai ke Kategori (Opsional)</label>
+                        <select id="lobby-dnd-kategori" class="w-full p-2.5 rounded-xl bg-slate-800 text-white border border-slate-700 outline-none focus:border-amber-500 text-xs transition-colors">
                             <option value="">-- Tidak Disimpan (Hanya Latihan) --</option>
                             <option value="Tugas (TP/Bab 1)">Tugas (TP/Bab 1)</option>
                             <option value="Sumatif (TP/Bab 1)">Sumatif (TP/Bab 1)</option>
@@ -2191,7 +2180,7 @@ function bukaLobiDragDrop(jenisGame) {
                         </select>
                     </div>
 
-                    <div class="p-3 bg-slate-800/80 border border-slate-700 rounded-xl flex items-center justify-between mt-2">
+                    <div class="p-3 bg-slate-800/80 border border-slate-700 rounded-xl flex items-center justify-between">
                         <label for="dnd-acak-soal" class="text-xs font-bold text-slate-300 cursor-pointer flex items-center select-none">
                             <i class="fa-solid fa-shuffle text-amber-400 mr-2.5"></i> Acak Urutan Soal (Shuffle)
                         </label>
@@ -2199,14 +2188,12 @@ function bukaLobiDragDrop(jenisGame) {
                     </div>
                 </div>
 
-                <div class="mt-6 text-center flex flex-col items-center">
-                    <button onclick="masukKeArenaGameDnd()" class="w-full bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-white font-black text-sm py-3.5 rounded-xl shadow-[0_0_20px_rgba(16,185,129,0.3)] transition-all tracking-wider">
-                        MULAI MENGERJAKAN SOAL
-                    </button>
-                    <button onclick="switchTab('dragdrop')" class="w-full mt-3 text-slate-400 font-bold hover:text-white py-1.5 text-xs transition-colors">
-                        Batal / Kembali
-                    </button>
-                </div>
+                <button onclick="masukKeArenaGameDnd()" class="w-full mt-6 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-white font-black py-3.5 rounded-xl shadow-lg transition-all text-base">
+                    MULAI MENGERJAKAN SOAL
+                </button>
+                <button onclick="keluarFullscreenDnd()" class="w-full mt-2.5 text-slate-400 font-bold hover:text-white py-1.5 text-xs transition-colors">
+                    Batal / Kembali
+                </button>
             </div>
             
             <div class="text-center mt-6 opacity-50">
@@ -2226,6 +2213,12 @@ function bukaLobiDragDrop(jenisGame) {
     }
 }
 
+// Menghapus elemen Fullscreen lalu mengembalikan ke menu utama
+function keluarFullscreenDnd() {
+    const fsDiv = document.getElementById('dnd-fullscreen-arena');
+    if (fsDiv) fsDiv.remove();
+    switchTab('dragdrop'); // Kembali ke pilihan game
+}
 function updateLobbySiswaDnd() {
     const kelasId = document.getElementById('lobby-dnd-kelas').value;
     const selectSiswa = document.getElementById('lobby-dnd-siswa');
