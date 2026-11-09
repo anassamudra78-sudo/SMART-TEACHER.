@@ -91,9 +91,6 @@ function switchTab(tabId, dariHistory = false) {
     const menuBtn = document.getElementById('mobile-menu-btn');
     if (sidebar && menuBtn) {
         if (tabId === 'kuis') { sidebar.classList.remove('md:flex'); menuBtn.classList.remove('md:hidden'); }
-            if (tabId === 'dragdrop') {
-            renderDragDropPage(document.getElementById('main-content'));
-        }
         else { sidebar.classList.add('md:flex'); menuBtn.classList.add('md:hidden'); }
     }
     toggleMobileMenu(true);
