@@ -1965,7 +1965,7 @@ function simpanKeLocalStorage() {
 function renderDragDropPage(container) {
     container.innerHTML = `
         <div class="max-w-5xl mx-auto space-y-6 fade-in pb-4">
-            <!-- HERO SECTION (DIPERBESAR SEDIKIT VERTIKALNYA) -->
+            <!-- HERO SECTION -->
             <div class="relative bg-slate-900 rounded-[2.5rem] border border-indigo-500/20 shadow-2xl overflow-hidden px-6 py-7 lg:py-8 text-center">
                 <div class="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full max-w-2xl bg-gradient-to-b from-indigo-500/10 to-transparent blur-3xl pointer-events-none"></div>
                 <div class="absolute -bottom-10 -right-10 w-40 h-40 bg-purple-500/10 rounded-full blur-2xl pointer-events-none"></div>
@@ -1976,7 +1976,8 @@ function renderDragDropPage(container) {
                         <span class="text-[10px] font-black tracking-widest uppercase">PLAY & LEARN</span>
                     </div>
                     
-                    <h2 class="text-3xl sm:text-4xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white via-indigo-100 to-slate-400 mb-2 drop-shadow-lg">Drag & Drop Arena</h2>
+                    <!-- PERBAIKAN HURUF G: Ditambahkan pb-2 dan leading-normal agar ekor huruf tidak terpotong -->
+                    <h2 class="text-3xl sm:text-4xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white via-indigo-100 to-slate-400 mb-2 pb-2 leading-normal drop-shadow-lg">Drag & Drop Arena</h2>
                     
                     <p class="text-slate-400 text-xs md:text-sm max-w-xl mx-auto leading-relaxed">
                         Pilih mode permainan interaktif di bawah ini. Geser dan letakkan balok ke tempat yang benar untuk mendapatkan poin!
@@ -1984,7 +1985,7 @@ function renderDragDropPage(container) {
                 </div>
             </div>
 
-            <!-- PILIHAN 3 GAME (DIPANJANGKAN SEDIKIT KE BAWAH) -->
+            <!-- PILIHAN 3 GAME -->
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6 relative z-10 max-w-5xl mx-auto">
                 <!-- MATCH & DROP -->
                 <div class="bg-slate-900 border border-slate-700 px-6 py-7 lg:p-8 rounded-[2.5rem] text-center shadow-lg transition-all hover:scale-105 hover:shadow-[0_0_30px_rgba(16,185,129,0.3)] hover:border-emerald-500/50 group flex flex-col justify-between h-full min-h-[300px]">
