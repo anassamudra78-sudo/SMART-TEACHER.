@@ -2140,3 +2140,16 @@ function masukKeArenaGameDnd() {
     else if (gameDndTerpilih === 'sort' && typeof mulaiGameSort === 'function') mulaiGameSort();
     else if (gameDndTerpilih === 'build' && typeof mulaiGameBuild === 'function') mulaiGameBuild();
 }
+// Fungsi untuk membuka halaman Drag & Drop Arena dari tombol menu
+function bukaDragAndDropArena() {
+    const container = document.getElementById('main-content');
+    
+    // Cek dan buka halaman Drag & Drop
+    if (typeof renderDragDropPage === 'function') {
+        renderDragDropPage(container);
+    } else if (typeof switchTab === 'function') {
+        switchTab('dragdrop');
+    } else {
+        console.error("Fungsi renderDragDropPage tidak ditemukan.");
+    }
+}
