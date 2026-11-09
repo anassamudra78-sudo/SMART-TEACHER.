@@ -2281,12 +2281,13 @@ function masukKeArenaGameDnd() {
     const manualEl = document.getElementById('lobby-dnd-manual');
     const kategoriEl = document.getElementById('lobby-dnd-kategori');
     
-    const durasi = durasiEl ? durasiEl.value : '15';
-    const kelasId = kelasEl ? kelasEl.value : '';
-    const siswaId = siswaEl ? siswaEl.value : '';
-    const manualName = manualEl ? manualEl.value.trim() : '';
+    // Menggunakan pengaman ?.value agar tidak pernah crash jika elemen null
+    const durasi = durasiEl?.value || '15';
+    const kelasId = kelasEl?.value || '';
+    const siswaId = siswaEl?.value || '';
+    const manualName = manualEl?.value ? manualEl.value.trim() : '';
     
-    // VALIDASI SEDERHANA: Lolos jika KETIK MANUAL terisi, ATAU (Kelas & Siswa dipilih)
+    // Validasi fleksibel: nama manual ATAU pilihan kelas/siswa
     if (!manualName && (!kelasId || !siswaId)) {
         return showAlert("Peringatan", "Harap pilih Kelas dan Siswa, ATAU ketik nama manual!");
     }
@@ -2302,7 +2303,7 @@ function masukKeArenaGameDnd() {
     AppState.dnd.waktuPerSoal = parseInt(durasi) || 15;
     AppState.dnd.pemain = namaPemain || 'Siswa';
     AppState.dnd.kelasId = kelasId;
-    AppState.dnd.kategori = kategoriEl ? kategoriEl.value : '';
+    AppState.dnd.kategori = kategoriEl?.value || '';
     
     // Tutup Lobi Modal
     tutupLobiDnd();
