@@ -2046,47 +2046,58 @@ function renderDragDropPage(container) {
 }
 
 // =========================================================================
-// FUNGSI MEMBUKA LOBI DRAG & DROP (100% IDENTIK KUIS ARENA)
+// FUNGSI MEMBUKA LOBI DRAG & DROP (FULLSCREEN MURNI & TERINTEGRASI)
 // =========================================================================
 
 let gameDndTerpilih = '';
 
+// Trik membuat main-content fullscreen 100% tanpa membuat elemen ganda
 function amankanLayarPenuhDragDrop() {
-    const body = document.body;
-    const oldHtml = body.innerHTML; // Simpan struktur lama jika diperlukan
+    const mc = document.getElementById('main-content');
+    if (!mc) return null;
     
-    // Alih-alih numpang di main-content, kita buat div baru yang benar-benar FULLSCREEN
-    const fullscreenDiv = document.createElement('div');
-    fullscreenDiv.id = 'dnd-fullscreen-arena';
-    fullscreenDiv.className = 'fixed inset-0 z-[9999] bg-slate-950 overflow-y-auto w-full h-full';
+    // Jadikan main-content fullscreen menutupi segalanya
+    mc.style.position = 'fixed';
+    mc.style.top = '0';
+    mc.style.left = '0';
+    mc.style.right = '0';
+    mc.style.bottom = '0';
+    mc.style.zIndex = '99999';
+    mc.style.backgroundColor = '#020617';
+    mc.style.overflowY = 'auto';
+    mc.style.padding = '0'; // Hilangkan padding sisa bawaan
+    mc.style.margin = '0';
+
+    // Penanda sakti agar sistem Hitung Mundur tahu kita sedang di Drag & Drop
+    window.isDragDropMode = true; 
     
-    // Trik agar saat di-close kembali ke keadaan semula
-    if (!window.hookSwitchTabDndFull) {
-        const switchTabAsli = window.switchTab;
-        if (typeof switchTabAsli === 'function') {
-            window.switchTab = function(tabId) {
-                const fsDiv = document.getElementById('dnd-fullscreen-arena');
-                if (fsDiv) fsDiv.remove();
-                switchTabAsli(tabId);
-            };
-        }
-        window.hookSwitchTabDndFull = true;
+    return mc;
+}
+
+// Mengembalikan main-content ke ukuran normal saat keluar
+function keluarFullscreenDnd() {
+    window.isDragDropMode = false;
+    const mc = document.getElementById('main-content');
+    if (mc) {
+        mc.style.position = '';
+        mc.style.top = '';
+        mc.style.left = '';
+        mc.style.right = '';
+        mc.style.bottom = '';
+        mc.style.zIndex = '';
+        mc.style.backgroundColor = '';
+        mc.style.overflowY = '';
+        mc.style.padding = '';
+        mc.style.margin = '';
     }
-    
-    // Pastikan tidak ada duplikat div yang sama sebelum menambah yang baru
-    const oldFsDiv = document.getElementById('dnd-fullscreen-arena');
-    if(oldFsDiv) oldFsDiv.remove();
-    
-    body.appendChild(fullscreenDiv);
-    return fullscreenDiv;
+    if (typeof switchTab === 'function') switchTab('dragdrop');
 }
 
 function bukaLobiDragDrop(jenisGame) {
     gameDndTerpilih = jenisGame;
-    
-    // BIKIN LAYAR FULLSCREEN MURNI
     const container = amankanLayarPenuhDragDrop();
-    
+    if (!container) return;
+
     let namaGame = jenisGame === 'match' ? 'MATCH & DROP' : (jenisGame === 'sort' ? 'SORT & DROP' : 'BUILD & DROP');
     let kelasOpts = AppState.db.kelas.map(k => `<option value="${k.id}">${k.kode}</option>`).join('');
     let mapelOpts = AppState.db.mapel.map(m => `<option value="${m.id}">${m.nama}</option>`).join('');
@@ -2122,7 +2133,7 @@ function bukaLobiDragDrop(jenisGame) {
             </div>
         </div>
 
-        <!-- AREA FORM LOBI TENGAH - UKURAN DIPERKECIL AGAR PROPORSIONAL (max-w-xl) -->
+        <!-- AREA FORM LOBI TENGAH -->
         <div class="max-w-xl mx-auto p-4 select-none fade-in pb-12 mt-4 sm:mt-8 w-full">
             <div class="bg-slate-900/95 p-6 sm:p-8 rounded-[2rem] border-2 border-amber-500/30 shadow-2xl relative overflow-hidden text-center z-20">
                 
@@ -2130,7 +2141,6 @@ function bukaLobiDragDrop(jenisGame) {
                 <h3 class="text-2xl font-black text-white mb-1">Identitas Pemain & Mode Game</h3>
                 <p class="text-xs text-slate-400 mb-5">Pilih mode game dan pemain untuk memulai permainan!</p>
 
-                <!-- Tombol Mode Single & Duel (Ukuran & gaya sama persis Kuis Arena) -->
                 <div class="grid grid-cols-2 gap-2 p-1.5 bg-slate-800 rounded-2xl mb-5 border border-slate-700">
                     <button class="py-2.5 text-xs font-extrabold rounded-xl transition-all bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-md flex items-center justify-center">
                         <i class="fa-solid fa-user mr-1.5"></i> Single Player
@@ -2141,7 +2151,6 @@ function bukaLobiDragDrop(jenisGame) {
                 </div>
 
                 <div class="space-y-4 text-left mt-3">
-                    <!-- DURASI DIBUKA KUNCINYA AGAR BISA DIPILIH -->
                     <div>
                         <label class="text-xs font-bold text-slate-300 block mb-1">⏱️ Durasi Waktu Per Soal</label>
                         <select id="lobby-dnd-durasi" class="w-full p-2.5 rounded-xl bg-slate-800 text-white border border-slate-700 outline-none focus:border-amber-500 text-xs">
@@ -2225,6 +2234,93 @@ function bukaLobiDragDrop(jenisGame) {
     }
 }
 
+// -------------------------------------------------------------
+// TIMER HITUNG MUNDUR (DENGAN KECERDASAN PELACAK LOBI DND)
+// -------------------------------------------------------------
+function mulaiHitungMundur(detikTunggu) {
+    const overlayCount = document.createElement('div');
+    overlayCount.id = 'layar-hitung-mundur';
+    overlayCount.className = 'fixed inset-0 z-[99999] bg-slate-950 flex flex-col items-center justify-center transition-all duration-300';
+    
+    overlayCount.innerHTML = `
+        <h2 class="text-slate-400 font-bold text-xl uppercase tracking-[0.3em] mb-8">Persiapan Kuis</h2>
+        <div id="angka-mundur" class="text-[12rem] lg:text-[18rem] font-black text-amber-500 leading-none" style="text-shadow: 0 0 25px rgba(245,158,11,0.4);">
+            ${detikTunggu}
+        </div>
+    `;
+    document.body.appendChild(overlayCount);
+
+    const angkaEl = document.getElementById('angka-mundur');
+    let sisaDetik = detikTunggu;
+    const ctx = getAudioCtx(); 
+
+    function playBeepShort() {
+        if (ctx.state === 'running') {
+            try {
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.type = 'square'; 
+                osc.frequency.setValueAtTime(600, ctx.currentTime);
+                gain.gain.setValueAtTime(0.5, ctx.currentTime); 
+                gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.1);
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.start();
+                osc.stop(ctx.currentTime + 0.1);
+            } catch(e) {}
+        }
+    }
+
+    function playBeepLong() {
+        if (ctx.state === 'running') {
+            try {
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.type = 'square'; 
+                osc.frequency.setValueAtTime(800, ctx.currentTime); 
+                gain.gain.setValueAtTime(0.8, ctx.currentTime); 
+                gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.8); 
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.start();
+                osc.stop(ctx.currentTime + 0.8);
+            } catch(e) {}
+        }
+    }
+
+    playBeepShort(); 
+
+    let timerMundur = setInterval(() => {
+        sisaDetik--;
+        
+        if (sisaDetik > 0) {
+            angkaEl.innerText = sisaDetik;
+            angkaEl.style.transform = 'scale(1.2)';
+            setTimeout(() => angkaEl.style.transform = 'scale(1)', 150);
+            playBeepShort();
+            
+        } else {
+            clearInterval(timerMundur);
+            overlayCount.style.background = "#020617"; 
+            angkaEl.innerText = "MULAI!";
+            angkaEl.className = "text-[6rem] lg:text-[10rem] font-black text-emerald-500 tracking-widest";
+            angkaEl.style.textShadow = "0 0 35px rgba(16,185,129,0.5)"; 
+            playBeepLong();
+
+            setTimeout(() => {
+                overlayCount.remove();
+                
+                // --- DETEKSI PINTAR: APAKAH KITA DI DRAG & DROP ATAU KUIS? ---
+                if (window.isDragDropMode) {
+                    if (typeof masukKeArenaGameDnd === 'function') masukKeArenaGameDnd();
+                } else {
+                    if (typeof mulaiKuisSebenarnya === 'function') mulaiKuisSebenarnya(); 
+                }
+                
+            }, 800);
+        }
+    }, 1000);
+}
 // Menghapus elemen Fullscreen lalu mengembalikan ke menu utama
 function keluarFullscreenDnd() {
     const fsDiv = document.getElementById('dnd-fullscreen-arena');
