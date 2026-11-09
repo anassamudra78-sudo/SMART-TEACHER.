@@ -1959,33 +1959,34 @@ function simpanKeLocalStorage() {
 }
 
 // ==========================================================
-// INTEGRASI LOBI DRAG & DROP ARENA (DI DALAM UI-KUIS.JS)
+// FILE: ui-dragdrop.js / UI-KUIS.JS (VERSI FINAL PASTI BERUBAH)
 // ==========================================================
 
 function renderDragDropPage(container) {
     container.innerHTML = `
         <div class="max-w-5xl mx-auto space-y-4 fade-in pb-8">
-            <!-- HERO SECTION -->
-            <div class="relative bg-slate-900 rounded-[2.5rem] border border-indigo-500/20 shadow-2xl overflow-hidden px-6 py-5 lg:px-10 lg:py-6 text-center mb-4">
+            <!-- HERO SECTION (PADDING ATAS & BAWAH DIREMPINGKAN AGAR TIDAK KELUAR LAYAR) -->
+            <div class="relative bg-slate-900 rounded-[2.5rem] border border-indigo-500/20 shadow-2xl overflow-hidden px-6 py-4 lg:px-10 lg:py-5 text-center mb-4">
                 <div class="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full max-w-2xl bg-gradient-to-b from-indigo-500/10 to-transparent blur-3xl pointer-events-none"></div>
+                <div class="absolute -bottom-10 -right-10 w-40 h-40 bg-purple-500/10 rounded-full blur-2xl pointer-events-none"></div>
                 
                 <div class="relative z-10">
-                    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/30 text-indigo-400 mb-2">
+                    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/30 text-indigo-400 mb-1.5">
                         <i class="fa-solid fa-gamepad text-xs"></i>
                         <span class="text-[10px] font-black tracking-widest uppercase">PLAY & LEARN</span>
                     </div>
                     
-                    <h2 class="text-3xl sm:text-4xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white via-indigo-100 to-slate-400 mb-2 drop-shadow-lg">Drag & Drop Arena</h2>
+                    <h2 class="text-3xl sm:text-4xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white via-indigo-100 to-slate-400 mb-1.5 drop-shadow-lg">Drag & Drop Arena</h2>
                     
                     <p class="text-slate-400 text-xs md:text-sm max-w-xl mx-auto leading-relaxed">
-                        "Belajar, Bermain, dan Tantang Temanmu!"
+                        Pilih mode permainan interaktif di bawah ini. Geser dan letakkan balok ke tempat yang benar untuk mendapatkan poin!
                     </p>
                 </div>
             </div>
 
             <!-- PILIHAN 3 GAME -->
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6 relative z-10 max-w-5xl mx-auto">
-                <!-- MATCH & DROP -->
+                <!-- GAME 1: MATCH & DROP -->
                 <div class="bg-slate-900 border border-slate-700 p-6 rounded-[2rem] text-center shadow-lg transition-all hover:scale-105 hover:shadow-[0_0_30px_rgba(16,185,129,0.3)] hover:border-emerald-500/50 group flex flex-col justify-between h-full">
                     <div>
                         <div class="w-16 h-16 mx-auto bg-emerald-500/10 rounded-2xl flex items-center justify-center mb-4 group-hover:bg-emerald-500 transition-colors">
@@ -1999,7 +2000,7 @@ function renderDragDropPage(container) {
                     </button>
                 </div>
 
-                <!-- SORT & DROP -->
+                <!-- GAME 2: SORT & DROP -->
                 <div class="bg-slate-900 border border-slate-700 p-6 rounded-[2rem] text-center shadow-lg transition-all hover:scale-105 hover:shadow-[0_0_30px_rgba(245,158,11,0.3)] hover:border-amber-500/50 group flex flex-col justify-between h-full">
                     <div>
                         <div class="w-16 h-16 mx-auto bg-amber-500/10 rounded-2xl flex items-center justify-center mb-4 group-hover:bg-amber-500 transition-colors">
@@ -2013,7 +2014,7 @@ function renderDragDropPage(container) {
                     </button>
                 </div>
 
-                <!-- BUILD & DROP -->
+                <!-- GAME 3: BUILD & DROP -->
                 <div class="bg-slate-900 border border-slate-700 p-6 rounded-[2rem] text-center shadow-lg transition-all hover:scale-105 hover:shadow-[0_0_30px_rgba(139,92,246,0.3)] hover:border-violet-500/50 group flex flex-col justify-between h-full">
                     <div>
                         <div class="w-16 h-16 mx-auto bg-violet-500/10 rounded-2xl flex items-center justify-center mb-4 group-hover:bg-violet-500 transition-colors">
@@ -2132,7 +2133,7 @@ function masukKeArenaGameDnd() {
     const manualName = document.getElementById('lobby-dnd-manual').value.trim();
 
     if (!manualName && (!kelasId || !siswaId)) {
-        return showAlert("Peringatan", "Harap Pilih Kelas dan Siswa ATAU Ketik nama manual!", "error");
+        return showAlert("Peringatan", "Harap Pilih Kelas, Mapel, dan Siswa ATAU Ketik nama manual!", "error");
     }
 
     if (gameDndTerpilih === 'match' && typeof mulaiGameMatch === 'function') mulaiGameMatch();
