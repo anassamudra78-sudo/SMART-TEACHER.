@@ -2275,44 +2275,47 @@ function mulaiHitungMundur(detikTunggu) {
 }
 
 function masukKeArenaGameDnd() {
-    const durasi = document.getElementById('lobby-dnd-durasi')?.value || 15;
-    const kelasId = document.getElementById('lobby-dnd-kelas')?.value;
-    const siswaId = document.getElementById('lobby-dnd-siswa')?.value;
-    const manualName = document.getElementById('lobby-dnd-manual')?.value.trim();
+    const durasiEl = document.getElementById('lobby-dnd-durasi');
+    const kelasEl = document.getElementById('lobby-dnd-kelas');
+    const siswaEl = document.getElementById('lobby-dnd-siswa');
+    const manualEl = document.getElementById('lobby-dnd-manual');
+    const kategoriEl = document.getElementById('lobby-dnd-kategori');
     
-    // Validasi wajib isi nama / siswa
+    const durasi = durasiEl ? durasiEl.value : '15';
+    const kelasId = kelasEl ? kelasEl.value : '';
+    const siswaId = siswaEl ? siswaEl.value : '';
+    const manualName = manualEl ? manualEl.value.trim() : '';
+    
+    // VALIDASI SEDERHANA: Lolos jika KETIK MANUAL terisi, ATAU (Kelas & Siswa dipilih)
     if (!manualName && (!kelasId || !siswaId)) {
-        return showAlert("Peringatan", "Harap Pilih Kelas dan Siswa, ATAU ketik nama manual!");
+        return showAlert("Peringatan", "Harap pilih Kelas dan Siswa, ATAU ketik nama manual!");
     }
 
-    // Tentukan nama pemain final
     let namaPemain = manualName;
-    if (!manualName && siswaId) {
+    if (!manualName && siswaId && AppState.db && AppState.db.siswa) {
         const siswa = AppState.db.siswa.find(s => s.id === siswaId);
         if (siswa) namaPemain = siswa.nama;
     }
 
-    // Simpan pengaturan ke state global AppState
+    // Simpan ke State Global
     AppState.dnd = AppState.dnd || {};
-    AppState.dnd.waktuPerSoal = parseInt(durasi);
-    AppState.dnd.pemain = namaPemain;
+    AppState.dnd.waktuPerSoal = parseInt(durasi) || 15;
+    AppState.dnd.pemain = namaPemain || 'Siswa';
     AppState.dnd.kelasId = kelasId;
-    AppState.dnd.kategori = document.getElementById('lobby-dnd-kategori')?.value || '';
+    AppState.dnd.kategori = kategoriEl ? kategoriEl.value : '';
     
-    // Tutup Lobi dengan bersih
+    // Tutup Lobi Modal
     tutupLobiDnd();
 
-    // Jalankan hitung mundur khas Kuis Arena (3 detik), lalu mulai gamenya
+    // Jalankan hitung mundur lalu mulai game
     if (typeof mulaiHitungMundur === 'function') {
         mulaiHitungMundur(3, () => {
             jalankanEngineGameDndAktif();
         });
     } else {
-        // Cadangan jika fungsi hitung mundur tidak terpanggil
         jalankanEngineGameDndAktif();
     }
 }
-
 // Fungsi pengarah ke file engine game masing-masing
 function jalankanEngineGameDndAktif() {
     if (gameDndTerpilih === 'match' && typeof mulaiGameMatch === 'function') {
