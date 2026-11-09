@@ -2008,7 +2008,7 @@ function renderDragDropPage(container) {
                         <h3 class="text-lg font-black text-white mb-3 tracking-wide uppercase">Match & Drop</h3>
                         <p class="text-xs text-slate-400 mb-6 leading-relaxed">Pasangkan balok soal ke kotak jawaban yang tepat. Cocok untuk kosakata dan definisi.</p>
                     </div>
-                    <button onclick="bukaLobiPersiapanDnd('match')" class="w-full bg-slate-800 hover:bg-emerald-500 text-emerald-400 hover:text-white border border-slate-600 hover:border-emerald-400 font-bold py-3.5 px-6 rounded-xl transition-all uppercase text-xs tracking-wider shadow-md flex items-center justify-center mt-auto">
+                    <button onclick="bukaLobiDragDrop('match')" class="w-full bg-slate-800 hover:bg-emerald-500 text-emerald-400 hover:text-white border border-slate-600 hover:border-emerald-400 font-bold py-3.5 px-6 rounded-xl transition-all uppercase text-xs tracking-wider shadow-md flex items-center justify-center mt-auto">
                         <i class="fa-solid fa-play mr-2"></i> MAINKAN SEKARANG
                     </button>
                 </div>
@@ -2022,7 +2022,7 @@ function renderDragDropPage(container) {
                         <h3 class="text-lg font-black text-white mb-3 tracking-wide uppercase">Sort & Drop</h3>
                         <p class="text-xs text-slate-400 mb-6 leading-relaxed">Kelompokkan berbagai item ke dalam kategori yang sesuai. Cocok untuk klasifikasi.</p>
                     </div>
-                    <button onclick="bukaLobiPersiapanDnd('sort')" class="w-full bg-slate-800 hover:bg-amber-500 text-amber-400 hover:text-slate-900 border border-slate-600 hover:border-amber-400 font-bold py-3.5 px-6 rounded-xl transition-all uppercase text-xs tracking-wider shadow-md flex items-center justify-center mt-auto">
+                    <button onclick="bukaLobiDragDrop('sort')" class="w-full bg-slate-800 hover:bg-amber-500 text-amber-400 hover:text-slate-900 border border-slate-600 hover:border-amber-400 font-bold py-3.5 px-6 rounded-xl transition-all uppercase text-xs tracking-wider shadow-md flex items-center justify-center mt-auto">
                         <i class="fa-solid fa-play mr-2"></i> MAINKAN SEKARANG
                     </button>
                 </div>
