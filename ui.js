@@ -299,11 +299,11 @@ function renderContent(tabId) {
     else if (tabId === 'absensi') renderAbsensi(container);
     else if (tabId === 'rapor') renderRapor(container);
     else if (tabId === 'kuis') renderKuisPage(container);
+    else if (tabId === 'dragdrop') renderDragDropPage(container); // <--- TAMBAHKAN DI SINI
     else if (tabId === 'ai') renderAI(container);
     else if (tabId === 'presentation_studio') renderPresentationStudio(container);
     else if (tabId === 'pengaturan') renderPengaturan(container);
 }
-
 function renderDashboard(container) {
     const statCard = (title, count, icon, bgBoxClass, textIconClass, targetTab) => `
         <div onclick="switchTab('${targetTab}')" class="cursor-pointer bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-lg shadow-slate-200/30 dark:shadow-none hover:-translate-y-1 hover:border-brand-500/40 transition-all flex items-center justify-between group">
