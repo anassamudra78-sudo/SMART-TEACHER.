@@ -1,12 +1,12 @@
 // ==========================================================
 // FILE: engine-sort.js
-// FUNGSI: Mesin "Sort & Drop" (KIRI-KANAN ORIGINAL & ATAS-BAWAH TINGGI PAS)
+// FUNGSI: Mesin "Sort & Drop" (UKURAN PATEN + SKOR BERTAHAP)
 // ==========================================================
 
 let sortState = {
     skor: 0,
     itemTerjawab: 0,
-    layout: 'kiri-kanan', // Default layout
+    layout: 'kiri-kanan', 
     kategori: [
         { id: "isim", judul: "ISIM", subjudul: "Kata Benda", tema: "cyan" },
         { id: "fiil", judul: "FI'IL", subjudul: "Kata Kerja", tema: "emerald" }
@@ -24,17 +24,14 @@ let sortState = {
     dataSoal: []
 };
 
-// UKURAN DIPISAH MUTLAK ANTARA KIRI-KANAN & ATAS-BAWAH
 function hitungSkalaOtomatisSort(jumlahSoal, isKiriKanan) {
     if (isKiriKanan) {
-        // ORIGINAL KIRI-KANAN (TIDAK ADA YANG DIUBAH)
         if (jumlahSoal <= 8) {
             return { tinggiKotak: "h-14 md:h-16", teksArab: "text-2xl md:text-3xl", teksEmoji: "text-4xl", gap: "gap-2 md:gap-3", gridKiri: "grid-cols-2 md:grid-cols-2" };
         } else {
             return { tinggiKotak: "h-10 md:h-12", teksArab: "text-xl", teksEmoji: "text-2xl md:text-3xl", gap: "gap-2", gridKiri: "grid-cols-3 md:grid-cols-4" };
         }
     } else {
-        // COMPACT ATAS-BAWAH (SUPER RINGKAS AGAR MUAT 1 LAYAR)
         if (jumlahSoal <= 8) {
             return { tinggiKotak: "h-10 md:h-12", teksArab: "text-xl md:text-2xl", teksEmoji: "text-2xl md:text-3xl", gap: "gap-1.5 md:gap-2", gridKiri: "grid-cols-4" };
         } else {
@@ -44,13 +41,7 @@ function hitungSkalaOtomatisSort(jumlahSoal, isKiriKanan) {
 }
 
 function bukaSetupGame(jenisGame) {
-    if (jenisGame === 'sort') {
-        mulaiGameSort();
-    } else if (jenisGame === 'match') {
-        if (typeof mulaiGameMatch === 'function') mulaiGameMatch();
-    } else if (jenisGame === 'build') {
-        if (typeof mulaiGameBuild === 'function') mulaiGameBuild();
-    }
+    if (jenisGame === 'sort') mulaiGameSort();
 }
 
 function ubahGayaLayoutSort(gayaBaru) {
@@ -63,13 +54,13 @@ function mulaiGameSort(isRenderUlang = false) {
     if (!isRenderUlang) {
         sortState.skor = 0;
         sortState.itemTerjawab = 0;
-        sortState.dataSoal = sortState.dataSoalAsli.map(item => ({...item, terjawab: false})).sort(() => Math.random() - 0.5);
+        // Tambahkan atribut salah=0 di database sementara (dataSoal) agar ingat saat ganti layout
+        sortState.dataSoal = sortState.dataSoalAsli.map(item => ({...item, terjawab: false, salah: 0})).sort(() => Math.random() - 0.5);
     }
 
     let isKiriKanan = sortState.layout === 'kiri-kanan';
     let skala = hitungSkalaOtomatisSort(sortState.dataSoal.length, isKiriKanan);
 
-    // DEKLARASI PENGATURAN RUANG (Dipisah ketat agar Kiri-Kanan tetap original)
     let classContainer = isKiriKanan 
         ? "max-w-7xl mx-auto p-2 md:p-4 mt-2 select-none fade-in pb-20" 
         : "max-w-7xl mx-auto px-2 md:px-4 pt-1 pb-4 select-none fade-in";
@@ -80,7 +71,7 @@ function mulaiGameSort(isRenderUlang = false) {
 
     let classPapan = isKiriKanan
         ? "flex flex-col lg:flex-row gap-4 md:gap-6 bg-[#0f172a] p-4 md:p-6 rounded-3xl border border-slate-800 shadow-[0_8px_30px_rgba(0,0,0,0.4)] relative overflow-hidden"
-        : "flex flex-col gap-2 md:gap-3 bg-[#0f172a] p-3 md:p-4 rounded-3xl border border-slate-800 shadow-[0_8px_30px_rgba(0,0,0,0.4)] relative overflow-hidden";
+        : "flex flex-col gap-2 md:gap-3 bg-[#0f172a] p-3 rounded-3xl border border-slate-800 shadow-[0_8px_30px_rgba(0,0,0,0.4)] relative overflow-hidden";
 
     let classWadahKiri = isKiriKanan ? "w-full lg:w-5/12 flex flex-col z-10" : "w-full flex flex-col z-10";
     let classWadahKanan = isKiriKanan ? "w-full lg:w-7/12 flex flex-col z-10" : "w-full flex flex-col z-10";
@@ -105,7 +96,7 @@ function mulaiGameSort(isRenderUlang = false) {
 
     let gridKategori = isKiriKanan
         ? "grid grid-cols-1 md:grid-cols-2 gap-4 h-full min-h-[300px]"
-        : "grid grid-cols-1 md:grid-cols-2 gap-3 h-full min-h-[230px] md:min-h-[250px]"; // <-- INI YANG DILEBARKAN (1-2 cm ke bawah, tetap ada space)
+        : "grid grid-cols-1 md:grid-cols-2 gap-3 h-full min-h-[230px] md:min-h-[250px]";
 
     container.innerHTML = `
         <div class="${classContainer}">
@@ -133,12 +124,12 @@ function mulaiGameSort(isRenderUlang = false) {
                 <div class="absolute top-0 left-1/4 w-96 h-96 bg-cyan-500/10 rounded-full blur-[100px] pointer-events-none"></div>
                 <div class="absolute bottom-0 right-1/4 w-96 h-96 bg-emerald-500/10 rounded-full blur-[100px] pointer-events-none"></div>
 
-                <!-- WADAH KIRI -->
                 <div class="${classWadahKiri}" id="wadah-kiri-sort">
                     ${headerWadahKiri}
                     <div class="grid ${skala.gridKiri} ${skala.gap}" id="grid-balok-sort">
                         ${sortState.dataSoal.map(item => {
-                            if (item.terjawab) return '';
+                            if (item.terjawab) return `<div class="${skala.tinggiKotak} w-full invisible"></div>`;
+                            
                             let isGambar = item.tipe === 'gambar';
                             let isiKartu = isGambar 
                                 ? `<span class="drop-shadow-lg ${skala.teksEmoji} pointer-events-none mt-1">${item.soal}</span>` 
@@ -156,22 +147,20 @@ function mulaiGameSort(isRenderUlang = false) {
 
                 ${pembatas}
 
-                <!-- WADAH KANAN -->
                 <div class="${classWadahKanan}">
                     ${headerKategori}
-                    
                     <div class="${gridKategori}">
                         ${sortState.kategori.map(kat => {
                             let isCyan = kat.tema === 'cyan';
                             let colorTheme = isCyan ? 'cyan' : 'emerald';
                             
                             let balokItemClass = isKiriKanan 
-                                ? `w-[calc(50%-4px)] lg:w-[calc(50%-6px)] bg-slate-800 border-l-4 border-${colorTheme}-500 border-y border-r border-slate-700 rounded-lg p-1.5 flex items-center gap-2 shadow-sm`
-                                : `w-[calc(50%-3px)] lg:w-[calc(50%-4px)] bg-slate-800 border-l-4 border-${colorTheme}-500 border-y border-r border-slate-700 rounded-lg p-1 flex items-center gap-1.5 shadow-sm`;
+                                ? `w-[calc(50%-4px)] lg:w-[calc(50%-6px)] bg-slate-800 border-l-4 border-${colorTheme}-500 border-y border-r border-slate-700 rounded-lg p-1.5 flex items-center shadow-sm fade-in`
+                                : `w-[calc(50%-3px)] lg:w-[calc(50%-4px)] bg-slate-800 border-l-4 border-${colorTheme}-500 border-y border-r border-slate-700 rounded-lg p-1 md:p-1.5 flex items-center shadow-sm fade-in`;
 
                             let teksArtiClass = isKiriKanan
-                                ? `text-[9px] font-bold text-slate-300 uppercase truncate border-l border-slate-600 pl-2 ml-1`
-                                : `text-[9px] font-bold text-slate-300 uppercase truncate border-l border-slate-600 pl-1.5 ml-0.5`;
+                                ? `text-[9px] md:text-[10px] font-bold text-slate-300 uppercase truncate border-l border-slate-600 pl-2.5 ml-2.5 flex-1`
+                                : `text-[9px] font-bold text-slate-300 uppercase truncate border-l border-slate-600 pl-2 ml-2 flex-1`;
                                 
                             let bgHeaderKotak = isKiriKanan 
                                 ? `bg-${colorTheme}-950/40 border-b border-${colorTheme}-500/30 p-2 md:p-3 text-center shrink-0 z-10`
@@ -183,11 +172,13 @@ function mulaiGameSort(isRenderUlang = false) {
 
                             let balokMasuk = sortState.dataSoal.filter(s => s.terjawab && s.kat === kat.id).map(b => {
                                 let visual = b.soal;
-                                let fontClass = b.tipe === 'gambar' ? 'text-base' : 'font-arabic text-xl';
+                                let fontClass = b.tipe === 'gambar' ? 'text-lg md:text-xl' : 'font-arabic text-xl md:text-2xl';
                                 
                                 return `
                                     <div class="${balokItemClass}">
-                                        <span class="${fontClass} text-white drop-shadow-md shrink-0 w-6 text-center leading-none">${visual}</span>
+                                        <div class="w-8 md:w-10 flex items-center justify-center shrink-0">
+                                            <span class="${fontClass} text-white drop-shadow-md text-center leading-none">${visual}</span>
+                                        </div>
                                         <span class="${teksArtiClass}">${b.arti}</span>
                                     </div>
                                 `;
@@ -199,7 +190,6 @@ function mulaiGameSort(isRenderUlang = false) {
                                         <h2 class="text-${colorTheme}-400 font-black tracking-widest text-sm">${kat.judul}</h2>
                                         <p class="text-[8px] text-slate-400 uppercase font-bold tracking-wider">${kat.subjudul}</p>
                                     </div>
-                                    
                                     <div class="${areaDropSort}">
                                         <div class="absolute inset-0 flex items-center justify-center pointer-events-none opacity-[0.03] ${balokMasuk ? 'hidden' : ''}">
                                             <i class="fa-solid fa-box-open text-5xl md:text-6xl text-${colorTheme}-500"></i>
@@ -240,7 +230,6 @@ function pasangSensorSort() {
             e.preventDefault(); 
             let sentuhan = e.touches[0];
             kartu.style.position = 'fixed';
-            
             kartu.style.left = (sentuhan.clientX - (kartu.offsetWidth / 2)) + 'px';
             kartu.style.top = (sentuhan.clientY - (kartu.offsetHeight / 2)) + 'px';
         }, {passive: false});
@@ -273,12 +262,49 @@ function pasangSensorSort() {
                         kotakTarget.classList.remove('border-solid', `border-${tema}-500`, `bg-${tema}-900/30`);
                     }, 200);
 
-                    mulaiGameSort(true);
+                    let isKiriKanan = sortState.layout === 'kiri-kanan';
+                    let skala = hitungSkalaOtomatisSort(sortState.dataSoal.length, isKiriKanan);
+
+                    kartu.className = `${skala.tinggiKotak} w-full invisible`;
+                    kartu.innerHTML = '';
+                    kartu.style.position = 'static';
+                    wadahKiri.appendChild(kartu);
+
+                    let balokItemClass = isKiriKanan
+                        ? `w-[calc(50%-4px)] lg:w-[calc(50%-6px)] bg-slate-800 border-l-4 border-${tema}-500 border-y border-r border-slate-700 rounded-lg p-1.5 flex items-center shadow-sm fade-in`
+                        : `w-[calc(50%-3px)] lg:w-[calc(50%-4px)] bg-slate-800 border-l-4 border-${tema}-500 border-y border-r border-slate-700 rounded-lg p-1 md:p-1.5 flex items-center shadow-sm fade-in`;
+
+                    let teksArtiClass = isKiriKanan
+                        ? `text-[9px] md:text-[10px] font-bold text-slate-300 uppercase truncate border-l border-slate-600 pl-2.5 ml-2.5 flex-1`
+                        : `text-[9px] font-bold text-slate-300 uppercase truncate border-l border-slate-600 pl-2 ml-2 flex-1`;
+
+                    let fontClass = soalData.tipe === 'gambar' ? 'text-lg md:text-xl' : 'font-arabic text-xl md:text-2xl';
+
+                    let elemenMasuk = document.createElement('div');
+                    elemenMasuk.className = balokItemClass;
+                    elemenMasuk.innerHTML = `
+                        <div class="w-8 md:w-10 flex items-center justify-center shrink-0">
+                            <span class="${fontClass} text-white drop-shadow-md text-center leading-none">${soalData.soal}</span>
+                        </div>
+                        <span class="${teksArtiClass}">${soalData.arti}</span>
+                    `;
+
+                    let areaDrop = kotakTarget.querySelector('.area-drop-sort');
+                    let iconKosong = areaDrop.querySelector('.absolute');
+                    if (iconKosong) iconKosong.style.display = 'none';
+                    areaDrop.appendChild(elemenMasuk);
+
+                    // ==========================================
+                    // SISTEM PENALTI 2: Kurangi Poin Bertahap
+                    // ==========================================
+                    let nilaiBawaan = 100 / sortState.dataSoal.length;
+                    let persenPotongan = 0.25; // Minus 25% setiap salah
                     
-                    let nilaiPerSoal = 100 / sortState.dataSoal.length;
-                    sortState.skor += nilaiPerSoal;
+                    let nilaiDidapat = Math.max(0, nilaiBawaan - (soalData.salah * (nilaiBawaan * persenPotongan)));
+                    sortState.skor += nilaiDidapat;
+                    // ==========================================
+
                     sortState.itemTerjawab++;
-                    
                     document.getElementById('skor-sort').innerText = Math.round(sortState.skor);
                     if (typeof playSoundEffect === 'function') playSoundEffect('correct'); 
 
@@ -289,6 +315,13 @@ function pasangSensorSort() {
                     kartu.style.position = 'static';
                     wadahKiri.appendChild(kartu);
                     if (typeof playSoundEffect === 'function') playSoundEffect('wrong'); 
+                    
+                    // ==========================================
+                    // SISTEM PENALTI 2: Tambah hitungan salah ke memori
+                    // ==========================================
+                    let idSoal = kartu.getAttribute('data-id');
+                    let soalData = sortState.dataSoal.find(s => s.id === idSoal);
+                    if(soalData) soalData.salah += 1;
                     
                     kotakTarget.classList.remove('border-dashed');
                     kotakTarget.classList.add('border-solid', 'border-rose-500', 'bg-rose-900/40');
