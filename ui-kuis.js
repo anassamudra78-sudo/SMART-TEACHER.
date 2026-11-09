@@ -1558,7 +1558,8 @@ function aksiUndianSelesai(mode, aksi) {
 function mulaiHitungMundur(detikTunggu) {
     const overlayCount = document.createElement('div');
     overlayCount.id = 'layar-hitung-mundur';
-    overlayCount.className = 'fixed inset-0 z-[9999] bg-slate-950 flex flex-col items-center justify-center transition-all duration-300';
+    // Saya naikkan z-index menjadi 99999 agar animasi 321 selalu tampil paling depan
+    overlayCount.className = 'fixed inset-0 z-[99999] bg-slate-950 flex flex-col items-center justify-center transition-all duration-300';
     
     overlayCount.innerHTML = `
         <h2 class="text-slate-400 font-bold text-xl uppercase tracking-[0.3em] mb-8">Persiapan Kuis</h2>
@@ -1631,7 +1632,18 @@ function mulaiHitungMundur(detikTunggu) {
 
             setTimeout(() => {
                 overlayCount.remove();
-                mulaiKuisSebenarnya(); 
+                
+                // --- INI KUNCI PERBAIKANNYA ---
+                // Sistem kini melacak otomatis: Jika layar Fullscreen Drag & Drop terdeteksi, 
+                // maka buka engine Drag & Drop. Jika tidak ada, buka engine Kuis.
+                const isDragDrop = document.getElementById('dnd-fullscreen-arena');
+                if (isDragDrop) {
+                    if (typeof masukKeArenaGameDnd === 'function') masukKeArenaGameDnd();
+                } else {
+                    if (typeof mulaiKuisSebenarnya === 'function') mulaiKuisSebenarnya(); 
+                }
+                // ------------------------------
+                
             }, 800);
         }
     }, 1000);
