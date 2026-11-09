@@ -2062,7 +2062,10 @@ function amankanLayarPenuhDragDrop() {
     mc.style.left = '0';
     mc.style.right = '0';
     mc.style.bottom = '0';
-    mc.style.zIndex = '99999';
+    
+    // INI PERBAIKANNYA: Turunkan z-index jadi 9900 agar tidak menutupi Undian (9999)
+    mc.style.zIndex = '9900'; 
+    
     mc.style.backgroundColor = '#020617';
     mc.style.overflowY = 'auto';
     mc.style.padding = '0'; // Hilangkan padding sisa bawaan
@@ -2073,7 +2076,6 @@ function amankanLayarPenuhDragDrop() {
     
     return mc;
 }
-
 // Mengembalikan main-content ke ukuran normal saat keluar
 function keluarFullscreenDnd() {
     window.isDragDropMode = false;
