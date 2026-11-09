@@ -2278,32 +2278,50 @@ function masukKeArenaGameDnd() {
     const siswaId = document.getElementById('lobby-dnd-siswa')?.value;
     const manualName = document.getElementById('lobby-dnd-manual')?.value.trim();
     
-    // Validasi
+    // Validasi wajib isi nama / siswa
     if (!manualName && (!kelasId || !siswaId)) {
         return showAlert("Peringatan", "Harap Pilih Kelas dan Siswa, ATAU ketik nama manual!");
     }
 
-    // Tentukan nama pemain
+    // Tentukan nama pemain final
     let namaPemain = manualName;
     if (!manualName && siswaId) {
         const siswa = AppState.db.siswa.find(s => s.id === siswaId);
         if (siswa) namaPemain = siswa.nama;
     }
 
-    // Simpan pengaturan ke state
+    // Simpan pengaturan ke state global AppState
+    AppState.dnd = AppState.dnd || {};
     AppState.dnd.waktuPerSoal = parseInt(durasi);
     AppState.dnd.pemain = namaPemain;
+    AppState.dnd.kelasId = kelasId;
     AppState.dnd.kategori = document.getElementById('lobby-dnd-kategori')?.value || '';
     
-    // Tutup Lobi
+    // Tutup Lobi dengan bersih
     tutupLobiDnd();
 
-    // Mulai hitung mundur, setelah selesai panggil fungsi game yang sesuai
-    mulaiHitungMundur(3, () => {
-        if (gameDndTerpilih === 'match' && typeof mulaiGameMatch === 'function') mulaiGameMatch();
-        else if (gameDndTerpilih === 'sort' && typeof mulaiGameSort === 'function') mulaiGameSort();
-        else if (gameDndTerpilih === 'build' && typeof mulaiGameBuild === 'function') mulaiGameBuild();
-    });
+    // Jalankan hitung mundur khas Kuis Arena (3 detik), lalu mulai gamenya
+    if (typeof mulaiHitungMundur === 'function') {
+        mulaiHitungMundur(3, () => {
+            jalankanEngineGameDndAktif();
+        });
+    } else {
+        // Cadangan jika fungsi hitung mundur tidak terpanggil
+        jalankanEngineGameDndAktif();
+    }
+}
+
+// Fungsi pengarah ke file engine game masing-masing
+function jalankanEngineGameDndAktif() {
+    if (gameDndTerpilih === 'match' && typeof mulaiGameMatch === 'function') {
+        mulaiGameMatch();
+    } else if (gameDndTerpilih === 'sort' && typeof mulaiGameSort === 'function') {
+        mulaiGameSort();
+    } else if (gameDndTerpilih === 'build' && typeof mulaiGameBuild === 'function') {
+        mulaiGameBuild();
+    } else {
+        showAlert("Informasi", "Engine untuk game " + gameDndTerpilih + " akan segera dimuat!");
+    }
 }
 
 // Fungsi untuk membuka halaman Drag & Drop Arena dari tombol menu
