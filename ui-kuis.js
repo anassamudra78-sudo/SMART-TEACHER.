@@ -2033,18 +2033,61 @@ function renderDragDropPage(container) {
     `;
 }
 
+// =========================================================================
+// FUNGSI MEMBUKA LOBI DRAG & DROP (100% FULLSCREEN TANPA TOP-BAR GANGGUAN)
+// =========================================================================
+
 let gameDndTerpilih = '';
+
+// FUNGSI PENGHANCUR TOP-BAR (Membuat layar penuh menutupi header bawaan)
+function amankanLayarPenuhDragDrop() {
+    const mc = document.getElementById('main-content');
+    if (mc) {
+        // Trik Inline CSS: Memaksa area konten melayang menutupi seluruh layar!
+        mc.style.position = 'fixed';
+        mc.style.top = '0';
+        mc.style.left = '0';
+        mc.style.right = '0';
+        mc.style.bottom = '0';
+        mc.style.zIndex = '9999';
+        mc.style.backgroundColor = '#020617'; // Warna latar bg-slate-950
+        mc.style.overflowY = 'auto';
+        
+        // Cegat tombol keluar: Agar saat pindah menu (Keluar Game), layar kembali normal
+        if (!window.hookSwitchTabDnd) {
+            const switchTabAsli = window.switchTab;
+            if (typeof switchTabAsli === 'function') {
+                window.switchTab = function(tabId) {
+                    mc.style.position = '';
+                    mc.style.top = '';
+                    mc.style.left = '';
+                    mc.style.right = '';
+                    mc.style.bottom = '';
+                    mc.style.zIndex = '';
+                    mc.style.backgroundColor = '';
+                    mc.style.overflowY = '';
+                    switchTabAsli(tabId);
+                };
+            }
+            window.hookSwitchTabDnd = true;
+        }
+    }
+}
 
 function bukaLobiDragDrop(jenisGame) {
     gameDndTerpilih = jenisGame;
     const container = document.getElementById('main-content');
     
+    // 1. EKSEKUSI PENGHILANG TOP BAR SIALAN ITU (BERLAKU UNTUK LOBI & DALAM GAME)
+    amankanLayarPenuhDragDrop();
+    
     let namaGame = jenisGame === 'match' ? 'MATCH & DROP' : (jenisGame === 'sort' ? 'SORT & DROP' : 'BUILD & DROP');
     let kelasOpts = AppState.db.kelas.map(k => `<option value="${k.id}">${k.kode}</option>`).join('');
+    let mapelOpts = AppState.db.mapel.map(m => `<option value="${m.id}">${m.nama}</option>`).join('');
 
     container.innerHTML = `
-        <!-- TOP BAR (SAMA PERSIS DENGAN KUIS ARENA) -->
-        <div class="bg-slate-900 border-b border-slate-800 p-3 sm:p-4 flex flex-wrap gap-3 justify-between items-center sticky top-0 z-50">
+        <!-- TOP BAR DND (SEKARANG AKAN BERADA PALING ATAS KARENA FULLSCREEN) -->
+        <div class="bg-slate-900 border-b border-slate-800 p-3 sm:p-4 flex flex-wrap gap-3 justify-between items-center sticky top-0 z-50 shadow-xl">
             <div class="flex items-center space-x-3">
                 <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-orange-500 text-white flex items-center justify-center font-black shadow-lg">
                     <i class="fa-solid fa-gamepad text-xl sm:text-2xl"></i>
@@ -2073,23 +2116,25 @@ function bukaLobiDragDrop(jenisGame) {
             </div>
         </div>
 
-        <!-- AREA FORM LOBI (SAMA PERSIS DENGAN KUIS ARENA) -->
+        <!-- AREA FORM LOBI TENGAH -->
         <div class="max-w-2xl mx-auto p-4 select-none fade-in pb-12 mt-4 sm:mt-6">
-            <div class="bg-slate-900 p-6 sm:p-8 rounded-[2rem] border border-slate-700 shadow-2xl relative overflow-hidden">
+            <!-- BINGKAI KUNING TEBAL SEPERTI KUIS ARENA -->
+            <div class="bg-slate-900 p-6 sm:p-8 rounded-[2rem] border-2 border-amber-500/50 shadow-2xl relative overflow-hidden">
                 
                 <div class="text-center mb-6">
-                    <i class="fa-solid fa-user-graduate text-5xl text-amber-400 mb-3"></i>
+                    <i class="fa-solid fa-user-graduate text-5xl text-amber-400 mb-3 animate-bounce"></i>
                     <h3 class="text-xl sm:text-2xl font-black text-white">Identitas Pemain & Mode Game</h3>
                     <p class="text-xs text-slate-400 mt-1">Pilih mode game dan pemain untuk memulai permainan!</p>
                 </div>
 
                 <div class="space-y-5 text-left">
-                    <div class="grid grid-cols-2 gap-3 mb-4">
-                        <button class="bg-emerald-500 text-slate-900 font-bold py-2.5 rounded-xl text-sm flex items-center justify-center gap-2 shadow-lg">
+                    <!-- Tombol Mode Single & Duel -->
+                    <div class="grid grid-cols-2 gap-3 mb-4 bg-slate-800 p-1.5 rounded-2xl border border-slate-700">
+                        <button class="bg-emerald-500 text-white font-bold py-2.5 rounded-xl text-sm flex items-center justify-center gap-2 shadow-md">
                             <i class="fa-solid fa-user"></i> Single Player
                         </button>
-                        <button class="bg-slate-800 text-slate-400 hover:text-slate-300 border border-slate-700 font-bold py-2.5 rounded-xl text-sm flex items-center justify-center gap-2 transition-colors">
-                            <i class="fa-solid fa-bolt"></i> Mode Duel (2 Siswa)
+                        <button class="bg-slate-800 text-slate-400 hover:text-white font-bold py-2.5 rounded-xl text-sm flex items-center justify-center gap-2 transition-colors">
+                            <i class="fa-solid fa-bolt text-amber-400"></i> Mode Duel (2 Siswa)
                         </button>
                     </div>
 
@@ -2107,7 +2152,7 @@ function bukaLobiDragDrop(jenisGame) {
 
                     <div>
                         <label class="text-xs font-bold text-slate-300 ml-1 mb-1.5 block">1. Pilih Kelas</label>
-                        <select id="lobby-dnd-kelas" onchange="updateLobbySiswaDnd()" class="w-full bg-slate-950 border border-slate-800 text-white text-sm rounded-2xl px-4 py-3.5 outline-none focus:border-emerald-500 transition-colors">
+                        <select id="lobby-dnd-kelas" onchange="updateLobbySiswaDnd()" class="w-full bg-slate-800 border border-slate-700 text-white text-xs rounded-xl px-4 py-3 outline-none focus:border-amber-500 transition-colors">
                             <option value="">-- Pilih Kelas --</option>
                             ${kelasOpts}
                         </select>
@@ -2115,45 +2160,50 @@ function bukaLobiDragDrop(jenisGame) {
                     
                     <div>
                         <label class="text-xs font-bold text-slate-300 ml-1 mb-1.5 block">2. Mata Pelajaran</label>
-                        <select class="w-full bg-slate-950 border border-slate-800 text-white text-sm rounded-2xl px-4 py-3.5 outline-none focus:border-emerald-500 transition-colors">
+                        <select id="lobby-dnd-mapel" class="w-full bg-slate-800 border border-slate-700 text-white text-xs rounded-xl px-4 py-3 outline-none focus:border-amber-500 transition-colors">
                             <option value="">-- Pilih Mapel --</option>
+                            ${mapelOpts}
                         </select>
                     </div>
 
                     <div>
                         <label class="text-xs font-bold text-slate-300 ml-1 mb-1.5 block">3. Nama Siswa</label>
-                        <div class="flex gap-2">
-                            <select id="lobby-dnd-siswa" class="flex-1 bg-slate-950 border border-slate-800 text-white text-sm rounded-2xl px-4 py-3.5 outline-none focus:border-emerald-500 transition-colors">
+                        <div class="flex gap-2 mb-2">
+                            <select id="lobby-dnd-siswa" class="flex-1 bg-slate-800 border border-slate-700 text-white text-xs rounded-xl px-4 py-3 outline-none focus:border-amber-500 transition-colors">
                                 <option value="">-- Pilih Kelas Terlebih Dahulu --</option>
                             </select>
-                            <button onclick="undiPemainDndSpin()" class="bg-amber-500 hover:bg-amber-400 text-slate-950 font-black px-5 rounded-2xl shadow-md text-xs flex items-center gap-1.5 transition-colors">
+                            <!-- TOMBOL UNDI KUNING MENCOLOK -->
+                            <button onclick="undiPemainDndSpin()" class="bg-gradient-to-r from-yellow-400 to-amber-500 hover:from-yellow-300 hover:to-amber-400 text-slate-900 font-black px-4 rounded-xl shadow-lg flex items-center gap-1.5 transition-all text-xs">
                                 <i class="fa-solid fa-dice text-base"></i> Undi
                             </button>
                         </div>
-                        <input type="text" id="lobby-dnd-manual" placeholder="Atau ketik nama manual..." class="w-full bg-slate-950 border border-slate-800 text-white text-sm rounded-2xl px-4 py-3.5 mt-2.5 outline-none focus:border-emerald-500 transition-colors">
+                        <input type="text" id="lobby-dnd-manual" placeholder="Atau ketik nama manual..." class="w-full bg-slate-800 border border-slate-700 text-white text-xs rounded-xl px-4 py-3 outline-none focus:border-amber-500 transition-colors">
                     </div>
 
                     <div>
                         <label class="text-xs font-bold text-slate-300 ml-1 mb-1.5 block">4. Simpan Nilai ke Kategori (Opsional)</label>
-                        <select class="w-full bg-slate-950 border border-slate-800 text-white text-sm rounded-2xl px-4 py-3.5 outline-none focus:border-emerald-500 transition-colors">
+                        <select id="lobby-dnd-kategori" class="w-full bg-slate-800 border border-slate-700 text-white text-xs rounded-xl px-4 py-3 outline-none focus:border-amber-500 transition-colors">
                             <option value="">-- Tidak Disimpan (Hanya Latihan) --</option>
+                            <option value="Tugas (TP/Bab 1)">Tugas (TP/Bab 1)</option>
+                            <option value="Sumatif (TP/Bab 1)">Sumatif (TP/Bab 1)</option>
+                            <option value="Tugas (TP/Bab 2)">Tugas (TP/Bab 2)</option>
+                            <option value="Sumatif (TP/Bab 2)">Sumatif (TP/Bab 2)</option>
                         </select>
                     </div>
 
-                    <div class="flex items-center justify-between bg-slate-950 border border-slate-800 rounded-2xl px-4 py-3.5 mt-2">
-                        <div class="flex items-center gap-2">
-                            <i class="fa-solid fa-shuffle text-amber-500"></i>
-                            <span class="text-sm font-bold text-slate-300">Acak Urutan Soal (Shuffle)</span>
-                        </div>
-                        <input type="checkbox" checked class="w-5 h-5 accent-amber-500 rounded cursor-pointer">
+                    <div class="p-3 bg-slate-800/80 border border-slate-700 rounded-xl flex items-center justify-between mt-2">
+                        <label for="dnd-acak-soal" class="text-xs font-bold text-slate-300 cursor-pointer flex items-center select-none">
+                            <i class="fa-solid fa-shuffle text-amber-400 mr-2.5"></i> Acak Urutan Soal (Shuffle)
+                        </label>
+                        <input type="checkbox" id="dnd-acak-soal" class="w-5 h-5 accent-amber-500 cursor-pointer" checked>
                     </div>
                 </div>
 
-                <div class="mt-8 text-center flex flex-col items-center">
-                    <button onclick="masukKeArenaGameDnd()" class="w-full bg-emerald-500 hover:bg-emerald-400 text-slate-900 font-black text-sm py-4 rounded-2xl shadow-[0_0_20px_rgba(16,185,129,0.3)] transition-all uppercase tracking-wider">
+                <div class="mt-6 text-center flex flex-col items-center">
+                    <button onclick="masukKeArenaGameDnd()" class="w-full bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-white font-black text-sm py-3.5 rounded-xl shadow-[0_0_20px_rgba(16,185,129,0.3)] transition-all tracking-wider">
                         MULAI MENGERJAKAN SOAL
                     </button>
-                    <button onclick="switchTab('dragdrop')" class="mt-4 text-slate-400 hover:text-white text-xs font-bold transition-colors">
+                    <button onclick="switchTab('dragdrop')" class="w-full mt-3 text-slate-400 font-bold hover:text-white py-1.5 text-xs transition-colors">
                         Batal / Kembali
                     </button>
                 </div>
@@ -2164,7 +2214,18 @@ function bukaLobiDragDrop(jenisGame) {
             </div>
         </div>
     `;
+
+    if (AppState.kuis && AppState.kuis.kelasAktif) {
+        setTimeout(() => {
+            const selKelas = document.getElementById('lobby-dnd-kelas');
+            if (selKelas) {
+                selKelas.value = AppState.kuis.kelasAktif;
+                updateLobbySiswaDnd();
+            }
+        }, 50);
+    }
 }
+
 function updateLobbySiswaDnd() {
     const kelasId = document.getElementById('lobby-dnd-kelas').value;
     const selectSiswa = document.getElementById('lobby-dnd-siswa');
