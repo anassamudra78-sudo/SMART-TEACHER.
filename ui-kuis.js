@@ -2036,7 +2036,7 @@ function renderDragDropPage(container) {
                         <h3 class="text-lg font-black text-white mb-3 tracking-wide uppercase">Build & Drop</h3>
                         <p class="text-xs text-slate-400 mb-6 leading-relaxed">Susun potongan kata menjadi satu kalimat utuh. Cocok untuk tata bahasa dan sintaksis.</p>
                     </div>
-                    <button onclick="bukaLobiDragDrop('build')" class="w-full bg-slate-800 hover:bg-violet-500 text-violet-400 hover:text-white border border-slate-600 hover:border-violet-400 font-bold py-3.5 px-6 rounded-xl transition-all uppercase text-xs tracking-wider shadow-md flex items-center justify-center mt-auto">
+                    <button onclick="bukaLobiPersiapanDnd('build')" class="w-full bg-slate-800 hover:bg-violet-500 text-violet-400 hover:text-white border border-slate-600 hover:border-violet-400 font-bold py-3.5 px-6 rounded-xl transition-all uppercase text-xs tracking-wider shadow-md flex items-center justify-center mt-auto">
                         <i class="fa-solid fa-play mr-2"></i> MAINKAN SEKARANG
                     </button>
                 </div>
