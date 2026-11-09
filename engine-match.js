@@ -13,7 +13,7 @@ let matchState = {
         { id: "p4", tipe: "gambar", soal: "🐇", arti: "Kelinci" },
         { id: "p5", tipe: "teks", soal: "مَسْجِدٌ", arti: "Masjid" },
         { id: "p6", tipe: "gambar", soal: "🖋️", arti: "Pena" },
-        { id: "p7", tipe: "teks", soal: "كُرْسِيٌّ", arti: "Kursi" },
+        { id: "p7", tipe: "teks", soal: "كُرْسِيٌّ", arti: "Kursi" },
         { id: "p8", tipe: "gambar", soal: "🚗", arti: "Mobil" }
     ]
 };
@@ -57,7 +57,7 @@ function hitungSkalaOtomatis(jumlahSoal) {
         };
     } else {
         return {
-            tinggiKotak: "h-8 md:h-10",       
+            tinggiKotak: "h-8 md:h-10",        
             lebarDrop: "w-12 md:w-16",
             teksArab: "text-lg",
             teksIndo: "text-xs",
@@ -110,10 +110,12 @@ function mulaiGameMatch() {
                                 ? `<div class="w-full h-full flex items-center justify-center pointer-events-none p-1"><span class="drop-shadow-lg ${skala.teksEmoji}">${item.soal}</span></div>` 
                                 : `<div class="w-full h-full flex items-center justify-center pointer-events-none p-1"><span class="drop-shadow-lg font-arabic ${skala.teksArab} text-center leading-none text-white">${item.soal}</span></div>`;
                             
-                            // Tema Balok: Teks pakai Indigo gelap, Gambar pakai Slate gelap
+                            // =========================================================
+                            // SUNTIKAN 1: MENGHILANGKAN BACKGROUND BIRU PADA BALOK TEKS
+                            // =========================================================
                             let cssKartu = isGambar
                                 ? `bg-slate-800 border-2 border-slate-600 text-slate-200`
-                                : `bg-indigo-600 border-2 border-indigo-500 text-white`;
+                                : `bg-slate-800 border-2 border-slate-600 text-white`; 
                             
                             return `
                                 <div class="kartu-soal ${cssKartu} touch-none rounded-xl md:rounded-2xl flex justify-center items-center ${skala.tinggiKotak} shadow-lg transition-transform cursor-grab relative overflow-hidden" data-id="${item.id}" data-tipe="${item.tipe}">
@@ -158,11 +160,23 @@ function pasangSensorSederhana() {
     const kartus = document.querySelectorAll('.kartu-soal');
     const wadahKiri = document.getElementById('wadah-kiri').querySelector('.grid');
     
+    // =========================================================
+    // SUNTIKAN 2: DEKLARASI PEMBUNGKUS KOLOM KIRI
+    // =========================================================
+    const kolomKiriUtama = document.getElementById('wadah-kiri');
+    
     kartus.forEach(kartu => {
         let terkunci = false;
 
         kartu.addEventListener('touchstart', function(e) {
             if(terkunci) return;
+            
+            // =========================================================
+            // SUNTIKAN 2: NAIKKAN LAPISAN KOLOM KIRI SAAT DISENTUH
+            // =========================================================
+            kolomKiriUtama.style.zIndex = '9999';
+            kolomKiriUtama.style.position = 'relative';
+            
             kartu.style.zIndex = 9999;
             kartu.classList.add('scale-105', 'shadow-2xl');
         }, {passive: false});
@@ -178,6 +192,12 @@ function pasangSensorSederhana() {
 
         kartu.addEventListener('touchend', function(e) {
             if(terkunci) return;
+            
+            // =========================================================
+            // SUNTIKAN 2: KEMBALIKAN LAPISAN KOLOM KIRI SAAT DILEPAS
+            // =========================================================
+            kolomKiriUtama.style.zIndex = '10';
+            
             kartu.classList.remove('scale-105', 'shadow-2xl');
             
             let sentuhan = e.changedTouches[0];
@@ -193,7 +213,6 @@ function pasangSensorSederhana() {
                     kartu.style.position = 'static';
                     
                     let tipe = kartu.getAttribute('data-tipe');
-                    // Saat benar, balok menyala hijau neon (Emerald) khas Arena Kuis
                     kartu.className = 'kartu-soal flex justify-center items-center w-full h-full rounded-lg transition-all relative shadow-[0_0_15px_rgba(16,185,129,0.4)] bg-emerald-500 text-white border-2 border-emerald-400';
                                       
                     kartu.innerHTML += `<div class="absolute -top-1 -right-1 bg-white text-emerald-600 rounded-full w-5 h-5 flex items-center justify-center text-[10px] shadow-md border border-emerald-500"><i class="fa-solid fa-check"></i></div>`;
@@ -235,7 +254,6 @@ function selebrasiKemenangan() {
         playCelebrationAudio(nilaiAkhir);
     }
     const container = document.getElementById('main-content');
-    // Selebrasi sudah Dark Mode, hanya disesuaikan sedikit warna garisnya
     container.innerHTML = `
         <div class="max-w-2xl mx-auto mt-10 p-8 bg-slate-900 rounded-[2.5rem] text-center border border-slate-700 shadow-[0_0_40px_rgba(16,185,129,0.2)] fade-in">
             <i class="fa-solid fa-trophy text-6xl text-amber-400 mb-6 animate-bounce drop-shadow-[0_0_15px_rgba(251,191,36,0.5)]"></i>
