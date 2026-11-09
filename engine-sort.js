@@ -1,6 +1,6 @@
 // ==========================================================
 // FILE: engine-sort.js
-// FUNGSI: Mesin Game "Sort & Drop" (ATAS-BAWAH + NO INNER BOX + SMOOTH DRAG)
+// FUNGSI: Mesin "Sort & Drop" (KIRI-KANAN ORIGINAL & ATAS-BAWAH COMPACT)
 // ==========================================================
 
 let sortState = {
@@ -24,26 +24,22 @@ let sortState = {
     dataSoal: []
 };
 
-function hitungSkalaOtomatisSort(jumlahSoal, layoutMode) {
-    let isKiriKanan = layoutMode === 'kiri-kanan';
-    if (jumlahSoal <= 8) {
-        return {
-            tinggiKotak: "h-14 md:h-16",
-            teksArab: "text-2xl md:text-3xl",
-            teksEmoji: "text-4xl",
-            gap: "gap-2 md:gap-3",
-            // Jika Atas-Bawah, balok soal berjejer 4 ke samping agar tidak panjang ke bawah
-            gridKiri: isKiriKanan ? "grid-cols-2" : "grid-cols-4", 
-        };
+// UKURAN DIPISAH MUTLAK ANTARA KIRI-KANAN & ATAS-BAWAH
+function hitungSkalaOtomatisSort(jumlahSoal, isKiriKanan) {
+    if (isKiriKanan) {
+        // ORIGINAL KIRI-KANAN (TIDAK ADA YANG DIUBAH)
+        if (jumlahSoal <= 8) {
+            return { tinggiKotak: "h-14 md:h-16", teksArab: "text-2xl md:text-3xl", teksEmoji: "text-4xl", gap: "gap-2 md:gap-3", gridKiri: "grid-cols-2 md:grid-cols-2" };
+        } else {
+            return { tinggiKotak: "h-10 md:h-12", teksArab: "text-xl", teksEmoji: "text-2xl md:text-3xl", gap: "gap-2", gridKiri: "grid-cols-3 md:grid-cols-4" };
+        }
     } else {
-        return {
-            tinggiKotak: "h-10 md:h-12",
-            teksArab: "text-xl",
-            teksEmoji: "text-2xl md:text-3xl",
-            gap: "gap-2",
-            // Jika Atas-Bawah dan soal banyak, balok soal berjejer 6-8 ke samping
-            gridKiri: isKiriKanan ? "grid-cols-3" : "grid-cols-5 md:grid-cols-6 lg:grid-cols-8",
-        };
+        // COMPACT ATAS-BAWAH (SUPER RINGKAS AGAR MUAT 1 LAYAR)
+        if (jumlahSoal <= 8) {
+            return { tinggiKotak: "h-10 md:h-12", teksArab: "text-xl md:text-2xl", teksEmoji: "text-2xl md:text-3xl", gap: "gap-1.5 md:gap-2", gridKiri: "grid-cols-4" };
+        } else {
+            return { tinggiKotak: "h-8 md:h-10", teksArab: "text-lg", teksEmoji: "text-xl", gap: "gap-1 md:gap-1.5", gridKiri: "grid-cols-5 md:grid-cols-6 lg:grid-cols-8" };
+        }
     }
 }
 
@@ -71,27 +67,54 @@ function mulaiGameSort(isRenderUlang = false) {
     }
 
     let isKiriKanan = sortState.layout === 'kiri-kanan';
-    let skala = hitungSkalaOtomatisSort(sortState.dataSoal.length, sortState.layout);
+    let skala = hitungSkalaOtomatisSort(sortState.dataSoal.length, isKiriKanan);
 
-    // Pengaturan Layout Dinamis
-    let classWadahUtama = isKiriKanan ? 'flex-col lg:flex-row' : 'flex-col';
-    let classKiri = isKiriKanan ? 'w-full lg:w-5/12' : 'w-full';
-    let classKanan = isKiriKanan ? 'w-full lg:w-7/12' : 'w-full';
+    // DEKLARASI PENGATURAN RUANG (Dipisah ketat agar Kiri-Kanan tetap original)
+    let classContainer = isKiriKanan 
+        ? "max-w-7xl mx-auto p-2 md:p-4 mt-2 select-none fade-in pb-20" 
+        : "max-w-7xl mx-auto px-2 md:px-4 pt-1 pb-4 select-none fade-in";
+        
+    let classHeader = isKiriKanan 
+        ? "flex flex-wrap justify-between items-center bg-slate-900 p-3 md:p-4 rounded-2xl shadow-[0_4px_20px_rgba(0,0,0,0.3)] mb-4 border border-slate-700 gap-3 relative z-10"
+        : "flex flex-wrap justify-between items-center bg-slate-900 p-2 md:p-3 rounded-2xl shadow-[0_4px_20px_rgba(0,0,0,0.3)] mb-1 border border-slate-700 gap-2 relative z-10";
+
+    let classPapan = isKiriKanan
+        ? "flex flex-col lg:flex-row gap-4 md:gap-6 bg-[#0f172a] p-4 md:p-6 rounded-3xl border border-slate-800 shadow-[0_8px_30px_rgba(0,0,0,0.4)] relative overflow-hidden"
+        : "flex flex-col gap-2 md:gap-3 bg-[#0f172a] p-3 rounded-3xl border border-slate-800 shadow-[0_8px_30px_rgba(0,0,0,0.4)] relative overflow-hidden";
+
+    let classWadahKiri = isKiriKanan ? "w-full lg:w-5/12 flex flex-col z-10" : "w-full flex flex-col z-10";
+    let classWadahKanan = isKiriKanan ? "w-full lg:w-7/12 flex flex-col z-10" : "w-full flex flex-col z-10";
+    
     let pembatas = isKiriKanan 
-        ? '<div class="hidden lg:block w-px bg-slate-700/50 mx-1 z-10"></div>' 
-        : '<div class="w-full h-px bg-slate-700/50 my-2 z-10"></div>';
+        ? `<div class="hidden lg:block w-px bg-slate-700/50 mx-1 z-10"></div>` 
+        : `<div class="w-full h-px bg-slate-700/50 my-1 z-10"></div>`;
+
+    let headerWadahKiri = isKiriKanan
+        ? `<div class="flex justify-between items-center border-b border-slate-700/50 pb-2 mb-4">
+             <h3 class="font-bold text-slate-400 uppercase tracking-widest text-xs">Pilih Balok</h3>
+             <span class="bg-slate-800 text-slate-300 text-[10px] font-bold px-2 py-0.5 rounded border border-slate-700">${sortState.dataSoal.length} Soal</span>
+           </div>`
+        : `<div class="flex justify-between items-center border-b border-slate-700/50 pb-1 mb-2">
+             <h3 class="font-bold text-slate-400 uppercase tracking-widest text-[10px]">Pilih Balok</h3>
+             <span class="bg-slate-800 text-slate-300 text-[10px] font-bold px-2 py-0.5 rounded border border-slate-700">${sortState.dataSoal.length} Soal</span>
+           </div>`;
+
+    let headerKategori = isKiriKanan
+        ? `<h3 class="text-center font-bold text-slate-400 mb-4 uppercase tracking-widest text-xs border-b border-slate-700/50 pb-2">Kelompokkan ke Kotak</h3>`
+        : `<h3 class="text-center font-bold text-slate-400 mb-2 uppercase tracking-widest text-[10px] border-b border-slate-700/50 pb-1">Kelompokkan ke Kotak</h3>`;
+
+    let gridKategori = isKiriKanan
+        ? "grid grid-cols-1 md:grid-cols-2 gap-4 h-full min-h-[300px]"
+        : "grid grid-cols-1 md:grid-cols-2 gap-3 h-full min-h-[160px]";
 
     container.innerHTML = `
-        <div class="max-w-7xl mx-auto p-2 md:p-4 mt-2 select-none fade-in pb-20">
+        <div class="${classContainer}">
             
-            <!-- HEADER -->
-            <div class="flex flex-wrap justify-between items-center bg-slate-900 p-3 md:p-4 rounded-2xl shadow-[0_4px_20px_rgba(0,0,0,0.3)] mb-4 border border-slate-700 gap-3 relative z-10">
-                
+            <div class="${classHeader}">
                 <h2 class="text-base md:text-xl font-black text-white flex items-center gap-2 drop-shadow-md shrink-0">
                     <i class="fa-solid fa-layer-group text-amber-400"></i><span class="hidden sm:block">SORT & DROP</span>
                 </h2>
                 
-                <!-- TOMBOL SWITCHER LAYOUT -->
                 <div class="flex items-center bg-slate-950 p-1 rounded-lg border border-slate-800 shrink-0 shadow-inner">
                     <button onclick="ubahGayaLayoutSort('kiri-kanan')" class="px-3 md:px-5 py-1.5 rounded-md text-[10px] md:text-xs font-bold transition-all ${isKiriKanan ? 'bg-amber-600 text-slate-900 shadow-md' : 'text-slate-500 hover:text-white'}">Kiri-Kanan</button>
                     <button onclick="ubahGayaLayoutSort('atas-bawah')" class="px-3 md:px-5 py-1.5 rounded-md text-[10px] md:text-xs font-bold transition-all ${!isKiriKanan ? 'bg-amber-600 text-slate-900 shadow-md' : 'text-slate-500 hover:text-white'}">Atas-Bawah</button>
@@ -106,19 +129,13 @@ function mulaiGameSort(isRenderUlang = false) {
                 </div>
             </div>
 
-            <!-- PAPAN MAIN -->
-            <div class="flex ${classWadahUtama} gap-4 md:gap-6 bg-[#0f172a] p-4 md:p-6 rounded-3xl border border-slate-800 shadow-[0_8px_30px_rgba(0,0,0,0.4)] relative overflow-hidden">
-                
+            <div class="${classPapan}">
                 <div class="absolute top-0 left-1/4 w-96 h-96 bg-cyan-500/10 rounded-full blur-[100px] pointer-events-none"></div>
                 <div class="absolute bottom-0 right-1/4 w-96 h-96 bg-emerald-500/10 rounded-full blur-[100px] pointer-events-none"></div>
 
-                <!-- WADAH KIRI (PILIH BALOK) -->
-                <div class="${classKiri} flex flex-col z-10" id="wadah-kiri-sort">
-                    <div class="flex justify-between items-center border-b border-slate-700/50 pb-2 mb-4">
-                        <h3 class="font-bold text-slate-400 uppercase tracking-widest text-xs">Pilih Balok</h3>
-                        <span class="bg-slate-800 text-slate-300 text-[10px] font-bold px-2 py-0.5 rounded border border-slate-700">${sortState.dataSoal.length} Soal</span>
-                    </div>
-                    
+                <!-- WADAH KIRI -->
+                <div class="${classWadahKiri}" id="wadah-kiri-sort">
+                    ${headerWadahKiri}
                     <div class="grid ${skala.gridKiri} ${skala.gap}" id="grid-balok-sort">
                         ${sortState.dataSoal.map(item => {
                             if (item.terjawab) return '';
@@ -139,38 +156,53 @@ function mulaiGameSort(isRenderUlang = false) {
 
                 ${pembatas}
 
-                <!-- WADAH KANAN (KATEGORI) -->
-                <div class="${classKanan} flex flex-col z-10">
-                    <h3 class="text-center font-bold text-slate-400 mb-4 uppercase tracking-widest text-xs border-b border-slate-700/50 pb-2">Kelompokkan ke Kotak</h3>
+                <!-- WADAH KANAN -->
+                <div class="${classWadahKanan}">
+                    ${headerKategori}
                     
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 h-full min-h-[300px]">
+                    <div class="${gridKategori}">
                         ${sortState.kategori.map(kat => {
                             let isCyan = kat.tema === 'cyan';
                             let colorTheme = isCyan ? 'cyan' : 'emerald';
                             
-                            // MENGHILANGKAN KOTAK BACKGROUND PADA TEKS DI DALAM KERANJANG
+                            let balokItemClass = isKiriKanan 
+                                ? `w-[calc(50%-4px)] lg:w-[calc(50%-6px)] bg-slate-800 border-l-4 border-${colorTheme}-500 border-y border-r border-slate-700 rounded-lg p-1.5 flex items-center gap-2 shadow-sm`
+                                : `w-[calc(50%-3px)] lg:w-[calc(50%-4px)] bg-slate-800 border-l-4 border-${colorTheme}-500 border-y border-r border-slate-700 rounded-lg p-1 flex items-center gap-1.5 shadow-sm`;
+
+                            let teksArtiClass = isKiriKanan
+                                ? `text-[9px] font-bold text-slate-300 uppercase truncate border-l border-slate-600 pl-2 ml-1`
+                                : `text-[9px] font-bold text-slate-300 uppercase truncate border-l border-slate-600 pl-1.5 ml-0.5`;
+                                
+                            let bgHeaderKotak = isKiriKanan 
+                                ? `bg-${colorTheme}-950/40 border-b border-${colorTheme}-500/30 p-2 md:p-3 text-center shrink-0 z-10`
+                                : `bg-${colorTheme}-950/40 border-b border-${colorTheme}-500/30 p-1.5 text-center shrink-0 z-10`;
+
+                            let areaDropSort = isKiriKanan 
+                                ? `area-drop-sort flex-1 p-2 md:p-3 flex flex-wrap content-start gap-1.5 md:gap-2 overflow-y-auto relative z-10`
+                                : `area-drop-sort flex-1 p-1.5 flex flex-wrap content-start gap-1.5 overflow-y-auto relative z-10`;
+
                             let balokMasuk = sortState.dataSoal.filter(s => s.terjawab && s.kat === kat.id).map(b => {
                                 let visual = b.soal;
                                 let fontClass = b.tipe === 'gambar' ? 'text-base' : 'font-arabic text-xl';
                                 
                                 return `
-                                    <div class="w-[calc(50%-4px)] lg:w-[calc(50%-6px)] bg-slate-800 border-l-4 border-${colorTheme}-500 border-y border-r border-slate-700 rounded-lg p-1.5 flex items-center gap-2 shadow-sm">
+                                    <div class="${balokItemClass}">
                                         <span class="${fontClass} text-white drop-shadow-md shrink-0 w-6 text-center leading-none">${visual}</span>
-                                        <span class="text-[9px] font-bold text-slate-300 uppercase truncate border-l border-slate-600 pl-2 ml-1">${b.arti}</span>
+                                        <span class="${teksArtiClass}">${b.arti}</span>
                                     </div>
                                 `;
                             }).join('');
 
                             return `
-                                <div class="kotak-target-sort flex flex-col h-full bg-slate-900 border-2 border-dashed border-${colorTheme}-500/40 rounded-2xl relative overflow-hidden transition-all" data-target="${kat.id}" data-tema="${colorTheme}">
-                                    <div class="bg-${colorTheme}-950/40 border-b border-${colorTheme}-500/30 p-2 md:p-3 text-center shrink-0 z-10">
-                                        <h2 class="text-${colorTheme}-400 font-black tracking-widest text-sm md:text-base">${kat.judul}</h2>
-                                        <p class="text-[8px] md:text-[9px] text-slate-400 uppercase font-bold tracking-wider">${kat.subjudul}</p>
+                                <div class="kotak-target-sort flex flex-col h-full bg-slate-900 border-2 border-dashed border-${colorTheme}-500/40 rounded-xl relative overflow-hidden transition-all" data-target="${kat.id}" data-tema="${colorTheme}">
+                                    <div class="${bgHeaderKotak}">
+                                        <h2 class="text-${colorTheme}-400 font-black tracking-widest text-sm">${kat.judul}</h2>
+                                        <p class="text-[8px] text-slate-400 uppercase font-bold tracking-wider">${kat.subjudul}</p>
                                     </div>
                                     
-                                    <div class="area-drop-sort flex-1 p-2 md:p-3 flex flex-wrap content-start gap-1.5 md:gap-2 overflow-y-auto relative z-10">
+                                    <div class="${areaDropSort}">
                                         <div class="absolute inset-0 flex items-center justify-center pointer-events-none opacity-[0.03] ${balokMasuk ? 'hidden' : ''}">
-                                            <i class="fa-solid fa-box-open text-6xl text-${colorTheme}-500"></i>
+                                            <i class="fa-solid fa-box-open text-5xl md:text-6xl text-${colorTheme}-500"></i>
                                         </div>
                                         ${balokMasuk}
                                     </div>
@@ -196,8 +228,6 @@ function pasangSensorSort() {
 
         kartu.addEventListener('touchstart', function(e) {
             if(terkunci) return;
-            
-            // JURUS MELAYANG
             kolomKiriUtama.style.zIndex = '9999';
             kolomKiriUtama.style.position = 'relative';
             
@@ -211,15 +241,12 @@ function pasangSensorSort() {
             let sentuhan = e.touches[0];
             kartu.style.position = 'fixed';
             
-            // JURUS TENGAH JARI
             kartu.style.left = (sentuhan.clientX - (kartu.offsetWidth / 2)) + 'px';
             kartu.style.top = (sentuhan.clientY - (kartu.offsetHeight / 2)) + 'px';
         }, {passive: false});
 
         kartu.addEventListener('touchend', function(e) {
             if(terkunci) return;
-            
-            // KEMBALIKAN LAPISAN
             kolomKiriUtama.style.zIndex = '10';
             kartu.classList.remove('scale-105', 'shadow-2xl');
             
