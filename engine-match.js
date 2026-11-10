@@ -77,7 +77,7 @@ function bukaSetupGame(jenisGame) {
     }
 }
 function mulaiGameMatch() {
-    const container = document.getElementById('main-content');
+    const container = amankanLayarPenuhDragDrop();
     matchState.skor = 0;
     matchState.pasanganTerjawab = 0;
 
