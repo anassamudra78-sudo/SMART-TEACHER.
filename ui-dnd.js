@@ -267,7 +267,7 @@ function bukaLobiDragDrop(jenisGame) {
 // -------------------------------------------------------------
 // TIMER HITUNG MUNDUR (DENGAN KECERDASAN PELACAK LOBI DND)
 // -------------------------------------------------------------
-function mulaiHitungMundur(detikTunggu) {
+function mulaiHitungMundurDnd(detikTunggu) {
     const overlayCount = document.createElement('div');
     overlayCount.id = 'layar-hitung-mundur';
     overlayCount.className = 'fixed inset-0 z-[99999] bg-slate-950 flex flex-col items-center justify-center transition-all duration-300';
