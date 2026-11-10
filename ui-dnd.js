@@ -369,6 +369,10 @@ function updateLobbySiswaDnd() {
     if (selectSiswa) selectSiswa.innerHTML = `<option value="">-- Pilih Siswa yang Mengerjakan --</option>${opts}`;
 }
 
+// =====================================================================
+// MESIN UNDIAN KHUSUS DRAG & DROP (JIPLAKAN MANDIRI, 100% AMAN DARI KUIS)
+// =====================================================================
+
 function undiPemainDndSpin() {
     const klsId = document.getElementById('lobby-dnd-kelas').value;
     if (!klsId) return showAlert('Peringatan', 'Pilih kelas terlebih dahulu!');
@@ -377,8 +381,79 @@ function undiPemainDndSpin() {
     
     let pemenang = listSiswa[Math.floor(Math.random() * listSiswa.length)];
     document.getElementById('lobby-dnd-siswa').value = pemenang.id;
-    if (typeof eksekusiUndianMewah === 'function') {
-        eksekusiUndianMewah('single', pemenang.nama, null, listSiswa.map(s => s.nama));
+    
+    // Panggil mesin undian MEWAH KHUSUS DND
+    eksekusiUndianMewahDnd(pemenang.nama, listSiswa.map(s => s.nama));
+}
+
+function eksekusiUndianMewahDnd(pemenang, daftarSemuaSiswa) {
+    const overlay = document.createElement('div');
+    overlay.id = 'layar-undian-dnd';
+    overlay.className = 'fixed inset-0 z-[9999] bg-slate-950/95 flex items-center justify-center backdrop-blur-md transition-opacity';
+    
+    overlay.innerHTML = `
+        <div class="text-center relative px-6 w-full max-w-4xl mx-auto">
+            <h2 class="text-emerald-400 font-black text-xl lg:text-2xl mb-8 tracking-widest uppercase animate-pulse">Mencari Pemain Drag & Drop...</h2>
+            <div class="w-full bg-gradient-to-br from-emerald-600 to-teal-900 border-4 border-emerald-400 px-8 py-8 rounded-3xl shadow-[0_0_50px_rgba(16,185,129,0.5)] flex items-center justify-center min-h-[160px]">
+                <div id="nama-slot-dnd" class="font-black text-white w-full uppercase tracking-wider text-center break-words leading-tight" style="text-shadow: 2px 2px 10px rgba(0,0,0,0.5);">
+                    ???
+                </div>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(overlay);
+
+    const elNama = document.getElementById('nama-slot-dnd');
+    
+    // Efek putar nama
+    let waktu = 0;
+    let interval = 60;
+    let timer = setInterval(() => {
+        waktu += interval;
+        let acak = daftarSemuaSiswa[Math.floor(Math.random() * daftarSemuaSiswa.length)];
+        
+        elNama.innerText = acak;
+        elNama.style.fontSize = acak.length > 20 ? '1.8rem' : '3.2rem';
+        
+        if (waktu >= 3000) {
+            clearInterval(timer);
+            elNama.innerText = pemenang;
+            elNama.style.fontSize = pemenang.length > 20 ? '2rem' : '3.6rem';
+            elNama.style.color = '#fbbf24';
+            elNama.style.transform = 'scale(1.05)';
+            
+            if (typeof playSoundEffect === 'function') playSoundEffect('terpilih');
+            if (typeof confetti === 'function') confetti({ particleCount: 150, spread: 80, origin: { y: 0.5 } });
+            
+            setTimeout(() => tampilkanTombolKonfirmasiUndianDnd(overlay), 1000);
+        }
+    }, interval);
+}
+
+function tampilkanTombolKonfirmasiUndianDnd(overlay) {
+    const btnBox = document.createElement('div');
+    btnBox.className = 'absolute bottom-10 lg:bottom-16 left-1/2 transform -translate-x-1/2 flex flex-col sm:flex-row gap-4 z-[99999] fade-in';
+    btnBox.innerHTML = `
+        <button onclick="aksiUndianSelesaiDnd('ulang')" class="bg-slate-900/80 hover:bg-rose-600 text-rose-400 hover:text-white border border-rose-500/50 font-black py-3.5 px-8 rounded-2xl shadow-xl transition-all hover:scale-105 flex items-center justify-center">
+            <i class="fa-solid fa-rotate-right mr-2 text-lg"></i> Undi Ulang
+        </button>
+        <button onclick="aksiUndianSelesaiDnd('lanjut')" class="bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-white font-black py-3.5 px-10 rounded-2xl shadow-[0_0_30px_rgba(16,185,129,0.5)] border border-emerald-400/50 transition-all hover:scale-105 flex items-center justify-center">
+            <i class="fa-solid fa-play mr-2 text-lg"></i> Lanjut Game DnD
+        </button>
+    `;
+    overlay.appendChild(btnBox);
+}
+
+function aksiUndianSelesaiDnd(aksi) {
+    const overlay = document.getElementById('layar-undian-dnd');
+    if (overlay) overlay.remove();
+
+    if (aksi === 'lanjut') {
+        // PASTI AMAN: Langsung panggil hitung mundur milik DnD sendiri
+        mulaiHitungMundurDnd(3);
+    } else {
+        // Putar ulang undian DnD
+        undiPemainDndSpin(); 
     }
 }
 
