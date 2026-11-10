@@ -108,7 +108,13 @@ function keluarFullscreenDnd() {
 }
 function bukaLobiDragDrop(jenisGame) {
     gameDndTerpilih = jenisGame;
-    const container = amankanLayarPenuhDragDrop();
+    
+    // 1. PASTIKAN MODAL HITAM DITUTUP/DISEMBUNYIKAN SAAT LOBI DIBUKA
+    const modal = document.getElementById('dnd-arena-modal');
+    if (modal) modal.classList.add('hidden');
+
+    // 2. TAMPILKAN LOBI DI KONTAINER UTAMA (MAIN-CONTENT)
+    const container = document.getElementById('main-content');
     if (!container) return;
 
     let namaGame = jenisGame === 'match' ? 'MATCH & DROP' : (jenisGame === 'sort' ? 'SORT & DROP' : 'BUILD & DROP');
@@ -129,17 +135,6 @@ function bukaLobiDragDrop(jenisGame) {
             </div>
             
             <div class="flex items-center space-x-2 mr-2 sm:mr-4">
-                <div class="hidden sm:flex items-center space-x-2">
-                    <button class="bg-rose-500/10 text-rose-400 border border-rose-500/20 px-3 py-1.5 rounded-xl text-xs font-bold flex items-center">
-                        <i class="fa-solid fa-stopwatch mr-1.5"></i> 15s
-                    </button>
-                    <button class="bg-amber-500/10 text-amber-400 border border-amber-500/20 px-3 py-1.5 rounded-xl text-xs font-bold flex items-center">
-                        <i class="fa-solid fa-star mr-1.5"></i> SKOR: 0
-                    </button>
-                    <button class="bg-emerald-500 hover:bg-emerald-400 text-slate-900 px-3 py-1.5 rounded-xl text-xs font-black flex items-center transition-colors">
-                        <i class="fa-solid fa-volume-high mr-1.5"></i> Musik Nyala
-                    </button>
-                </div>
                 <button onclick="keluarFullscreenDnd()" class="bg-slate-800 hover:bg-rose-600 text-slate-300 hover:text-white px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl text-xs font-bold border border-slate-700 hover:border-rose-500 transition-all flex items-center">
                     <i class="fa-solid fa-arrow-right-from-bracket mr-1.5"></i> Keluar
                 </button>
@@ -154,6 +149,7 @@ function bukaLobiDragDrop(jenisGame) {
                 <h3 class="text-2xl font-black text-white mb-1">Identitas Pemain & Mode Game</h3>
                 <p class="text-xs text-slate-400 mb-5">Pilih mode game dan pemain untuk memulai permainan!</p>
 
+                <!-- Sisa form lobi Bapak ke bawah biarkan apa adanya seperti semula -->
                 <div class="grid grid-cols-2 gap-2 p-1.5 bg-slate-800 rounded-2xl mb-5 border border-slate-700">
                     <button class="py-2.5 text-xs font-extrabold rounded-xl transition-all bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-md flex items-center justify-center">
                         <i class="fa-solid fa-user mr-1.5"></i> Single Player
