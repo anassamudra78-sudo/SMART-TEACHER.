@@ -766,7 +766,7 @@ function setModeKuisLobby(mode) {
 }
 
 function updateLobbySiswa() {
-    const kelasId = document.getElementById('lobby-kelas').value;
+    const kelasId = document.getElementById('lobby-kelas')?.value || '';
     const selectSiswa = document.getElementById('lobby-siswa');
     const selectA = document.getElementById('lobby-pemain-a');
     const selectB = document.getElementById('lobby-pemain-b');
