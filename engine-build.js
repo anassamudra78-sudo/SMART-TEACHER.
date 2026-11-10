@@ -57,7 +57,7 @@ function bukaSetupGame(jenisGame) {
 }
 
 function mulaiGameBuild(lanjutSoalBerikutnya = false) {
-    const container = document.getElementById('main-content');
+    const container = amankanLayarPenuhDragDrop();
     
     if (!lanjutSoalBerikutnya) {
         buildState.skor = 0;
