@@ -387,6 +387,8 @@ function undiPemainDndSpin() {
 }
 
 function eksekusiUndianMewahDnd(pemenang, daftarSemuaSiswa) {
+    const layarLama = document.getElementById('layar-undian-dnd');
+    if (layarLama) layarLama.remove();
     const overlay = document.createElement('div');
     overlay.id = 'layar-undian-dnd';
     overlay.className = 'fixed inset-0 z-[9999] bg-slate-950/95 flex items-center justify-center backdrop-blur-md transition-opacity';
