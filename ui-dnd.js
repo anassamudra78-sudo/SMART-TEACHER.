@@ -84,36 +84,27 @@ let gameDndTerpilih = '';
 // ==============================================================================
 
 function amankanLayarPenuhDragDrop() {
-    const modalDnd = document.getElementById('dnd-arena-modal');
-    if (!modalDnd) {
-        console.error("Wadah modal dnd-arena-modal tidak ditemukan!");
-        return null;
+    const modal = document.getElementById('dnd-arena-modal');
+    const wadah = document.getElementById('dnd-game-container');
+    
+    if (modal && wadah) {
+        modal.classList.remove('hidden'); // Buka layar fullscreen menutupi halaman belakang
+        window.isDragDropMode = true;
+        return wadah; // Berikan wadah khusus ke mesin game
     }
-    
-    // Buka pintu modalnya (hilangkan class hidden)
-    modalDnd.classList.remove('hidden');
-    window.isDragDropMode = true;
-    
-    // Berikan ruang VIP (container) ke mesin game untuk menggambar permainannya
-    return document.getElementById('dnd-game-container'); 
+    return document.getElementById('main-content');
 }
 
 function keluarFullscreenDnd() {
     window.isDragDropMode = false;
-    const modalDnd = document.getElementById('dnd-arena-modal');
+    const modal = document.getElementById('dnd-arena-modal');
+    const wadah = document.getElementById('dnd-game-container');
     
-    if (modalDnd) {
-        // Tutup pintu modalnya (tambahkan class hidden)
-        modalDnd.classList.add('hidden');
-        
-        // Bersihkan sisa-sisa game di dalam arena agar fresh saat dibuka lagi
-        const container = document.getElementById('dnd-game-container');
-        if (container) container.innerHTML = '';
-    }
+    if (modal) modal.classList.add('hidden'); // Tutup modal fullscreen
+    if (wadah) wadah.innerHTML = ''; // Bersihkan arena game
     
-    // Kembalikan ke menu utama Drag & Drop
-    if (typeof switchTab === 'function') switchTab('dragdrop');
-    window.scrollTo(0, 0); // Pastikan layar kembali ke atas
+    if (typeof switchTab === 'function') switchTab('dragdrop'); // Kembalikan ke Lobi Drag & Drop
+    window.scrollTo(0, 0);
 }
 function bukaLobiDragDrop(jenisGame) {
     gameDndTerpilih = jenisGame;
@@ -349,6 +340,7 @@ function keluarFullscreenDnd() {
     if (fsDiv) fsDiv.remove();
     switchTab('dragdrop'); // Kembali ke pilihan game
 }
+
 function updateLobbySiswaDnd() {
     const kelasId = document.getElementById('lobby-dnd-kelas').value;
     const selectSiswa = document.getElementById('lobby-dnd-siswa');
