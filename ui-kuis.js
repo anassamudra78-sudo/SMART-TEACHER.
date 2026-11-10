@@ -1432,10 +1432,15 @@ function putarNamaAcak(element, daftarNama, durasi, namaPemenang, callback) {
 }
 
 function eksekusiUndianMewah(mode, pemenang1, pemenang2 = null, daftarSemuaSiswa = []) {
+    // --- OBAT ANTI NYANGKUT (HAPUS LAYAR LAMA) ---
+    const layarLama = document.getElementById('layar-undian-v2');
+    if (layarLama) layarLama.remove();
+    // ---------------------------------------------
+
     if (!daftarSemuaSiswa || daftarSemuaSiswa.length === 0) {
         daftarSemuaSiswa = ["AGUS", "BUDI", "CITRA", "DEWI", "EKO", "FAJAR", "GITA", "HADI", "INTAN"];
     }
-
+    
     const overlay = document.createElement('div');
     overlay.id = 'layar-undian-v2';
     overlay.className = 'fixed inset-0 z-[9999] bg-slate-950/95 flex items-center justify-center backdrop-blur-md transition-opacity';
