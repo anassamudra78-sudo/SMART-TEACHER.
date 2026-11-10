@@ -79,50 +79,42 @@ function renderDragDropPage(container) {
 
 let gameDndTerpilih = '';
 
-// Trik membuat main-content fullscreen 100% tanpa membuat elemen ganda
-function amankanLayarPenuhDragDrop() {
-    const mc = document.getElementById('main-content');
-    if (!mc) return null;
-    
-    // Jadikan main-content fullscreen menutupi segalanya
-    mc.style.position = 'fixed';
-    mc.style.top = '0';
-    mc.style.left = '0';
-    mc.style.right = '0';
-    mc.style.bottom = '0';
-    
-    // INI PERBAIKANNYA: Turunkan z-index jadi 9900 agar tidak menutupi Undian (9999)
-    mc.style.zIndex = '9900'; 
-    
-    mc.style.backgroundColor = '#020617';
-    mc.style.overflowY = 'auto';
-    mc.style.padding = '0'; // Hilangkan padding sisa bawaan
-    mc.style.margin = '0';
+// ==============================================================================
+// SAKLAR MODAL DRAG & DROP (CLEAN ARCHITECTURE - TANPA SUNTIK STYLE)
+// ==============================================================================
 
-    // Penanda sakti agar sistem Hitung Mundur tahu kita sedang di Drag & Drop
-    window.isDragDropMode = true; 
+function amankanLayarPenuhDragDrop() {
+    const modalDnd = document.getElementById('dnd-arena-modal');
+    if (!modalDnd) {
+        console.error("Wadah modal dnd-arena-modal tidak ditemukan!");
+        return null;
+    }
     
-    return mc;
+    // Buka pintu modalnya (hilangkan class hidden)
+    modalDnd.classList.remove('hidden');
+    window.isDragDropMode = true;
+    
+    // Berikan ruang VIP (container) ke mesin game untuk menggambar permainannya
+    return document.getElementById('dnd-game-container'); 
 }
-// Mengembalikan main-content ke ukuran normal saat keluar
+
 function keluarFullscreenDnd() {
     window.isDragDropMode = false;
-    const mc = document.getElementById('main-content');
-    if (mc) {
-        mc.style.position = '';
-        mc.style.top = '';
-        mc.style.left = '';
-        mc.style.right = '';
-        mc.style.bottom = '';
-        mc.style.zIndex = '';
-        mc.style.backgroundColor = '';
-        mc.style.overflowY = '';
-        mc.style.padding = '';
-        mc.style.margin = '';
+    const modalDnd = document.getElementById('dnd-arena-modal');
+    
+    if (modalDnd) {
+        // Tutup pintu modalnya (tambahkan class hidden)
+        modalDnd.classList.add('hidden');
+        
+        // Bersihkan sisa-sisa game di dalam arena agar fresh saat dibuka lagi
+        const container = document.getElementById('dnd-game-container');
+        if (container) container.innerHTML = '';
     }
+    
+    // Kembalikan ke menu utama Drag & Drop
     if (typeof switchTab === 'function') switchTab('dragdrop');
+    window.scrollTo(0, 0); // Pastikan layar kembali ke atas
 }
-
 function bukaLobiDragDrop(jenisGame) {
     gameDndTerpilih = jenisGame;
     const container = amankanLayarPenuhDragDrop();
