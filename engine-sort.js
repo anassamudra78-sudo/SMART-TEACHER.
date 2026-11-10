@@ -56,7 +56,7 @@ function ubahGayaLayoutSort(gayaBaru) {
 }
 
 function mulaiGameSort(isRenderUlang = false) {
-    const container = document.getElementById('main-content');
+   const container = amankanLayarPenuhDragDrop();
     if (!isRenderUlang) {
         sortState.skor = 0;
         sortState.itemTerjawab = 0;
