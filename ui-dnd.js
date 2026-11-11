@@ -366,6 +366,7 @@ function keluarFullscreenDnd() {
     
     window.scrollTo(0, 0);
 }
+
 function updateLobbySiswaDnd() {
     const kelasId = document.getElementById('lobby-dnd-kelas').value;
     const selectSiswa = document.getElementById('lobby-dnd-siswa');
