@@ -104,43 +104,7 @@ function amankanLayarPenuhDragDrop() {
     
     return mc;
 }
-// Mengembalikan main-content ke ukuran normal saat keluar
-function keluarFullscreenDnd() {
-    window.isDragDropMode = false;
-    
-    // 1. Tutup layar hitam / modal game (jika sedang di dalam game)
-    const modal = document.getElementById('dnd-arena-modal');
-    if (modal) modal.classList.add('hidden');
-    
-    const wadahGame = document.getElementById('dnd-game-container');
-    if (wadahGame) wadahGame.innerHTML = '';
-    
-    // 2. KEMBALIKAN MAIN-CONTENT KE NORMAL (Ini Kunci Agar Top Bar Global Muncul Lagi!)
-    const mc = document.getElementById('main-content');
-    if (mc) {
-        // Hapus semua suntikan style agar tidak menutupi Top Bar global
-        mc.style.position = '';
-        mc.style.top = '';
-        mc.style.left = '';
-        mc.style.right = '';
-        mc.style.bottom = '';
-        mc.style.zIndex = '';
-        mc.style.backgroundColor = '';
-        mc.style.overflowY = '';
-        mc.style.padding = '';
-        mc.style.margin = '';
-        
-        // 3. Bersihkan Lobi, lalu render ulang Menu Awal (3 Kotak)
-        mc.innerHTML = ''; 
-        if (typeof renderDragDropPage === 'function') {
-            renderDragDropPage(mc);
-        } else if (typeof switchTab === 'function') {
-            switchTab('dragdrop');
-        }
-    }
-    
-    window.scrollTo(0, 0);
-}
+
 function bukaLobiDragDrop(jenisGame) {
     gameDndTerpilih = jenisGame;
     const container = amankanLayarPenuhDragDrop();
@@ -373,29 +337,39 @@ function mulaiHitungMundurDnd(detikTunggu) {
 function keluarFullscreenDnd() {
     window.isDragDropMode = false;
     
-    // 1. Sembunyikan modal fullscreen (Layar Hitam)
+    // 1. Tutup layar hitam / modal game (jika user keluar dari dalam game)
     const modal = document.getElementById('dnd-arena-modal');
     if (modal) modal.classList.add('hidden');
     
-    // 2. Bersihkan kontainer game
     const wadahGame = document.getElementById('dnd-game-container');
     if (wadahGame) wadahGame.innerHTML = '';
     
-    // 3. KEMBALIKAN KE HALAMAN AWAL DRAG & DROP SECARA UTUH (TERMASUK TOP BAR)
-    const mainContainer = document.getElementById('main-content');
-    if (mainContainer) {
-        // Bersihkan lobi yang tertinggal
-        mainContainer.innerHTML = ''; 
-        // Panggil ulang fungsi pembuat halaman Drag & Drop bawaan Bapak
+    // 2. KEMBALIKAN MAIN-CONTENT KE NORMAL (Cabut paksaan fullscreen)
+    const mc = document.getElementById('main-content');
+    if (mc) {
+        // Ini kunci mutlak agar Top Bar Global tidak tertutup lagi
+        mc.style.position = '';
+        mc.style.top = '';
+        mc.style.left = '';
+        mc.style.right = '';
+        mc.style.bottom = '';
+        mc.style.zIndex = '';
+        mc.style.backgroundColor = '';
+        mc.style.overflowY = '';
+        mc.style.padding = '';
+        mc.style.margin = '';
+        
+        // 3. Bersihkan Lobi, lalu render ulang Menu Awal (3 Kotak)
+        mc.innerHTML = ''; 
         if (typeof renderDragDropPage === 'function') {
-            renderDragDropPage(mainContainer);
+            renderDragDropPage(mc);
+        } else if (typeof switchTab === 'function') {
+            switchTab('dragdrop');
         }
     }
     
-    // Pastikan scroll kembali ke atas
     window.scrollTo(0, 0);
 }
-
 function updateLobbySiswaDnd() {
     const kelasId = document.getElementById('lobby-dnd-kelas').value;
     const selectSiswa = document.getElementById('lobby-dnd-siswa');
