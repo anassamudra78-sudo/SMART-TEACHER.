@@ -355,24 +355,29 @@ function mulaiHitungMundurDnd(detikTunggu) {
 function keluarFullscreenDnd() {
     window.isDragDropMode = false;
     
-    // 1. Sembunyikan modal fullscreen
+    // 1. Sembunyikan modal fullscreen (Layar Hitam)
     const modal = document.getElementById('dnd-arena-modal');
     if (modal) modal.classList.add('hidden');
     
-    // 2. Bersihkan kontainer game di dalam modal
+    // 2. Bersihkan kontainer game
     const wadahGame = document.getElementById('dnd-game-container');
     if (wadahGame) wadahGame.innerHTML = '';
     
-    // 3. KEMBALIKAN KE LOBI UTAMA DENGAN TOP BAR LENGKAP
+    // 3. KEMBALIKAN KE HALAMAN AWAL DRAG & DROP SECARA UTUH (TERMASUK TOP BAR)
     const mainContainer = document.getElementById('main-content');
-    if (mainContainer && typeof renderDragDropPage === 'function') {
-        renderDragDropPage(mainContainer);
-    } else if (typeof switchTab === 'function') {
-        switchTab('dragdrop');
+    if (mainContainer) {
+        // Bersihkan lobi yang tertinggal
+        mainContainer.innerHTML = ''; 
+        // Panggil ulang fungsi pembuat halaman Drag & Drop bawaan Bapak
+        if (typeof renderDragDropPage === 'function') {
+            renderDragDropPage(mainContainer);
+        }
     }
     
+    // Pastikan scroll kembali ke atas
     window.scrollTo(0, 0);
 }
+
 function updateLobbySiswaDnd() {
     const kelasId = document.getElementById('lobby-dnd-kelas').value;
     const selectSiswa = document.getElementById('lobby-dnd-siswa');
