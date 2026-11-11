@@ -113,7 +113,12 @@ function mulaiGameMatch() {
     
     // Reset Skor di Top Bar ke 0
     if (typeof updateSkorDnd === 'function') updateSkorDnd(0);
-
+    
+// --- SAMBUNGAN DATABASE STUDIO SOAL ---
+    if (AppState.db.dnd && AppState.db.dnd.match && AppState.db.dnd.match.length > 0) {
+        matchState.dataSoal = JSON.parse(JSON.stringify(AppState.db.dnd.match));
+    }
+    // --------------------------------------
     let soalAcak = [...matchState.dataSoal].sort(() => Math.random() - 0.5);
     let artiAcak = [...matchState.dataSoal].sort(() => Math.random() - 0.5);
 
