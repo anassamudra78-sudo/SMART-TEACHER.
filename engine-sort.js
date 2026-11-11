@@ -93,6 +93,9 @@ function mulaiGameSort(isRenderUlang = false) {
         sortState.skor = 0;
         sortState.itemTerjawab = 0;
         if (typeof updateSkorDnd === 'function') updateSkorDnd(0);
+        if (AppState.db.dnd && AppState.db.dnd.sort && AppState.db.dnd.sort.length > 0) {
+            sortState.dataSoalAsli = JSON.parse(JSON.stringify(AppState.db.dnd.sort));
+        }
         sortState.dataSoal = sortState.dataSoalAsli.map(item => ({...item, terjawab: false, salah: 0})).sort(() => Math.random() - 0.5);
     }
 
