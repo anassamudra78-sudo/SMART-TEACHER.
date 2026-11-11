@@ -86,7 +86,9 @@ function mulaiGameBuild(lanjutSoalBerikutnya = false) {
 
     const container = document.getElementById('dnd-game-container');
     if (!container) return;
-    
+    if (AppState.db.dnd && AppState.db.dnd.build && AppState.db.dnd.build.length > 0) {
+        buildState.dataSoal = JSON.parse(JSON.stringify(AppState.db.dnd.build));
+    }
     if (!lanjutSoalBerikutnya) {
         buildState.skor = 0;
         buildState.soalAktif = 0;
