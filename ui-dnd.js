@@ -536,3 +536,56 @@ window.addEventListener('popstate', function() {
     
     window.isDragDropMode = false;
 });
+
+// =========================================================================
+// REMOTE CONTROL TOP BAR DRAG & DROP (SKOR, TIMER, MUSIK)
+// =========================================================================
+
+// 1. Fungsi Remote untuk update Skor
+function updateSkorDnd(skorBaru) {
+    const elSkor = document.getElementById('dnd-score-val');
+    if (elSkor) {
+        elSkor.innerText = skorBaru;
+        // Efek denyut kecil saat skor bertambah
+        elSkor.parentElement.classList.add('scale-110', 'text-amber-300');
+        setTimeout(() => elSkor.parentElement.classList.remove('scale-110', 'text-amber-300'), 200);
+    }
+}
+
+// 2. Fungsi Remote untuk update Timer (Dengan efek tegang saat waktu mau habis)
+function updateTimerDnd(sisaDetik) {
+    const elTimer = document.getElementById('dnd-timer-val');
+    const boxTimer = document.getElementById('dnd-topbar-timer');
+    if (elTimer) elTimer.innerText = sisaDetik + "s";
+    
+    if (boxTimer) {
+        if (sisaDetik <= 5 && sisaDetik > 0) {
+            // Efek merah berdenyut tegang seperti di kuis
+            boxTimer.className = "bg-rose-600 border-2 border-rose-400 text-white px-3 py-1.5 rounded-xl text-xs font-black flex items-center animate-pulse ring-2 ring-rose-500/50 shadow-lg scale-105 transition-all";
+        } else {
+            // Kembali normal
+            boxTimer.className = "bg-rose-500/10 text-rose-400 border border-rose-500/20 px-3 py-1.5 rounded-xl text-xs font-bold flex items-center";
+        }
+    }
+}
+
+// 3. Fungsi Remote untuk Tombol Musik (Bisa On/Off)
+let isDndMusicPlaying = true;
+function toggleDndBGM() {
+    isDndMusicPlaying = !isDndMusicPlaying;
+    const btnMusic = document.getElementById('dnd-topbar-music');
+    
+    if (isDndMusicPlaying) {
+        if (AppState.audio.elements.bgm) AppState.audio.elements.bgm.play().catch(e => console.log(e));
+        if (btnMusic) {
+            btnMusic.innerHTML = '<i class="fa-solid fa-volume-high mr-1.5"></i> Musik Nyala';
+            btnMusic.className = "bg-emerald-500 hover:bg-emerald-400 text-slate-900 px-3 py-1.5 rounded-xl text-xs font-black flex items-center transition-colors";
+        }
+    } else {
+        if (AppState.audio.elements.bgm) AppState.audio.elements.bgm.pause();
+        if (btnMusic) {
+            btnMusic.innerHTML = '<i class="fa-solid fa-volume-xmark mr-1.5"></i> Musik Mati';
+            btnMusic.className = "bg-rose-600 hover:bg-rose-500 text-white px-3 py-1.5 rounded-xl text-xs font-black flex items-center transition-colors";
+        }
+    }
+}
