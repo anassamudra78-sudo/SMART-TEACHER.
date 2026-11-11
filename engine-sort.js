@@ -58,10 +58,10 @@ function ubahGayaLayoutSort(gayaBaru) {
 }
 
 function jalankanTimerSort(isRenderUlang) {
-    if (isRenderUlang) return; // Jangan restart timer kalau user cuma ganti layout layar
+    if (isRenderUlang) return; 
     
-    let elDurasi = document.getElementById('lobby-dnd-durasi');
-    sortState.sisaWaktu = elDurasi ? parseInt(elDurasi.value) : 15;
+    // Ambil dari variabel global
+    sortState.sisaWaktu = window.dndDurasiPilihan || 15;
     
     if (sortState.timerInterval) clearInterval(sortState.timerInterval);
     if (typeof updateTimerDnd === 'function') updateTimerDnd(sortState.sisaWaktu);
