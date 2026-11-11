@@ -671,8 +671,71 @@ function bukaEditorSoalDnd() {
 }
 
 // =========================================================================
-// FUNGSI EDITOR MATCH & DROP (DENGAN IMPORT EXCEL)
+// STUDIO SOAL DRAG & DROP (DASHBOARD & 3 EDITOR LENGKAP EXCEL & MANUAL)
 // =========================================================================
+
+function bukaEditorSoalDnd() {
+    const mc = document.getElementById('main-content');
+    if (!mc) return;
+    
+    if (!AppState.db.dnd) {
+        AppState.db.dnd = { match: [], sort: [], build: [] };
+    }
+
+    mc.innerHTML = `
+        <div class="max-w-5xl mx-auto space-y-6 fade-in pb-10 mt-4 px-2 sm:px-0">
+            
+            <div class="flex justify-between items-center bg-slate-900 p-4 rounded-2xl shadow-xl border border-slate-700">
+                <h2 class="text-lg sm:text-xl font-black text-white flex items-center gap-2">
+                    <i class="fa-solid fa-pen-ruler text-indigo-400"></i> <span class="hidden sm:inline">Studio Soal Drag & Drop</span>
+                </h2>
+                <button onclick="renderDragDropPage(document.getElementById('main-content'))" class="bg-slate-800 hover:bg-rose-600 text-slate-300 hover:text-white px-4 py-2 rounded-xl text-xs font-bold border border-slate-700 hover:border-rose-500 transition-all flex items-center">
+                    <i class="fa-solid fa-arrow-left mr-1.5"></i> Kembali ke Lobi
+                </button>
+            </div>
+
+            <div class="bg-indigo-950/30 border border-indigo-500/30 p-4 rounded-2xl text-center">
+                <p class="text-sm text-indigo-200 font-bold">Pilih jenis game Drag & Drop yang ingin Bapak kelola soalnya:</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Card Editor Match -->
+                <div class="bg-slate-800 p-6 rounded-3xl border-2 border-emerald-500/30 text-center shadow-xl relative overflow-hidden group hover:border-emerald-500 transition-colors">
+                    <div class="absolute top-0 right-0 w-32 h-32 bg-emerald-500/10 rounded-full blur-2xl pointer-events-none"></div>
+                    <i class="fa-solid fa-puzzle-piece text-5xl text-emerald-400 mb-4 drop-shadow-lg group-hover:scale-110 transition-transform"></i>
+                    <h3 class="text-xl font-black text-white mb-2">Match & Drop</h3>
+                    <p class="text-xs text-slate-400 mb-6">Kelola bank soal memasangkan balok (Kosakata & Arti).</p>
+                    <button onclick="bukaFormEditorDnd('match')" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-xl transition-all shadow-md">
+                        Kelola Soal Match
+                    </button>
+                </div>
+
+                <!-- Card Editor Sort -->
+                <div class="bg-slate-800 p-6 rounded-3xl border-2 border-amber-500/30 text-center shadow-xl relative overflow-hidden group hover:border-amber-500 transition-colors">
+                    <div class="absolute top-0 right-0 w-32 h-32 bg-amber-500/10 rounded-full blur-2xl pointer-events-none"></div>
+                    <i class="fa-solid fa-layer-group text-5xl text-amber-400 mb-4 drop-shadow-lg group-hover:scale-110 transition-transform"></i>
+                    <h3 class="text-xl font-black text-white mb-2">Sort & Drop</h3>
+                    <p class="text-xs text-slate-400 mb-6">Kelola bank soal pengelompokan kategori (Isim / Fi'il).</p>
+                    <button onclick="bukaFormEditorDnd('sort')" class="w-full bg-amber-500 hover:bg-amber-400 text-slate-900 font-black py-3 rounded-xl transition-all shadow-md">
+                        Kelola Soal Sort
+                    </button>
+                </div>
+
+                <!-- Card Editor Build -->
+                <div class="bg-slate-800 p-6 rounded-3xl border-2 border-violet-500/30 text-center shadow-xl relative overflow-hidden group hover:border-violet-500 transition-colors">
+                    <div class="absolute top-0 right-0 w-32 h-32 bg-violet-500/10 rounded-full blur-2xl pointer-events-none"></div>
+                    <i class="fa-solid fa-cubes text-5xl text-violet-400 mb-4 drop-shadow-lg group-hover:scale-110 transition-transform"></i>
+                    <h3 class="text-xl font-black text-white mb-2">Build & Drop</h3>
+                    <p class="text-xs text-slate-400 mb-6">Kelola bank soal menyusun kalimat dari potongan kata.</p>
+                    <button onclick="bukaFormEditorDnd('build')" class="w-full bg-violet-600 hover:bg-violet-500 text-white font-bold py-3 rounded-xl transition-all shadow-md">
+                        Kelola Soal Build
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+    window.scrollTo(0, 0);
+}
 
 function bukaFormEditorDnd(jenis) {
     const mc = document.getElementById('main-content');
@@ -680,13 +743,18 @@ function bukaFormEditorDnd(jenis) {
 
     if (jenis === 'match') {
         renderEditorMatchDnd(mc);
-    } else {
-        alert("Editor untuk " + jenis.toUpperCase() + " sedang disiapkan. Kita selesaikan Match dulu ya Pak!");
+    } else if (jenis === 'sort') {
+        renderEditorSortDnd(mc);
+    } else if (jenis === 'build') {
+        renderEditorBuildDnd(mc);
     }
 }
 
+
+// =========================================================================
+// 1. EDITOR MATCH & DROP (LENGKAP EXCEL & MANUAL)
+// =========================================================================
 function renderEditorMatchDnd(container) {
-    // Beri 2 data pancingan bawaan jika database masih kosong
     if (!AppState.db.dnd.match || AppState.db.dnd.match.length === 0) {
          AppState.db.dnd.match = [
             { id: "m1", tipe: "teks", soal: "كِتَابٌ", arti: "Buku" },
@@ -721,18 +789,13 @@ function renderEditorMatchDnd(container) {
             </div>
 
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <!-- Kolom Kiri: Import Excel & Manual -->
                 <div class="lg:col-span-1 space-y-6">
-                    
-                    <!-- IMPORT EXCEL -->
                     <div class="bg-slate-800 p-5 rounded-3xl border border-slate-700 shadow-xl">
                         <h3 class="font-black text-emerald-400 mb-3 uppercase tracking-widest text-sm flex items-center"><i class="fa-solid fa-file-excel mr-2"></i> Import Excel</h3>
-                        <p class="text-[10px] text-slate-400 mb-4 leading-relaxed">Download template Excel, isi soal di laptop, lalu upload kembali ke sini agar lebih cepat.</p>
-                        
+                        <p class="text-[10px] text-slate-400 mb-4 leading-relaxed">Download template Excel, isi soal, lalu upload kembali ke sini.</p>
                         <button onclick="downloadTemplateMatchExcel()" class="w-full mb-4 bg-slate-700 hover:bg-slate-600 text-emerald-400 font-bold py-2.5 rounded-xl text-xs transition-colors border border-slate-600 flex items-center justify-center">
                             <i class="fa-solid fa-download mr-2"></i> Download Template
                         </button>
-                        
                         <div class="relative overflow-hidden">
                             <input type="file" id="file-excel-match" accept=".xlsx, .xls" onchange="bacaExcelMatch(event)" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
                             <div class="bg-emerald-900/30 border border-emerald-500/30 text-emerald-300 text-xs font-bold py-3 px-4 rounded-xl text-center flex flex-col items-center justify-center transition-all hover:bg-emerald-800/40">
@@ -742,7 +805,6 @@ function renderEditorMatchDnd(container) {
                         </div>
                     </div>
 
-                    <!-- TAMBAH MANUAL -->
                     <div class="bg-slate-800 p-5 rounded-3xl border border-slate-700 shadow-xl">
                         <h3 class="font-black text-emerald-400 mb-4 uppercase tracking-widest text-sm flex items-center"><i class="fa-solid fa-plus-circle mr-2"></i> Tambah Manual</h3>
                         <div class="space-y-4">
@@ -768,7 +830,6 @@ function renderEditorMatchDnd(container) {
                     </div>
                 </div>
 
-                <!-- Daftar Soal Kanan -->
                 <div class="lg:col-span-2 bg-slate-900 p-5 sm:p-6 rounded-3xl border border-slate-700 shadow-inner flex flex-col lg:h-[80vh]">
                     <div class="flex justify-between items-center mb-4 border-b border-slate-800 pb-3 shrink-0">
                         <h3 class="font-black text-white text-sm sm:text-base flex items-center"><i class="fa-solid fa-list mr-2 text-slate-400"></i>Daftar Pasangan (<span class="text-emerald-400 ml-1">${AppState.db.dnd.match.length}</span>)</h3>
@@ -777,7 +838,7 @@ function renderEditorMatchDnd(container) {
                         </button>
                     </div>
                     <div class="flex-1 overflow-y-auto pr-2 custom-scrollbar">
-                        ${daftarSoalHtml || '<div class="text-center bg-slate-800/50 rounded-2xl py-12 border border-dashed border-slate-700"><i class="fa-solid fa-box-open text-4xl text-slate-600 mb-3"></i><p class="text-slate-400 text-xs font-bold">Belum ada pasangan soal.<br>Silakan tambah manual atau import via Excel.</p></div>'}
+                        ${daftarSoalHtml || '<div class="text-center bg-slate-800/50 rounded-2xl py-12 border border-dashed border-slate-700"><i class="fa-solid fa-box-open text-4xl text-slate-600 mb-3"></i><p class="text-slate-400 text-xs font-bold">Belum ada pasangan soal.</p></div>'}
                     </div>
                 </div>
             </div>
@@ -785,45 +846,33 @@ function renderEditorMatchDnd(container) {
     `;
 }
 
-// Fitur 1: Tambah Manual
 function tambahSoalMatch() {
     const tipe = document.getElementById('match-input-tipe').value;
     const soal = document.getElementById('match-input-soal').value.trim();
     const arti = document.getElementById('match-input-arti').value.trim();
-
-    if (!soal || !arti) {
-        return typeof showAlert === 'function' ? showAlert('Peringatan', 'Soal dan Arti tidak boleh kosong!', 'error') : alert('Soal dan Arti tidak boleh kosong!');
-    }
-
-    let idUnik = typeof generateId === 'function' ? generateId() : 'm_' + Date.now();
+    if (!soal || !arti) return alert('Soal dan Arti tidak boleh kosong!');
+    let idUnik = 'm_' + Date.now();
     AppState.db.dnd.match.push({ id: idUnik, tipe: tipe, soal: soal, arti: arti });
     renderEditorMatchDnd(document.getElementById('main-content'));
 }
 
-// Fitur 2: Hapus Manual
 function hapusSoalMatch(id) {
     AppState.db.dnd.match = AppState.db.dnd.match.filter(item => item.id !== id);
     renderEditorMatchDnd(document.getElementById('main-content'));
 }
 
-// Fitur 3: Simpan Ke Database Induk
 function simpanKeDatabaseMatch() {
     if (typeof saveDatabase === 'function') saveDatabase();
-    if (typeof showAlert === 'function') showAlert('Berhasil', 'Bank Soal Match & Drop tersimpan di HP & Cloud!', 'success');
-    else alert('Bank Soal Match & Drop berhasil disimpan!');
+    alert('Bank Soal Match & Drop tersimpan permanen!');
 }
 
-// Fitur 4: Download Template Excel
 function downloadTemplateMatchExcel() {
-    if (typeof XLSX === 'undefined') {
-        return typeof showAlert === 'function' ? showAlert('Error', 'Sistem Excel belum termuat sepenuhnya. Tunggu sebentar atau pastikan internet stabil.', 'error') : alert('Library Excel belum termuat.');
-    }
+    if (typeof XLSX === 'undefined') return alert('Library Excel belum siap.');
     const ws_data = [
         ['Tipe Balok', 'Soal (Kosakata/Emoji)', 'Arti (Pasangan)'],
-        ['PENTING: Kolom Tipe Balok HANYA boleh diisi teks atau gambar (huruf kecil).', '', ''],
+        ['PENTING: Kolom Tipe Balok HANYA boleh diisi teks atau gambar.', '', ''],
         ['teks', 'كِتَابٌ', 'Buku'],
-        ['gambar', '🚗', 'Mobil'],
-        ['teks', 'مَدْرَسَةٌ', 'Sekolah']
+        ['gambar', '🚗', 'Mobil']
     ];
     const ws = XLSX.utils.aoa_to_sheet(ws_data);
     const wb = XLSX.utils.book_new();
@@ -831,11 +880,9 @@ function downloadTemplateMatchExcel() {
     XLSX.writeFile(wb, "Template_Soal_Match_Drop.xlsx");
 }
 
-// Fitur 5: Proses Upload Excel
 function bacaExcelMatch(event) {
     const file = event.target.files[0];
     if (!file) return;
-
     const reader = new FileReader();
     reader.onload = function(e) {
         try {
@@ -843,36 +890,366 @@ function bacaExcelMatch(event) {
             const workbook = XLSX.read(data, { type: 'array' });
             const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
             const jsonRows = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
-            
             let jumlahBerhasil = 0;
-            // Baris 0 itu header, Baris 1 itu peringatan. Data asli mulai dari baris ke-2 (index 2)
             for (let i = 2; i < jsonRows.length; i++) {
                 let row = jsonRows[i];
-                if (!row || row.length < 3) continue; 
-                
+                if (!row || row.length < 3) continue;
                 let tipe = row[0] ? String(row[0]).trim().toLowerCase() : 'teks';
                 let soal = row[1] ? String(row[1]).trim() : '';
                 let arti = row[2] ? String(row[2]).trim() : '';
-                
-                if (!soal || !arti) continue; 
-                if (tipe !== 'teks' && tipe !== 'gambar') tipe = 'teks'; // Paksa ke teks kalau salah ketik
-                
-                let idUnik = typeof generateId === 'function' ? generateId() : 'm_' + Date.now() + '_' + i;
+                if (!soal || !arti) continue;
+                if (tipe !== 'teks' && tipe !== 'gambar') tipe = 'teks';
+                let idUnik = 'm_' + Date.now() + '_' + i;
                 AppState.db.dnd.match.push({ id: idUnik, tipe: tipe, soal: soal, arti: arti });
                 jumlahBerhasil++;
             }
-            
             if (jumlahBerhasil > 0) {
                 renderEditorMatchDnd(document.getElementById('main-content'));
-                if (typeof showAlert === 'function') showAlert('Berhasil', `${jumlahBerhasil} soal dari Excel sukses ditambahkan! Jangan lupa klik Simpan Permanen.`, 'success');
-                else alert(`${jumlahBerhasil} soal berhasil ditambahkan!`);
-            } else {
-                if (typeof showAlert === 'function') showAlert('Error', 'Data Excel kosong atau format tidak sesuai template.', 'error');
+                alert(`${jumlahBerhasil} soal match berhasil diimport!`);
             }
         } catch (err) {
-            if (typeof showAlert === 'function') showAlert('Error', 'Gagal membaca Excel: ' + err.message, 'error');
+            alert('Gagal membaca Excel: ' + err.message);
         }
-        event.target.value = ''; // Reset input agar bisa upload file yang sama lagi jika diedit
+        event.target.value = '';
+    };
+    reader.readAsArrayBuffer(file);
+}
+
+
+// =========================================================================
+// 2. EDITOR SORT & DROP (LENGKAP EXCEL & MANUAL)
+// =========================================================================
+function renderEditorSortDnd(container) {
+    if (!AppState.db.dnd.sort || AppState.db.dnd.sort.length === 0) {
+         AppState.db.dnd.sort = [
+            { id: "s1", soal: "كِتَابٌ", arti: "Buku", kat: "isim", tipe: "teks" },
+            { id: "s2", soal: "🏃", arti: "Berlari", kat: "fiil", tipe: "gambar" }
+         ];
+    }
+
+    let daftarSoalHtml = AppState.db.dnd.sort.map((item, index) => `
+        <div class="bg-slate-800 p-3 rounded-xl border border-slate-700 flex justify-between items-center mb-3 hover:border-amber-500/50 transition-colors">
+            <div class="flex items-center gap-3 md:gap-4">
+                <span class="bg-amber-900/50 text-amber-400 font-black w-8 h-8 flex items-center justify-center rounded-lg text-xs border border-amber-500/30 shrink-0">${index + 1}</span>
+                <div>
+                    <p class="${item.tipe === 'gambar' ? 'text-2xl' : 'font-arabic text-xl'} text-white leading-none mb-1">${item.soal}</p>
+                    <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Arti: <span class="text-amber-300">${item.arti}</span> | Kategori: <span class="text-indigo-400 uppercase font-black">${item.kat}</span></p>
+                </div>
+            </div>
+            <button onclick="hapusSoalSort('${item.id}')" class="w-8 h-8 rounded-lg bg-rose-500/10 text-rose-400 hover:bg-rose-500 hover:text-white flex items-center justify-center transition-colors shrink-0">
+                <i class="fa-solid fa-trash-can text-xs"></i>
+            </button>
+        </div>
+    `).join('');
+
+    container.innerHTML = `
+        <div class="max-w-6xl mx-auto space-y-6 fade-in pb-10 mt-4 px-2 sm:px-0">
+            <div class="flex justify-between items-center bg-slate-900 p-4 rounded-2xl shadow-xl border border-slate-700">
+                <h2 class="text-base sm:text-xl font-black text-white flex items-center gap-2">
+                    <i class="fa-solid fa-layer-group text-amber-400"></i> Editor Sort & Drop
+                </h2>
+                <button onclick="bukaEditorSoalDnd()" class="bg-slate-800 hover:bg-rose-600 text-slate-300 hover:text-white px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl text-xs font-bold border border-slate-700 hover:border-rose-500 transition-all flex items-center">
+                    <i class="fa-solid fa-arrow-left mr-1.5"></i> Kembali
+                </button>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div class="lg:col-span-1 space-y-6">
+                    <div class="bg-slate-800 p-5 rounded-3xl border border-slate-700 shadow-xl">
+                        <h3 class="font-black text-amber-400 mb-3 uppercase tracking-widest text-sm flex items-center"><i class="fa-solid fa-file-excel mr-2"></i> Import Excel</h3>
+                        <p class="text-[10px] text-slate-400 mb-4 leading-relaxed">Download template Excel sort, isi soal dan kategorinya, lalu upload.</p>
+                        <button onclick="downloadTemplateSortExcel()" class="w-full mb-4 bg-slate-700 hover:bg-slate-600 text-amber-400 font-bold py-2.5 rounded-xl text-xs transition-colors border border-slate-600 flex items-center justify-center">
+                            <i class="fa-solid fa-download mr-2"></i> Download Template
+                        </button>
+                        <div class="relative overflow-hidden">
+                            <input type="file" id="file-excel-sort" accept=".xlsx, .xls" onchange="bacaExcelSort(event)" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
+                            <div class="bg-amber-900/30 border border-amber-500/30 text-amber-300 text-xs font-bold py-3 px-4 rounded-xl text-center flex flex-col items-center justify-center transition-all hover:bg-amber-800/40">
+                                <i class="fa-solid fa-cloud-arrow-up text-xl mb-1"></i>
+                                <span>Klik untuk Upload Excel</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-800 p-5 rounded-3xl border border-slate-700 shadow-xl">
+                        <h3 class="font-black text-amber-400 mb-4 uppercase tracking-widest text-sm flex items-center"><i class="fa-solid fa-plus-circle mr-2"></i> Tambah Manual</h3>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="text-[11px] font-bold text-slate-400 block mb-1.5 uppercase">Tipe Balok</label>
+                                <select id="sort-input-tipe" class="w-full bg-slate-900 border border-slate-700 text-white text-sm rounded-xl p-3 outline-none focus:border-amber-500 font-bold transition-colors">
+                                    <option value="teks">Teks (Arab/Latin)</option>
+                                    <option value="gambar">Gambar (Emoji)</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="text-[11px] font-bold text-slate-400 block mb-1.5 uppercase">Soal</label>
+                                <input type="text" id="sort-input-soal" class="w-full bg-slate-900 border border-slate-700 text-white font-arabic text-xl rounded-xl p-3 outline-none focus:border-amber-500 transition-colors" dir="auto" placeholder="Contoh: كِتَابٌ">
+                            </div>
+                            <div>
+                                <label class="text-[11px] font-bold text-slate-400 block mb-1.5 uppercase">Arti</label>
+                                <input type="text" id="sort-input-arti" class="w-full bg-slate-900 border border-slate-700 text-white text-sm font-bold rounded-xl p-3 outline-none focus:border-amber-500 transition-colors" placeholder="Contoh: Buku">
+                            </div>
+                            <div>
+                                <label class="text-[11px] font-bold text-slate-400 block mb-1.5 uppercase">Kategori (isim / fiil)</label>
+                                <input type="text" id="sort-input-kat" class="w-full bg-slate-900 border border-slate-700 text-white text-sm font-bold rounded-xl p-3 outline-none focus:border-amber-500 transition-colors" placeholder="isim atau fiil">
+                            </div>
+                            <button onclick="tambahSoalSort()" class="w-full bg-amber-500 hover:bg-amber-400 text-slate-900 font-black py-3 rounded-xl shadow-lg transition-transform hover:scale-[1.02] flex items-center justify-center">
+                                <i class="fa-solid fa-floppy-disk mr-2"></i> Simpan ke Daftar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="lg:col-span-2 bg-slate-900 p-5 sm:p-6 rounded-3xl border border-slate-700 shadow-inner flex flex-col lg:h-[80vh]">
+                    <div class="flex justify-between items-center mb-4 border-b border-slate-800 pb-3 shrink-0">
+                        <h3 class="font-black text-white text-sm sm:text-base flex items-center"><i class="fa-solid fa-list mr-2 text-slate-400"></i>Daftar Soal Sort (<span class="text-amber-400 ml-1">${AppState.db.dnd.sort.length}</span>)</h3>
+                        <button onclick="simpanKeDatabaseSort()" class="bg-indigo-600 hover:bg-indigo-500 text-white text-[10px] sm:text-xs font-bold px-3 sm:px-4 py-2 rounded-xl shadow-md transition-transform hover:scale-105 flex items-center">
+                            <i class="fa-solid fa-cloud-arrow-up mr-1.5"></i> Simpan Permanen
+                        </button>
+                    </div>
+                    <div class="flex-1 overflow-y-auto pr-2 custom-scrollbar">
+                        ${daftarSoalHtml || '<div class="text-center bg-slate-800/50 rounded-2xl py-12 border border-dashed border-slate-700"><i class="fa-solid fa-box-open text-4xl text-slate-600 mb-3"></i><p class="text-slate-400 text-xs font-bold">Belum ada soal sort.</p></div>'}
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+function tambahSoalSort() {
+    const tipe = document.getElementById('sort-input-tipe').value;
+    const soal = document.getElementById('sort-input-soal').value.trim();
+    const arti = document.getElementById('sort-input-arti').value.trim();
+    const kat = document.getElementById('sort-input-kat').value.trim().toLowerCase();
+    if (!soal || !arti || !kat) return alert('Semua kolom wajib diisi!');
+    let idUnik = 's_' + Date.now();
+    AppState.db.dnd.sort.push({ id: idUnik, soal: soal, arti: arti, kat: kat, tipe: tipe });
+    renderEditorSortDnd(document.getElementById('main-content'));
+}
+
+function hapusSoalSort(id) {
+    AppState.db.dnd.sort = AppState.db.dnd.sort.filter(item => item.id !== id);
+    renderEditorSortDnd(document.getElementById('main-content'));
+}
+
+function simpanKeDatabaseSort() {
+    if (typeof saveDatabase === 'function') saveDatabase();
+    alert('Bank Soal Sort & Drop tersimpan permanen!');
+}
+
+function downloadTemplateSortExcel() {
+    if (typeof XLSX === 'undefined') return alert('Library Excel belum siap.');
+    const ws_data = [
+        ['Tipe Balok', 'Soal (Kosakata/Emoji)', 'Arti / Keterangan', 'Kategori (isim / fiil)'],
+        ['PENTING: Kolom Kategori isi dengan isim atau fiil.', '', '', ''],
+        ['teks', 'كِتَابٌ', 'Buku', 'isim'],
+        ['gambar', '🏃', 'Berlari', 'fiil']
+    ];
+    const ws = XLSX.utils.aoa_to_sheet(ws_data);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Template_Sort_Drop");
+    XLSX.writeFile(wb, "Template_Soal_Sort_Drop.xlsx");
+}
+
+function bacaExcelSort(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        try {
+            const data = new Uint8Array(e.target.result);
+            const workbook = XLSX.read(data, { type: 'array' });
+            const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+            const jsonRows = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
+            let jumlahBerhasil = 0;
+            for (let i = 2; i < jsonRows.length; i++) {
+                let row = jsonRows[i];
+                if (!row || row.length < 4) continue;
+                let tipe = row[0] ? String(row[0]).trim().toLowerCase() : 'teks';
+                let soal = row[1] ? String(row[1]).trim() : '';
+                let arti = row[2] ? String(row[2]).trim() : '';
+                let kat = row[3] ? String(row[3]).trim().toLowerCase() : 'isim';
+                if (!soal || !arti) continue;
+                if (tipe !== 'teks' && tipe !== 'gambar') tipe = 'teks';
+                let idUnik = 's_' + Date.now() + '_' + i;
+                AppState.db.dnd.sort.push({ id: idUnik, soal: soal, arti: arti, kat: kat, tipe: tipe });
+                jumlahBerhasil++;
+            }
+            if (jumlahBerhasil > 0) {
+                renderEditorSortDnd(document.getElementById('main-content'));
+                alert(`${jumlahBerhasil} soal sort berhasil diimport!`);
+            }
+        } catch (err) {
+            alert('Gagal membaca file: ' + err.message);
+        }
+        event.target.value = '';
+    };
+    reader.readAsArrayBuffer(file);
+}
+
+
+// =========================================================================
+// 3. EDITOR BUILD & DROP (LENGKAP EXCEL & MANUAL)
+// =========================================================================
+function renderEditorBuildDnd(container) {
+    if (!AppState.db.dnd.build || AppState.db.dnd.build.length === 0) {
+         AppState.db.dnd.build = [
+            {
+                id: "b1",
+                arti: "Ahmad pergi ke sekolah",
+                susunan: [
+                    { id: "w1", teks: "ذَهَبَ" },
+                    { id: "w2", teks: "أَحْمَدُ" },
+                    { id: "w3", teks: "إِلَى" },
+                    { id: "w4", teks: "الْمَدْرَسَةِ" }
+                ]
+            }
+         ];
+    }
+
+    let daftarSoalHtml = AppState.db.dnd.build.map((item, index) => {
+        let deretanKata = item.susunan.map(w => `<span class="px-2 py-1 bg-slate-700 rounded text-white font-arabic text-sm">${w.teks}</span>`).join(' ');
+        return `
+            <div class="bg-slate-800 p-4 rounded-xl border border-slate-700 flex justify-between items-center mb-3 hover:border-violet-500/50 transition-colors">
+                <div class="space-y-1">
+                    <div class="flex items-center gap-2">
+                        <span class="bg-violet-900/50 text-violet-400 font-black px-2.5 py-1 rounded text-xs border border-violet-500/30">Soal ${index + 1}</span>
+                        <p class="text-xs font-bold text-slate-300">Arti: <span class="text-violet-300">"${item.arti}"</span></p>
+                    </div>
+                    <div class="flex flex-wrap gap-1.5 pt-1">${deretanKata}</div>
+                </div>
+                <button onclick="hapusSoalBuild('${item.id}')" class="w-8 h-8 rounded-lg bg-rose-500/10 text-rose-400 hover:bg-rose-500 hover:text-white flex items-center justify-center transition-colors shrink-0 ml-4">
+                    <i class="fa-solid fa-trash-can text-xs"></i>
+                </button>
+            </div>
+        `;
+    }).join('');
+
+    container.innerHTML = `
+        <div class="max-w-6xl mx-auto space-y-6 fade-in pb-10 mt-4 px-2 sm:px-0">
+            <div class="flex justify-between items-center bg-slate-900 p-4 rounded-2xl shadow-xl border border-slate-700">
+                <h2 class="text-base sm:text-xl font-black text-white flex items-center gap-2">
+                    <i class="fa-solid fa-cubes text-violet-400"></i> Editor Build & Drop
+                </h2>
+                <button onclick="bukaEditorSoalDnd()" class="bg-slate-800 hover:bg-rose-600 text-slate-300 hover:text-white px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl text-xs font-bold border border-slate-700 hover:border-rose-500 transition-all flex items-center">
+                    <i class="fa-solid fa-arrow-left mr-1.5"></i> Kembali
+                </button>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div class="lg:col-span-1 space-y-6">
+                    <div class="bg-slate-800 p-5 rounded-3xl border border-slate-700 shadow-xl">
+                        <h3 class="font-black text-violet-400 mb-3 uppercase tracking-widest text-sm flex items-center"><i class="fa-solid fa-file-excel mr-2"></i> Import Excel</h3>
+                        <p class="text-[10px] text-slate-400 mb-4 leading-relaxed">Download template susunan kalimat, isi kata-katanya, lalu upload kembali.</p>
+                        <button onclick="downloadTemplateBuildExcel()" class="w-full mb-4 bg-slate-700 hover:bg-slate-600 text-violet-400 font-bold py-2.5 rounded-xl text-xs transition-colors border border-slate-600 flex items-center justify-center">
+                            <i class="fa-solid fa-download mr-2"></i> Download Template
+                        </button>
+                        <div class="relative overflow-hidden">
+                            <input type="file" id="file-excel-build" accept=".xlsx, .xls" onchange="bacaExcelBuild(event)" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
+                            <div class="bg-violet-900/30 border border-violet-500/30 text-violet-300 text-xs font-bold py-3 px-4 rounded-xl text-center flex flex-col items-center justify-center transition-all hover:bg-violet-800/40">
+                                <i class="fa-solid fa-cloud-arrow-up text-xl mb-1"></i>
+                                <span>Klik untuk Upload Excel</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-800 p-5 rounded-3xl border border-slate-700 shadow-xl">
+                        <h3 class="font-black text-violet-400 mb-4 uppercase tracking-widest text-sm flex items-center"><i class="fa-solid fa-plus-circle mr-2"></i> Tambah Manual</h3>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="text-[11px] font-bold text-slate-400 block mb-1.5 uppercase">Arti Kalimat</label>
+                                <input type="text" id="build-input-arti" class="w-full bg-slate-900 border border-slate-700 text-white text-sm font-bold rounded-xl p-3 outline-none focus:border-violet-500 transition-colors" placeholder="Contoh: Ahmad pergi ke sekolah">
+                            </div>
+                            <div>
+                                <label class="text-[11px] font-bold text-slate-400 block mb-1.5 uppercase">Potongan Kata (Pisahkan koma)</label>
+                                <textarea id="build-input-kata" rows="3" class="w-full bg-slate-900 border border-slate-700 text-white font-arabic text-lg rounded-xl p-3 outline-none focus:border-violet-500 transition-colors" placeholder="ذَهَبَ, أَحْمَدُ, إِلَى, الْمَدْرَسَةِ"></textarea>
+                            </div>
+                            <button onclick="tambahSoalBuild()" class="w-full bg-violet-600 hover:bg-violet-500 text-white font-black py-3 rounded-xl shadow-lg transition-transform hover:scale-[1.02] flex items-center justify-center">
+                                <i class="fa-solid fa-floppy-disk mr-2"></i> Simpan ke Daftar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="lg:col-span-2 bg-slate-900 p-5 sm:p-6 rounded-3xl border border-slate-700 shadow-inner flex flex-col lg:h-[80vh]">
+                    <div class="flex justify-between items-center mb-4 border-b border-slate-800 pb-3 shrink-0">
+                        <h3 class="font-black text-white text-sm sm:text-base flex items-center"><i class="fa-solid fa-list mr-2 text-slate-400"></i>Daftar Kalimat Build (<span class="text-violet-400 ml-1">${AppState.db.dnd.build.length}</span>)</h3>
+                        <button onclick="simpanKeDatabaseBuild()" class="bg-indigo-600 hover:bg-indigo-500 text-white text-[10px] sm:text-xs font-bold px-3 sm:px-4 py-2 rounded-xl shadow-md transition-transform hover:scale-105 flex items-center">
+                            <i class="fa-solid fa-cloud-arrow-up mr-1.5"></i> Simpan Permanen
+                        </button>
+                    </div>
+                    <div class="flex-1 overflow-y-auto pr-2 custom-scrollbar">
+                        ${daftarSoalHtml || '<div class="text-center bg-slate-800/50 rounded-2xl py-12 border border-dashed border-slate-700"><i class="fa-solid fa-box-open text-4xl text-slate-600 mb-3"></i><p class="text-slate-400 text-xs font-bold">Belum ada kalimat build.</p></div>'}
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+function tambahSoalBuild() {
+    const arti = document.getElementById('build-input-arti').value.trim();
+    const kataStr = document.getElementById('build-input-kata').value.trim();
+    if (!arti || !kataStr) return alert('Arti dan potongan kata wajib diisi!');
+    let arrKata = kataStr.split(',').map((k, idx) => ({ id: 'w' + (idx + 1), teks: k.trim() })).filter(k => k.teks !== '');
+    let idUnik = 'b_' + Date.now();
+    AppState.db.dnd.build.push({ id: idUnik, arti: arti, susunan: arrKata });
+    renderEditorBuildDnd(document.getElementById('main-content'));
+}
+
+function hapusSoalBuild(id) {
+    AppState.db.dnd.build = AppState.db.dnd.build.filter(item => item.id !== id);
+    renderEditorBuildDnd(document.getElementById('main-content'));
+}
+
+function simpanKeDatabaseBuild() {
+    if (typeof saveDatabase === 'function') saveDatabase();
+    alert('Bank Soal Build & Drop tersimpan permanen!');
+}
+
+function downloadTemplateBuildExcel() {
+    if (typeof XLSX === 'undefined') return alert('Library Excel belum siap.');
+    const ws_data = [
+        ['Arti / Terjemahan Kalimat', 'Potongan Kata (Pisahkan dengan koma ,)'],
+        ['PENTING: Kolom kedua adalah urutan kata benar dipisahkan koma.', ''],
+        ['Ahmad pergi ke sekolah', 'ذَهَبَ, أَحْمَدُ, إِلَى, الْمَدْرَسَةِ'],
+        ['Siswa membaca Al-Quran', 'قَرَأَ, الطَّالِبُ, الْقُرْآنَ']
+    ];
+    const ws = XLSX.utils.aoa_to_sheet(ws_data);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Template_Build_Drop");
+    XLSX.writeFile(wb, "Template_Soal_Build_Drop.xlsx");
+}
+
+function bacaExcelBuild(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        try {
+            const data = new Uint8Array(e.target.result);
+            const workbook = XLSX.read(data, { type: 'array' });
+            const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+            const jsonRows = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
+            let jumlahBerhasil = 0;
+            for (let i = 2; i < jsonRows.length; i++) {
+                let row = jsonRows[i];
+                if (!row || row.length < 2) continue;
+                let arti = row[0] ? String(row[0]).trim() : '';
+                let kataStr = row[1] ? String(row[1]).trim() : '';
+                if (!arti || !kataStr) continue;
+                let arrKata = kataStr.split(',').map((k, idx) => ({ id: 'w' + (idx + 1), teks: k.trim() })).filter(k => k.teks !== '');
+                let idUnik = 'b_' + Date.now() + '_' + i;
+                AppState.db.dnd.build.push({ id: idUnik, arti: arti, susunan: arrKata });
+                jumlahBerhasil++;
+            }
+            if (jumlahBerhasil > 0) {
+                renderEditorBuildDnd(document.getElementById('main-content'));
+                alert(`${jumlahBerhasil} soal kalimat berhasil diimport!`);
+            }
+        } catch (err) {
+            alert('Gagal membaca Excel: ' + err.message);
+        }
+        event.target.value = '';
     };
     reader.readAsArrayBuffer(file);
 }
