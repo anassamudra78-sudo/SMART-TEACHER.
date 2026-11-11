@@ -493,11 +493,15 @@ function masukKeArenaGameDnd() {
         return showAlert("Peringatan", "Harap Pilih Kelas, Mapel, dan Siswa ATAU Ketik nama manual!", "error");
     }
 
+    // --- TAMBAHAN KUNCI: Simpan durasi ke memori global SEBELUM Lobi dihapus ---
+    const durasiEl = document.getElementById('lobby-dnd-durasi');
+    window.dndDurasiPilihan = durasiEl ? parseInt(durasiEl.value) : 15;
+
+    // Baru jalankan mesin game yang akan menimpa layar lobi
     if (gameDndTerpilih === 'match' && typeof mulaiGameMatch === 'function') mulaiGameMatch();
     else if (gameDndTerpilih === 'sort' && typeof mulaiGameSort === 'function') mulaiGameSort();
     else if (gameDndTerpilih === 'build' && typeof mulaiGameBuild === 'function') mulaiGameBuild();
-}
-// Fungsi untuk membuka halaman Drag & Drop Arena dari tombol menu
+}// Fungsi untuk membuka halaman Drag & Drop Arena dari tombol menu
 function bukaDragAndDropArena() {
     const container = document.getElementById('main-content');
     
