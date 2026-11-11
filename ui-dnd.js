@@ -599,3 +599,77 @@ function toggleDndBGM() {
         }
     }
 }
+
+// =========================================================================
+// STUDIO SOAL DRAG & DROP (RUANG EDITOR GURU)
+// =========================================================================
+
+function bukaEditorSoalDnd() {
+    const mc = document.getElementById('main-content');
+    if (!mc) return;
+    
+    // 1. Inisialisasi Database Khusus DND jika belum ada di aplikasi
+    if (!AppState.db.dnd) {
+        AppState.db.dnd = { match: [], sort: [], build: [] };
+    }
+
+    // 2. Render tampilan Dashboard Studio Soal
+    mc.innerHTML = `
+        <div class="max-w-5xl mx-auto space-y-6 fade-in pb-10 mt-4 px-2 sm:px-0">
+            
+            <div class="flex justify-between items-center bg-slate-900 p-4 rounded-2xl shadow-xl border border-slate-700">
+                <h2 class="text-lg sm:text-xl font-black text-white flex items-center gap-2">
+                    <i class="fa-solid fa-pen-ruler text-indigo-400"></i> <span class="hidden sm:inline">Studio Soal Drag & Drop</span>
+                </h2>
+                <button onclick="renderDragDropPage(document.getElementById('main-content'))" class="bg-slate-800 hover:bg-rose-600 text-slate-300 hover:text-white px-4 py-2 rounded-xl text-xs font-bold border border-slate-700 hover:border-rose-500 transition-all flex items-center">
+                    <i class="fa-solid fa-arrow-left mr-1.5"></i> Kembali ke Lobi
+                </button>
+            </div>
+
+            <div class="bg-indigo-950/30 border border-indigo-500/30 p-4 rounded-2xl text-center">
+                <p class="text-sm text-indigo-200 font-bold">Pilih jenis game Drag & Drop yang ingin Bapak kelola soalnya:</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Card Editor Match -->
+                <div class="bg-slate-800 p-6 rounded-3xl border-2 border-emerald-500/30 text-center shadow-xl relative overflow-hidden group hover:border-emerald-500 transition-colors">
+                    <div class="absolute top-0 right-0 w-32 h-32 bg-emerald-500/10 rounded-full blur-2xl pointer-events-none"></div>
+                    <i class="fa-solid fa-puzzle-piece text-5xl text-emerald-400 mb-4 drop-shadow-lg group-hover:scale-110 transition-transform"></i>
+                    <h3 class="text-xl font-black text-white mb-2">Match & Drop</h3>
+                    <p class="text-xs text-slate-400 mb-6">Buat bank soal memasangkan balok (Kosakata ke Arti/Definisi).</p>
+                    <button onclick="bukaFormEditorDnd('match')" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-xl transition-all shadow-md">
+                        Kelola Soal Match
+                    </button>
+                </div>
+
+                <!-- Card Editor Sort -->
+                <div class="bg-slate-800 p-6 rounded-3xl border-2 border-amber-500/30 text-center shadow-xl relative overflow-hidden group hover:border-amber-500 transition-colors">
+                    <div class="absolute top-0 right-0 w-32 h-32 bg-amber-500/10 rounded-full blur-2xl pointer-events-none"></div>
+                    <i class="fa-solid fa-layer-group text-5xl text-amber-400 mb-4 drop-shadow-lg group-hover:scale-110 transition-transform"></i>
+                    <h3 class="text-xl font-black text-white mb-2">Sort & Drop</h3>
+                    <p class="text-xs text-slate-400 mb-6">Buat bank soal pengelompokan kategori (Misal: Isim & Fi'il).</p>
+                    <button onclick="bukaFormEditorDnd('sort')" class="w-full bg-amber-500 hover:bg-amber-400 text-slate-900 font-black py-3 rounded-xl transition-all shadow-md">
+                        Kelola Soal Sort
+                    </button>
+                </div>
+
+                <!-- Card Editor Build -->
+                <div class="bg-slate-800 p-6 rounded-3xl border-2 border-violet-500/30 text-center shadow-xl relative overflow-hidden group hover:border-violet-500 transition-colors">
+                    <div class="absolute top-0 right-0 w-32 h-32 bg-violet-500/10 rounded-full blur-2xl pointer-events-none"></div>
+                    <i class="fa-solid fa-cubes text-5xl text-violet-400 mb-4 drop-shadow-lg group-hover:scale-110 transition-transform"></i>
+                    <h3 class="text-xl font-black text-white mb-2">Build & Drop</h3>
+                    <p class="text-xs text-slate-400 mb-6">Buat bank soal menyusun urutan potongan kata menjadi kalimat.</p>
+                    <button onclick="bukaFormEditorDnd('build')" class="w-full bg-violet-600 hover:bg-violet-500 text-white font-bold py-3 rounded-xl transition-all shadow-md">
+                        Kelola Soal Build
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+    window.scrollTo(0, 0);
+}
+
+function bukaFormEditorDnd(jenis) {
+    // Fungsi pancingan sementara. Nanti kita ganti dengan form aslinya.
+    alert("Berhasil! Tombol menuju Editor " + jenis.toUpperCase() + " sudah aktif. Tunggu instruksi selanjutnya untuk merakit formnya!");
+}
