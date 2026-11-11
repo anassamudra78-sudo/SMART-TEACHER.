@@ -498,3 +498,29 @@ function bukaDragAndDropArena() {
         console.error("Fungsi renderDragDropPage tidak ditemukan.");
     }
 }
+
+// =========================================================================
+// PENDETEKSI SWIPE BACK / TOMBOL BACK HP (MENCEGAH TOP BAR HILANG)
+// =========================================================================
+window.addEventListener('popstate', function() {
+    // 1. Cabut paksaan fullscreen di main-content secara otomatis
+    const mc = document.getElementById('main-content');
+    if (mc && mc.style.position === 'fixed') {
+        mc.style.position = '';
+        mc.style.top = '';
+        mc.style.left = '';
+        mc.style.right = '';
+        mc.style.bottom = '';
+        mc.style.zIndex = '';
+        mc.style.backgroundColor = '';
+        mc.style.overflowY = '';
+        mc.style.padding = '';
+        mc.style.margin = '';
+    }
+    
+    // 2. Pastikan modal game (layar hitam) juga ikut tertutup
+    const modal = document.getElementById('dnd-arena-modal');
+    if (modal) modal.classList.add('hidden');
+    
+    window.isDragDropMode = false;
+});
