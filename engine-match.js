@@ -1,10 +1,12 @@
 // ==========================================================
 // FILE: engine-match.js
-// FUNGSI: Mesin Game "Match & Drop" (DARK MODE + SKOR BERTAHAP)
+// FUNGSI: Mesin Game "Match & Drop" (DENGAN TOP BAR GLOBAL)
 // ==========================================================
 let matchState = {
     skor: 0,
     pasanganTerjawab: 0,
+    sisaWaktu: 0,
+    timerInterval: null,
     dataSoal: [
         { id: "p1", tipe: "teks", soal: "كِتَابٌ", arti: "Buku" },
         { id: "p2", tipe: "gambar", soal: "🦆", arti: "Bebek" }, 
@@ -75,10 +77,52 @@ function bukaSetupGame(jenisGame) {
         mulaiGameBuild();
     }
 }
+
+function jalankanTimerMatch() {
+    // Ambil durasi dari pilihan di Lobi (default 15 detik kalau belum dipilih)
+    let elDurasi = document.getElementById('lobby-dnd-durasi');
+    matchState.sisaWaktu = elDurasi ? parseInt(elDurasi.value) : 15;
+    
+    // Matikan timer lama kalau ada
+    if (matchState.timerInterval) clearInterval(matchState.timerInterval);
+    
+    // Tampilkan di Top Bar
+    if (typeof updateTimerDnd === 'function') updateTimerDnd(matchState.sisaWaktu);
+
+    matchState.timerInterval = setInterval(() => {
+        matchState.sisaWaktu--;
+        
+        // Panggil fungsi Remote Control Top Bar
+        if (typeof updateTimerDnd === 'function') {
+            updateTimerDnd(matchState.sisaWaktu);
+        }
+
+        // Kalau sisa 5 detik, putar suara 'Tick' tegang seperti di Kuis
+        if (matchState.sisaWaktu <= 5 && matchState.sisaWaktu > 0) {
+             if (typeof playTick === 'function') playTick(900);
+        }
+
+        if (matchState.sisaWaktu <= 0) {
+            clearInterval(matchState.timerInterval);
+            if (typeof playSoundEffect === 'function') playSoundEffect('habis');
+            // Waktu habis, game selesai paksa
+            selebrasiKemenangan();
+        }
+    }, 1000);
+}
+
 function mulaiGameMatch() {
-    const container = amankanLayarPenuhDragDrop();
+    const subtitleEl = document.getElementById('dnd-topbar-subtitle');
+    if (subtitleEl) subtitleEl.innerText = "Sedang Bermain...";
+
+    const container = document.getElementById('dnd-game-container');
+    if (!container) return;
+    
     matchState.skor = 0;
     matchState.pasanganTerjawab = 0;
+    
+    // Reset Skor di Top Bar ke 0
+    if (typeof updateSkorDnd === 'function') updateSkorDnd(0);
 
     let soalAcak = [...matchState.dataSoal].sort(() => Math.random() - 0.5);
     let artiAcak = [...matchState.dataSoal].sort(() => Math.random() - 0.5);
@@ -86,14 +130,8 @@ function mulaiGameMatch() {
     let skala = hitungSkalaOtomatis(matchState.dataSoal.length);
 
     container.innerHTML = `
-        <div class="max-w-7xl mx-auto p-2 md:p-4 mt-2 select-none fade-in pb-20">
-            <div class="flex justify-between items-center bg-slate-900 p-3 md:p-4 rounded-2xl shadow-[0_4px_20px_rgba(0,0,0,0.3)] mb-4 border border-slate-700">
-                <h2 class="text-base md:text-xl font-black text-white flex items-center gap-2 drop-shadow-md"><i class="fa-solid fa-puzzle-piece text-emerald-400"></i>MATCH & DROP</h2>
-                <div class="font-bold text-emerald-400 bg-slate-800 px-4 py-1 md:py-2 rounded-xl border border-slate-700 shadow-inner">Nilai: <span id="skor-match" class="font-black text-white text-lg md:text-xl ml-1">0</span></div>
-                <button onclick="bukaDragAndDropArena()" class="bg-slate-700 hover:bg-slate-600 text-slate-200 px-4 py-1 md:py-2 rounded-xl font-bold transition-colors border border-slate-600">Keluar</button>
-            </div>
-
-            <div class="flex flex-col lg:flex-row gap-4 md:gap-6 bg-[#0f172a] p-4 md:p-6 rounded-3xl border border-slate-800 shadow-[0_8px_30px_rgba(0,0,0,0.4)] relative overflow-hidden">
+        <div class="max-w-7xl mx-auto p-2 md:p-4 mt-2 select-none fade-in pb-20 w-full h-full">
+            <div class="flex flex-col lg:flex-row gap-4 md:gap-6 bg-[#0f172a] p-4 md:p-6 rounded-3xl border border-slate-800 shadow-[0_8px_30px_rgba(0,0,0,0.4)] relative overflow-hidden h-full min-h-[500px]">
                 <div class="absolute top-0 left-1/4 w-96 h-96 bg-indigo-500/10 rounded-full blur-[100px] pointer-events-none"></div>
                 <div class="absolute bottom-0 right-1/4 w-96 h-96 bg-emerald-500/10 rounded-full blur-[100px] pointer-events-none"></div>
 
@@ -110,7 +148,6 @@ function mulaiGameMatch() {
                                 ? `bg-slate-800 border-2 border-slate-600 text-slate-200`
                                 : `bg-slate-800 border-2 border-slate-600 text-white`; 
                             
-                            // Tambahkan data-salah="0" sebagai perekam jumlah salah
                             return `
                                 <div class="kartu-soal ${cssKartu} touch-none rounded-xl md:rounded-2xl flex justify-center items-center ${skala.tinggiKotak} shadow-lg transition-transform cursor-grab relative overflow-hidden" data-id="${item.id}" data-tipe="${item.tipe}" data-salah="0">
                                     ${isiKartu}
@@ -141,6 +178,7 @@ function mulaiGameMatch() {
         </div>
     `;
     pasangSensorSederhana();
+    jalankanTimerMatch(); // <-- Timer mulai berjalan
 }
 
 function pasangSensorSederhana() {
@@ -195,23 +233,21 @@ function pasangSensorSederhana() {
                     kotakTarget.classList.remove('border-dashed', 'border-slate-600', 'bg-slate-900', 'p-1');
                     kotakTarget.classList.add('border-solid', 'border-emerald-500', 'bg-emerald-900/30', 'terisi');
                     
-                    // ==========================================
-                    // SISTEM PENALTI 2: Kurangi Poin Bertahap (25% tiap salah)
-                    // ==========================================
                     let salahCount = parseInt(kartu.getAttribute('data-salah')) || 0;
                     let nilaiBawaan = 100 / matchState.dataSoal.length; 
                     let persenPotongan = 0.25; 
                     
-                    // Nilai didapat minimal 0 (tidak bisa minus)
                     let nilaiDidapat = Math.max(0, nilaiBawaan - (salahCount * (nilaiBawaan * persenPotongan)));
                     matchState.skor += nilaiDidapat;
-                    // ==========================================
+                    
+                    // UPDATE SKOR DI TOP BAR!
+                    if (typeof updateSkorDnd === 'function') updateSkorDnd(Math.round(matchState.skor));
 
                     matchState.pasanganTerjawab++;
-                    document.getElementById('skor-match').innerText = Math.round(matchState.skor);
                     if (typeof playSoundEffect === 'function') playSoundEffect('correct'); 
 
                     if (matchState.pasanganTerjawab === matchState.dataSoal.length) {
+                        if (matchState.timerInterval) clearInterval(matchState.timerInterval); // Matikan timer menang
                         setTimeout(() => selebrasiKemenangan(), 400);
                     }
                 } else {
@@ -219,9 +255,6 @@ function pasangSensorSederhana() {
                     wadahKiri.appendChild(kartu);
                     if (typeof playSoundEffect === 'function') playSoundEffect('wrong'); 
                     
-                    // ==========================================
-                    // SISTEM PENALTI 2: Tambah hitungan salah ke memori balok
-                    // ==========================================
                     let salahCount = parseInt(kartu.getAttribute('data-salah')) || 0;
                     kartu.setAttribute('data-salah', salahCount + 1);
                     
@@ -237,10 +270,15 @@ function pasangSensorSederhana() {
 }
 
 function selebrasiKemenangan() {
+    if (matchState.timerInterval) clearInterval(matchState.timerInterval); // Jaga-jaga matikan timer
+    
     let nilaiAkhir = Math.round(matchState.skor);
     if (typeof playCelebrationAudio === 'function') playCelebrationAudio(nilaiAkhir);
     
-    const container = document.getElementById('main-content');
+    const subtitleEl = document.getElementById('dnd-topbar-subtitle');
+    if (subtitleEl) subtitleEl.innerText = "Permainan Selesai";
+
+    const container = document.getElementById('dnd-game-container');
     container.innerHTML = `
         <div class="max-w-2xl mx-auto mt-10 p-8 bg-slate-900 rounded-[2.5rem] text-center border border-slate-700 shadow-[0_0_40px_rgba(16,185,129,0.2)] fade-in">
             <i class="fa-solid fa-trophy text-6xl text-amber-400 mb-6 animate-bounce drop-shadow-[0_0_15px_rgba(251,191,36,0.5)]"></i>
@@ -252,7 +290,7 @@ function selebrasiKemenangan() {
             </div>
             
             <div class="flex justify-center gap-4">
-                <button onclick="bukaDragAndDropArena()" class="bg-slate-700 hover:bg-slate-600 text-white font-bold py-3 px-6 rounded-2xl border border-slate-600 transition-colors">Menu Game</button>
+                <button onclick="keluarFullscreenDnd()" class="bg-slate-700 hover:bg-slate-600 text-white font-bold py-3 px-6 rounded-2xl border border-slate-600 transition-colors">Menu Game</button>
                 <button onclick="mulaiGameMatch()" class="bg-emerald-500 hover:bg-emerald-400 text-white font-black py-3 px-8 rounded-2xl shadow-[0_0_15px_rgba(16,185,129,0.4)] transition-transform">MAIN LAGI</button>
             </div>
         </div>
