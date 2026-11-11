@@ -420,11 +420,32 @@ function eksekusiUndianMewahDnd(pemenang, daftarSemuaSiswa) {
 
     const elNama = document.getElementById('nama-slot-dnd');
     
-    // Efek putar nama
+    // --- MENGAMBIL MESIN AUDIO DARI KUIS ---
+    const ctx = typeof getAudioCtx === 'function' ? getAudioCtx() : null;
+    
+    // Efek putar nama beserta suaranya
     let waktu = 0;
     let interval = 60;
     let timer = setInterval(() => {
         waktu += interval;
+        
+        // --- SUNTIKAN SUARA TIK-TIK-TIK PERSIS KUIS ---
+        if (ctx && ctx.state === 'running') {
+            try {
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.type = 'square';
+                osc.frequency.setValueAtTime(450, ctx.currentTime);
+                gain.gain.setValueAtTime(0.03, ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.05);
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.start();
+                osc.stop(ctx.currentTime + 0.05);
+            } catch(e) {}
+        }
+        // ----------------------------------------------
+
         let acak = daftarSemuaSiswa[Math.floor(Math.random() * daftarSemuaSiswa.length)];
         
         elNama.innerText = acak;
@@ -437,6 +458,7 @@ function eksekusiUndianMewahDnd(pemenang, daftarSemuaSiswa) {
             elNama.style.color = '#fbbf24';
             elNama.style.transform = 'scale(1.05)';
             
+            // Memutar suara 'Ting!' saat terpilih
             if (typeof playSoundEffect === 'function') playSoundEffect('terpilih');
             if (typeof confetti === 'function') confetti({ particleCount: 150, spread: 80, origin: { y: 0.5 } });
             
