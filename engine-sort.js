@@ -1,12 +1,14 @@
 // ==========================================================
 // FILE: engine-sort.js
-// FUNGSI: Mesin "Sort & Drop" (UKURAN PATEN + SKOR BERTAHAP)
+// FUNGSI: Mesin "Sort & Drop" (DENGAN TOP BAR GLOBAL & TIMER)
 // ==========================================================
 
 let sortState = {
     skor: 0,
     itemTerjawab: 0,
     layout: 'kiri-kanan', 
+    sisaWaktu: 0,
+    timerInterval: null,
     kategori: [
         { id: "isim", judul: "ISIM", subjudul: "Kata Benda", tema: "cyan" },
         { id: "fiil", judul: "FI'IL", subjudul: "Kata Kerja", tema: "emerald" }
@@ -40,7 +42,6 @@ function hitungSkalaOtomatisSort(jumlahSoal, isKiriKanan) {
     }
 }
 
-// Fungsi Universal Anti-Bentrok
 function bukaSetupGame(jenisGame) {
     if (jenisGame === 'match' && typeof mulaiGameMatch === 'function') {
         mulaiGameMatch();
@@ -50,17 +51,48 @@ function bukaSetupGame(jenisGame) {
         mulaiGameBuild();
     }
 }
+
 function ubahGayaLayoutSort(gayaBaru) {
     sortState.layout = gayaBaru;
     mulaiGameSort(true); 
 }
 
+function jalankanTimerSort(isRenderUlang) {
+    if (isRenderUlang) return; // Jangan restart timer kalau user cuma ganti layout layar
+    
+    let elDurasi = document.getElementById('lobby-dnd-durasi');
+    sortState.sisaWaktu = elDurasi ? parseInt(elDurasi.value) : 15;
+    
+    if (sortState.timerInterval) clearInterval(sortState.timerInterval);
+    if (typeof updateTimerDnd === 'function') updateTimerDnd(sortState.sisaWaktu);
+
+    sortState.timerInterval = setInterval(() => {
+        sortState.sisaWaktu--;
+        if (typeof updateTimerDnd === 'function') updateTimerDnd(sortState.sisaWaktu);
+
+        if (sortState.sisaWaktu <= 5 && sortState.sisaWaktu > 0) {
+             if (typeof playTick === 'function') playTick(900);
+        }
+
+        if (sortState.sisaWaktu <= 0) {
+            clearInterval(sortState.timerInterval);
+            if (typeof playSoundEffect === 'function') playSoundEffect('habis');
+            selebrasiKemenanganSort();
+        }
+    }, 1000);
+}
+
 function mulaiGameSort(isRenderUlang = false) {
-   const container = amankanLayarPenuhDragDrop();
+    const subtitleEl = document.getElementById('dnd-topbar-subtitle');
+    if (subtitleEl) subtitleEl.innerText = "Sedang Bermain...";
+
+    const container = document.getElementById('dnd-game-container');
+    if (!container) return;
+
     if (!isRenderUlang) {
         sortState.skor = 0;
         sortState.itemTerjawab = 0;
-        // Tambahkan atribut salah=0 di database sementara (dataSoal) agar ingat saat ganti layout
+        if (typeof updateSkorDnd === 'function') updateSkorDnd(0);
         sortState.dataSoal = sortState.dataSoalAsli.map(item => ({...item, terjawab: false, salah: 0})).sort(() => Math.random() - 0.5);
     }
 
@@ -68,16 +100,16 @@ function mulaiGameSort(isRenderUlang = false) {
     let skala = hitungSkalaOtomatisSort(sortState.dataSoal.length, isKiriKanan);
 
     let classContainer = isKiriKanan 
-        ? "max-w-7xl mx-auto p-2 md:p-4 mt-2 select-none fade-in pb-20" 
-        : "max-w-7xl mx-auto px-2 md:px-4 pt-1 pb-4 select-none fade-in";
+        ? "max-w-7xl mx-auto p-2 md:p-4 select-none fade-in pb-20 w-full h-full" 
+        : "max-w-7xl mx-auto px-2 md:px-4 pt-1 pb-4 select-none fade-in w-full h-full";
         
     let classHeader = isKiriKanan 
-        ? "flex flex-wrap justify-between items-center bg-slate-900 p-3 md:p-4 rounded-2xl shadow-[0_4px_20px_rgba(0,0,0,0.3)] mb-4 border border-slate-700 gap-3 relative z-10"
-        : "flex flex-wrap justify-between items-center bg-slate-900 p-2 md:p-3 rounded-2xl shadow-[0_4px_20px_rgba(0,0,0,0.3)] mb-1 border border-slate-700 gap-2 relative z-10";
+        ? "flex flex-wrap justify-center items-center bg-slate-900 p-2 md:p-3 rounded-2xl shadow-[0_4px_20px_rgba(0,0,0,0.3)] mb-4 border border-slate-700 gap-3 relative z-10"
+        : "flex flex-wrap justify-center items-center bg-slate-900 p-2 rounded-2xl shadow-[0_4px_20px_rgba(0,0,0,0.3)] mb-2 border border-slate-700 gap-2 relative z-10";
 
     let classPapan = isKiriKanan
-        ? "flex flex-col lg:flex-row gap-4 md:gap-6 bg-[#0f172a] p-4 md:p-6 rounded-3xl border border-slate-800 shadow-[0_8px_30px_rgba(0,0,0,0.4)] relative overflow-hidden"
-        : "flex flex-col gap-2 md:gap-3 bg-[#0f172a] p-3 rounded-3xl border border-slate-800 shadow-[0_8px_30px_rgba(0,0,0,0.4)] relative overflow-hidden";
+        ? "flex flex-col lg:flex-row gap-4 md:gap-6 bg-[#0f172a] p-4 md:p-6 rounded-3xl border border-slate-800 shadow-[0_8px_30px_rgba(0,0,0,0.4)] relative overflow-hidden min-h-[500px]"
+        : "flex flex-col gap-2 md:gap-3 bg-[#0f172a] p-3 rounded-3xl border border-slate-800 shadow-[0_8px_30px_rgba(0,0,0,0.4)] relative overflow-hidden min-h-[500px]";
 
     let classWadahKiri = isKiriKanan ? "w-full lg:w-5/12 flex flex-col z-10" : "w-full flex flex-col z-10";
     let classWadahKanan = isKiriKanan ? "w-full lg:w-7/12 flex flex-col z-10" : "w-full flex flex-col z-10";
@@ -108,21 +140,9 @@ function mulaiGameSort(isRenderUlang = false) {
         <div class="${classContainer}">
             
             <div class="${classHeader}">
-                <h2 class="text-base md:text-xl font-black text-white flex items-center gap-2 drop-shadow-md shrink-0">
-                    <i class="fa-solid fa-layer-group text-amber-400"></i><span class="hidden sm:block">SORT & DROP</span>
-                </h2>
-                
                 <div class="flex items-center bg-slate-950 p-1 rounded-lg border border-slate-800 shrink-0 shadow-inner">
-                    <button onclick="ubahGayaLayoutSort('kiri-kanan')" class="px-3 md:px-5 py-1.5 rounded-md text-[10px] md:text-xs font-bold transition-all ${isKiriKanan ? 'bg-amber-600 text-slate-900 shadow-md' : 'text-slate-500 hover:text-white'}">Kiri-Kanan</button>
-                    <button onclick="ubahGayaLayoutSort('atas-bawah')" class="px-3 md:px-5 py-1.5 rounded-md text-[10px] md:text-xs font-bold transition-all ${!isKiriKanan ? 'bg-amber-600 text-slate-900 shadow-md' : 'text-slate-500 hover:text-white'}">Atas-Bawah</button>
-                </div>
-
-                <div class="flex items-center gap-2 md:gap-4 shrink-0">
-                    <div class="font-bold text-amber-400 bg-slate-800 px-3 md:px-4 py-1.5 md:py-2 rounded-xl border border-slate-700 shadow-inner flex items-center">
-                        <span class="text-[9px] md:text-xs text-slate-400 mr-2 uppercase hidden sm:block">Nilai:</span> 
-                        <span id="skor-sort" class="font-black text-white text-base md:text-xl leading-none">${Math.round(sortState.skor)}</span>
-                    </div>
-                    <button onclick="bukaDragAndDropArena()" class="bg-slate-700 hover:bg-slate-600 text-slate-200 px-3 md:px-4 py-1.5 md:py-2 rounded-xl font-bold transition-colors border border-slate-600 text-[10px] md:text-sm">Keluar</button>
+                    <button onclick="ubahGayaLayoutSort('kiri-kanan')" class="px-4 md:px-6 py-2 rounded-md text-[10px] md:text-xs font-bold transition-all ${isKiriKanan ? 'bg-amber-600 text-slate-900 shadow-md' : 'text-slate-500 hover:text-white'}">Layout Kiri-Kanan</button>
+                    <button onclick="ubahGayaLayoutSort('atas-bawah')" class="px-4 md:px-6 py-2 rounded-md text-[10px] md:text-xs font-bold transition-all ${!isKiriKanan ? 'bg-amber-600 text-slate-900 shadow-md' : 'text-slate-500 hover:text-white'}">Layout Atas-Bawah</button>
                 </div>
             </div>
 
@@ -212,6 +232,7 @@ function mulaiGameSort(isRenderUlang = false) {
         </div>
     `;
     pasangSensorSort();
+    jalankanTimerSort(isRenderUlang); // Timer hidup
 }
 
 function pasangSensorSort() {
@@ -300,21 +321,20 @@ function pasangSensorSort() {
                     if (iconKosong) iconKosong.style.display = 'none';
                     areaDrop.appendChild(elemenMasuk);
 
-                    // ==========================================
-                    // SISTEM PENALTI 2: Kurangi Poin Bertahap
-                    // ==========================================
                     let nilaiBawaan = 100 / sortState.dataSoal.length;
-                    let persenPotongan = 0.25; // Minus 25% setiap salah
+                    let persenPotongan = 0.25; 
                     
                     let nilaiDidapat = Math.max(0, nilaiBawaan - (soalData.salah * (nilaiBawaan * persenPotongan)));
                     sortState.skor += nilaiDidapat;
-                    // ==========================================
+
+                    // REMOTE CONTROL TOP BAR
+                    if (typeof updateSkorDnd === 'function') updateSkorDnd(Math.round(sortState.skor));
 
                     sortState.itemTerjawab++;
-                    document.getElementById('skor-sort').innerText = Math.round(sortState.skor);
                     if (typeof playSoundEffect === 'function') playSoundEffect('correct'); 
 
                     if (sortState.itemTerjawab === sortState.dataSoal.length) {
+                        if (sortState.timerInterval) clearInterval(sortState.timerInterval);
                         setTimeout(() => selebrasiKemenanganSort(), 400);
                     }
                 } else {
@@ -322,9 +342,6 @@ function pasangSensorSort() {
                     wadahKiri.appendChild(kartu);
                     if (typeof playSoundEffect === 'function') playSoundEffect('wrong'); 
                     
-                    // ==========================================
-                    // SISTEM PENALTI 2: Tambah hitungan salah ke memori
-                    // ==========================================
                     let idSoal = kartu.getAttribute('data-id');
                     let soalData = sortState.dataSoal.find(s => s.id === idSoal);
                     if(soalData) soalData.salah += 1;
@@ -345,11 +362,17 @@ function pasangSensorSort() {
 }
 
 function selebrasiKemenanganSort() {
+    if (sortState.timerInterval) clearInterval(sortState.timerInterval);
+    
     let nilaiAkhir = Math.round(sortState.skor);
     if (typeof playCelebrationAudio === 'function') {
         playCelebrationAudio(nilaiAkhir);
     }
-    const container = document.getElementById('main-content');
+    
+    const subtitleEl = document.getElementById('dnd-topbar-subtitle');
+    if (subtitleEl) subtitleEl.innerText = "Permainan Selesai";
+
+    const container = document.getElementById('dnd-game-container');
     container.innerHTML = `
         <div class="max-w-2xl mx-auto mt-10 p-8 bg-slate-900 rounded-[2.5rem] text-center border border-slate-700 shadow-[0_0_40px_rgba(251,191,36,0.2)] fade-in">
             <i class="fa-solid fa-medal text-6xl text-amber-400 mb-6 animate-bounce drop-shadow-[0_0_15px_rgba(251,191,36,0.5)]"></i>
@@ -361,7 +384,7 @@ function selebrasiKemenanganSort() {
             </div>
             
             <div class="flex justify-center gap-4">
-                <button onclick="bukaDragAndDropArena()" class="bg-slate-700 hover:bg-slate-600 text-white font-bold py-3 px-6 rounded-2xl border border-slate-600 transition-colors">Menu Game</button>
+                <button onclick="keluarFullscreenDnd()" class="bg-slate-700 hover:bg-slate-600 text-white font-bold py-3 px-6 rounded-2xl border border-slate-600 transition-colors">Menu Game</button>
                 <button onclick="mulaiGameSort()" class="bg-amber-500 hover:bg-amber-400 text-slate-900 font-black py-3 px-8 rounded-2xl shadow-[0_0_15px_rgba(251,191,36,0.4)] transition-transform">MAIN LAGI</button>
             </div>
         </div>
