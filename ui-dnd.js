@@ -351,6 +351,7 @@ function mulaiHitungMundurDnd(detikTunggu) {
         }
     }, 1000);
 }
+
 function keluarFullscreenDnd() {
     window.isDragDropMode = false;
     
