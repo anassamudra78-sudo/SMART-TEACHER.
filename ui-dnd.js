@@ -670,7 +670,209 @@ function bukaEditorSoalDnd() {
     window.scrollTo(0, 0);
 }
 
+// =========================================================================
+// FUNGSI EDITOR MATCH & DROP (DENGAN IMPORT EXCEL)
+// =========================================================================
+
 function bukaFormEditorDnd(jenis) {
-    // Fungsi pancingan sementara. Nanti kita ganti dengan form aslinya.
-    alert("Berhasil! Tombol menuju Editor " + jenis.toUpperCase() + " sudah aktif. Tunggu instruksi selanjutnya untuk merakit formnya!");
+    const mc = document.getElementById('main-content');
+    if (!mc) return;
+
+    if (jenis === 'match') {
+        renderEditorMatchDnd(mc);
+    } else {
+        alert("Editor untuk " + jenis.toUpperCase() + " sedang disiapkan. Kita selesaikan Match dulu ya Pak!");
+    }
+}
+
+function renderEditorMatchDnd(container) {
+    // Beri 2 data pancingan bawaan jika database masih kosong
+    if (!AppState.db.dnd.match || AppState.db.dnd.match.length === 0) {
+         AppState.db.dnd.match = [
+            { id: "m1", tipe: "teks", soal: "كِتَابٌ", arti: "Buku" },
+            { id: "m2", tipe: "gambar", soal: "🦆", arti: "Bebek" }
+         ];
+    }
+
+    let daftarSoalHtml = AppState.db.dnd.match.map((item, index) => `
+        <div class="bg-slate-800 p-3 rounded-xl border border-slate-700 flex justify-between items-center mb-3 hover:border-emerald-500/50 transition-colors">
+            <div class="flex items-center gap-3 md:gap-4">
+                <span class="bg-emerald-900/50 text-emerald-400 font-black w-8 h-8 flex items-center justify-center rounded-lg text-xs border border-emerald-500/30 shrink-0">${index + 1}</span>
+                <div>
+                    <p class="${item.tipe === 'gambar' ? 'text-2xl' : 'font-arabic text-xl'} text-white leading-none mb-1">${item.soal}</p>
+                    <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Arti: <span class="text-emerald-300">${item.arti}</span> <span class="ml-2 px-1.5 py-0.5 bg-slate-700 rounded text-slate-300 text-[9px]">${item.tipe}</span></p>
+                </div>
+            </div>
+            <button onclick="hapusSoalMatch('${item.id}')" class="w-8 h-8 rounded-lg bg-rose-500/10 text-rose-400 hover:bg-rose-500 hover:text-white flex items-center justify-center transition-colors shrink-0">
+                <i class="fa-solid fa-trash-can text-xs"></i>
+            </button>
+        </div>
+    `).join('');
+
+    container.innerHTML = `
+        <div class="max-w-6xl mx-auto space-y-6 fade-in pb-10 mt-4 px-2 sm:px-0">
+            <div class="flex justify-between items-center bg-slate-900 p-4 rounded-2xl shadow-xl border border-slate-700">
+                <h2 class="text-base sm:text-xl font-black text-white flex items-center gap-2">
+                    <i class="fa-solid fa-puzzle-piece text-emerald-400"></i> Editor Match & Drop
+                </h2>
+                <button onclick="bukaEditorSoalDnd()" class="bg-slate-800 hover:bg-rose-600 text-slate-300 hover:text-white px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl text-xs font-bold border border-slate-700 hover:border-rose-500 transition-all flex items-center">
+                    <i class="fa-solid fa-arrow-left mr-1.5"></i> Kembali
+                </button>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Kolom Kiri: Import Excel & Manual -->
+                <div class="lg:col-span-1 space-y-6">
+                    
+                    <!-- IMPORT EXCEL -->
+                    <div class="bg-slate-800 p-5 rounded-3xl border border-slate-700 shadow-xl">
+                        <h3 class="font-black text-emerald-400 mb-3 uppercase tracking-widest text-sm flex items-center"><i class="fa-solid fa-file-excel mr-2"></i> Import Excel</h3>
+                        <p class="text-[10px] text-slate-400 mb-4 leading-relaxed">Download template Excel, isi soal di laptop, lalu upload kembali ke sini agar lebih cepat.</p>
+                        
+                        <button onclick="downloadTemplateMatchExcel()" class="w-full mb-4 bg-slate-700 hover:bg-slate-600 text-emerald-400 font-bold py-2.5 rounded-xl text-xs transition-colors border border-slate-600 flex items-center justify-center">
+                            <i class="fa-solid fa-download mr-2"></i> Download Template
+                        </button>
+                        
+                        <div class="relative overflow-hidden">
+                            <input type="file" id="file-excel-match" accept=".xlsx, .xls" onchange="bacaExcelMatch(event)" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
+                            <div class="bg-emerald-900/30 border border-emerald-500/30 text-emerald-300 text-xs font-bold py-3 px-4 rounded-xl text-center flex flex-col items-center justify-center transition-all hover:bg-emerald-800/40">
+                                <i class="fa-solid fa-cloud-arrow-up text-xl mb-1"></i>
+                                <span>Klik untuk Upload Excel</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- TAMBAH MANUAL -->
+                    <div class="bg-slate-800 p-5 rounded-3xl border border-slate-700 shadow-xl">
+                        <h3 class="font-black text-emerald-400 mb-4 uppercase tracking-widest text-sm flex items-center"><i class="fa-solid fa-plus-circle mr-2"></i> Tambah Manual</h3>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="text-[11px] font-bold text-slate-400 block mb-1.5 uppercase">Tipe Balok</label>
+                                <select id="match-input-tipe" class="w-full bg-slate-900 border border-slate-700 text-white text-sm rounded-xl p-3 outline-none focus:border-emerald-500 font-bold transition-colors">
+                                    <option value="teks">Teks (Arab/Latin)</option>
+                                    <option value="gambar">Gambar (Emoji)</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="text-[11px] font-bold text-slate-400 block mb-1.5 uppercase">Soal (Kosakata/Emoji)</label>
+                                <input type="text" id="match-input-soal" class="w-full bg-slate-900 border border-slate-700 text-white font-arabic text-xl rounded-xl p-3 outline-none focus:border-emerald-500 transition-colors" dir="auto" placeholder="Contoh: كِتَابٌ">
+                            </div>
+                            <div>
+                                <label class="text-[11px] font-bold text-slate-400 block mb-1.5 uppercase">Arti (Pasangan)</label>
+                                <input type="text" id="match-input-arti" class="w-full bg-slate-900 border border-slate-700 text-white text-sm font-bold rounded-xl p-3 outline-none focus:border-emerald-500 transition-colors" placeholder="Contoh: Buku">
+                            </div>
+                            <button onclick="tambahSoalMatch()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-black py-3 rounded-xl shadow-lg transition-transform hover:scale-[1.02] flex items-center justify-center">
+                                <i class="fa-solid fa-floppy-disk mr-2"></i> Simpan ke Daftar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Daftar Soal Kanan -->
+                <div class="lg:col-span-2 bg-slate-900 p-5 sm:p-6 rounded-3xl border border-slate-700 shadow-inner flex flex-col lg:h-[80vh]">
+                    <div class="flex justify-between items-center mb-4 border-b border-slate-800 pb-3 shrink-0">
+                        <h3 class="font-black text-white text-sm sm:text-base flex items-center"><i class="fa-solid fa-list mr-2 text-slate-400"></i>Daftar Pasangan (<span class="text-emerald-400 ml-1">${AppState.db.dnd.match.length}</span>)</h3>
+                        <button onclick="simpanKeDatabaseMatch()" class="bg-indigo-600 hover:bg-indigo-500 text-white text-[10px] sm:text-xs font-bold px-3 sm:px-4 py-2 rounded-xl shadow-md transition-transform hover:scale-105 flex items-center">
+                            <i class="fa-solid fa-cloud-arrow-up mr-1.5"></i> Simpan Permanen
+                        </button>
+                    </div>
+                    <div class="flex-1 overflow-y-auto pr-2 custom-scrollbar">
+                        ${daftarSoalHtml || '<div class="text-center bg-slate-800/50 rounded-2xl py-12 border border-dashed border-slate-700"><i class="fa-solid fa-box-open text-4xl text-slate-600 mb-3"></i><p class="text-slate-400 text-xs font-bold">Belum ada pasangan soal.<br>Silakan tambah manual atau import via Excel.</p></div>'}
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+// Fitur 1: Tambah Manual
+function tambahSoalMatch() {
+    const tipe = document.getElementById('match-input-tipe').value;
+    const soal = document.getElementById('match-input-soal').value.trim();
+    const arti = document.getElementById('match-input-arti').value.trim();
+
+    if (!soal || !arti) {
+        return typeof showAlert === 'function' ? showAlert('Peringatan', 'Soal dan Arti tidak boleh kosong!', 'error') : alert('Soal dan Arti tidak boleh kosong!');
+    }
+
+    let idUnik = typeof generateId === 'function' ? generateId() : 'm_' + Date.now();
+    AppState.db.dnd.match.push({ id: idUnik, tipe: tipe, soal: soal, arti: arti });
+    renderEditorMatchDnd(document.getElementById('main-content'));
+}
+
+// Fitur 2: Hapus Manual
+function hapusSoalMatch(id) {
+    AppState.db.dnd.match = AppState.db.dnd.match.filter(item => item.id !== id);
+    renderEditorMatchDnd(document.getElementById('main-content'));
+}
+
+// Fitur 3: Simpan Ke Database Induk
+function simpanKeDatabaseMatch() {
+    if (typeof saveDatabase === 'function') saveDatabase();
+    if (typeof showAlert === 'function') showAlert('Berhasil', 'Bank Soal Match & Drop tersimpan di HP & Cloud!', 'success');
+    else alert('Bank Soal Match & Drop berhasil disimpan!');
+}
+
+// Fitur 4: Download Template Excel
+function downloadTemplateMatchExcel() {
+    if (typeof XLSX === 'undefined') {
+        return typeof showAlert === 'function' ? showAlert('Error', 'Sistem Excel belum termuat sepenuhnya. Tunggu sebentar atau pastikan internet stabil.', 'error') : alert('Library Excel belum termuat.');
+    }
+    const ws_data = [
+        ['Tipe Balok', 'Soal (Kosakata/Emoji)', 'Arti (Pasangan)'],
+        ['PENTING: Kolom Tipe Balok HANYA boleh diisi teks atau gambar (huruf kecil).', '', ''],
+        ['teks', 'كِتَابٌ', 'Buku'],
+        ['gambar', '🚗', 'Mobil'],
+        ['teks', 'مَدْرَسَةٌ', 'Sekolah']
+    ];
+    const ws = XLSX.utils.aoa_to_sheet(ws_data);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Template_Match_Drop");
+    XLSX.writeFile(wb, "Template_Soal_Match_Drop.xlsx");
+}
+
+// Fitur 5: Proses Upload Excel
+function bacaExcelMatch(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        try {
+            const data = new Uint8Array(e.target.result);
+            const workbook = XLSX.read(data, { type: 'array' });
+            const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+            const jsonRows = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
+            
+            let jumlahBerhasil = 0;
+            // Baris 0 itu header, Baris 1 itu peringatan. Data asli mulai dari baris ke-2 (index 2)
+            for (let i = 2; i < jsonRows.length; i++) {
+                let row = jsonRows[i];
+                if (!row || row.length < 3) continue; 
+                
+                let tipe = row[0] ? String(row[0]).trim().toLowerCase() : 'teks';
+                let soal = row[1] ? String(row[1]).trim() : '';
+                let arti = row[2] ? String(row[2]).trim() : '';
+                
+                if (!soal || !arti) continue; 
+                if (tipe !== 'teks' && tipe !== 'gambar') tipe = 'teks'; // Paksa ke teks kalau salah ketik
+                
+                let idUnik = typeof generateId === 'function' ? generateId() : 'm_' + Date.now() + '_' + i;
+                AppState.db.dnd.match.push({ id: idUnik, tipe: tipe, soal: soal, arti: arti });
+                jumlahBerhasil++;
+            }
+            
+            if (jumlahBerhasil > 0) {
+                renderEditorMatchDnd(document.getElementById('main-content'));
+                if (typeof showAlert === 'function') showAlert('Berhasil', `${jumlahBerhasil} soal dari Excel sukses ditambahkan! Jangan lupa klik Simpan Permanen.`, 'success');
+                else alert(`${jumlahBerhasil} soal berhasil ditambahkan!`);
+            } else {
+                if (typeof showAlert === 'function') showAlert('Error', 'Data Excel kosong atau format tidak sesuai template.', 'error');
+            }
+        } catch (err) {
+            if (typeof showAlert === 'function') showAlert('Error', 'Gagal membaca Excel: ' + err.message, 'error');
+        }
+        event.target.value = ''; // Reset input agar bisa upload file yang sama lagi jika diedit
+    };
+    reader.readAsArrayBuffer(file);
 }
