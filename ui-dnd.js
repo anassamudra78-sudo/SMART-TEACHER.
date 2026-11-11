@@ -32,6 +32,12 @@ function renderDragDropPage(container) {
                     <p class="text-slate-400 text-xs md:text-sm max-w-xl mx-auto leading-relaxed">
                         Pilih mode permainan interaktif di bawah ini. Geser dan letakkan balok ke tempat yang benar untuk mendapatkan poin!
                     </p>
+                    <!-- TOMBOL PINTU MASUK EDITOR SOAL DND -->
+<div class="mt-6 flex justify-center">
+    <button onclick="bukaEditorSoalDnd()" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2.5 px-6 rounded-xl shadow-[0_0_20px_rgba(79,70,229,0.4)] transition-all flex items-center border border-indigo-400 hover:scale-105">
+        <i class="fa-solid fa-pen-ruler mr-2"></i> Buat / Edit Soal DND
+    </button>
+</div>
                 </div>
             </div>
 
