@@ -3,6 +3,16 @@
 // ==========================================================
 
 function renderDragDropPage(container) {
+    // --- 1. SAPU JAGAT: Bersihkan efek melayang di main-content ---
+    const mc = document.getElementById('main-content');
+    if (mc) mc.removeAttribute('style');
+    
+    // --- 2. Matikan status mode game ---
+    window.isDragDropMode = false;
+    
+    // --- 3. Pastikan layar hitam modal tertutup ---
+    const modal = document.getElementById('dnd-arena-modal');
+    if (modal) modal.classList.add('hidden');
     container.innerHTML = `
         <div class="max-w-5xl mx-auto space-y-6 fade-in pb-4">
             <!-- HERO SECTION -->
