@@ -117,45 +117,26 @@ function amankanLayarPenuhDragDrop() {
 
 function bukaLobiDragDrop(jenisGame) {
     gameDndTerpilih = jenisGame;
-    const container = amankanLayarPenuhDragDrop();
+    
+    // 1. Langsung buka modal fullscreen (Kamar khusus yang sudah ada Top Bar-nya)
+    const modal = document.getElementById('dnd-arena-modal');
+    if (modal) modal.classList.remove('hidden');
+    window.isDragDropMode = true;
+
+    // 2. Ubah judul dinamis di Top Bar sesuai game yang dipilih
+    let namaGame = jenisGame === 'match' ? 'MATCH & DROP' : (jenisGame === 'sort' ? 'SORT & DROP' : 'BUILD & DROP');
+    const subtitleEl = document.getElementById('dnd-topbar-subtitle');
+    if (subtitleEl) subtitleEl.innerText = `Persiapan: ${namaGame}`;
+
+    // 3. Bidik wadah kosong di bawah Top Bar
+    const container = document.getElementById('dnd-game-container');
     if (!container) return;
 
-    let namaGame = jenisGame === 'match' ? 'MATCH & DROP' : (jenisGame === 'sort' ? 'SORT & DROP' : 'BUILD & DROP');
     let kelasOpts = AppState.db.kelas.map(k => `<option value="${k.id}">${k.kode}</option>`).join('');
     let mapelOpts = AppState.db.mapel.map(m => `<option value="${m.id}">${m.nama}</option>`).join('');
 
+    // 4. Masukkan HANYA form lobi ke dalam wadah (Top bar lama dihapus)
     container.innerHTML = `
-        <!-- TOP BAR DND - FULLSCREEN WIDTH -->
-        <div class="bg-slate-900 border-b border-slate-800 p-3 sm:p-4 flex flex-wrap gap-3 justify-between items-center sticky top-0 z-50 shadow-xl w-full">
-            <div class="flex items-center space-x-3 ml-2 sm:ml-4">
-                <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-orange-500 text-white flex items-center justify-center font-black shadow-lg">
-                    <i class="fa-solid fa-gamepad text-xl sm:text-2xl"></i>
-                </div>
-                <div>
-                    <h1 class="text-sm sm:text-lg font-black text-white leading-tight uppercase">SMART DRAG & DROP ARENA</h1>
-                    <p class="text-[10px] sm:text-xs text-orange-400 font-bold">Persiapan: ${namaGame}</p>
-                </div>
-            </div>
-            
-            <div class="flex items-center space-x-2 mr-2 sm:mr-4">
-                <div class="hidden sm:flex items-center space-x-2">
-                    <button class="bg-rose-500/10 text-rose-400 border border-rose-500/20 px-3 py-1.5 rounded-xl text-xs font-bold flex items-center">
-                        <i class="fa-solid fa-stopwatch mr-1.5"></i> 15s
-                    </button>
-                    <button class="bg-amber-500/10 text-amber-400 border border-amber-500/20 px-3 py-1.5 rounded-xl text-xs font-bold flex items-center">
-                        <i class="fa-solid fa-star mr-1.5"></i> SKOR: 0
-                    </button>
-                    <button class="bg-emerald-500 hover:bg-emerald-400 text-slate-900 px-3 py-1.5 rounded-xl text-xs font-black flex items-center transition-colors">
-                        <i class="fa-solid fa-volume-high mr-1.5"></i> Musik Nyala
-                    </button>
-                </div>
-                <button onclick="keluarFullscreenDnd()" class="bg-slate-800 hover:bg-rose-600 text-slate-300 hover:text-white px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl text-xs font-bold border border-slate-700 hover:border-rose-500 transition-all flex items-center">
-                    <i class="fa-solid fa-arrow-right-from-bracket mr-1.5"></i> Keluar
-                </button>
-            </div>
-        </div>
-
-        <!-- AREA FORM LOBI TENGAH -->
         <div class="max-w-xl mx-auto p-4 select-none fade-in pb-12 mt-4 sm:mt-8 w-full">
             <div class="bg-slate-900/95 p-6 sm:p-8 rounded-[2rem] border-2 border-amber-500/30 shadow-2xl relative overflow-hidden text-center z-20">
                 
@@ -255,7 +236,6 @@ function bukaLobiDragDrop(jenisGame) {
         }, 50);
     }
 }
-
 // -------------------------------------------------------------
 // TIMER HITUNG MUNDUR (DENGAN KECERDASAN PELACAK LOBI DND)
 // -------------------------------------------------------------
