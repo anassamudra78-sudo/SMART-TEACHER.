@@ -79,25 +79,16 @@ function bukaSetupGame(jenisGame) {
 }
 
 function jalankanTimerMatch() {
-    // Ambil durasi dari pilihan di Lobi (default 15 detik kalau belum dipilih)
-    let elDurasi = document.getElementById('lobby-dnd-durasi');
-    matchState.sisaWaktu = elDurasi ? parseInt(elDurasi.value) : 15;
+    // Ambil dari variabel global
+    matchState.sisaWaktu = window.dndDurasiPilihan || 15;
     
-    // Matikan timer lama kalau ada
     if (matchState.timerInterval) clearInterval(matchState.timerInterval);
-    
-    // Tampilkan di Top Bar
     if (typeof updateTimerDnd === 'function') updateTimerDnd(matchState.sisaWaktu);
 
     matchState.timerInterval = setInterval(() => {
         matchState.sisaWaktu--;
-        
-        // Panggil fungsi Remote Control Top Bar
-        if (typeof updateTimerDnd === 'function') {
-            updateTimerDnd(matchState.sisaWaktu);
-        }
+        if (typeof updateTimerDnd === 'function') updateTimerDnd(matchState.sisaWaktu);
 
-        // Kalau sisa 5 detik, putar suara 'Tick' tegang seperti di Kuis
         if (matchState.sisaWaktu <= 5 && matchState.sisaWaktu > 0) {
              if (typeof playTick === 'function') playTick(900);
         }
@@ -105,7 +96,6 @@ function jalankanTimerMatch() {
         if (matchState.sisaWaktu <= 0) {
             clearInterval(matchState.timerInterval);
             if (typeof playSoundEffect === 'function') playSoundEffect('habis');
-            // Waktu habis, game selesai paksa
             selebrasiKemenangan();
         }
     }, 1000);
