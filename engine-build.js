@@ -1,12 +1,14 @@
 // ==========================================================
 // FILE: engine-build.js
-// FUNGSI: Mesin "Build & Drop" (UNIVERSAL BHS ARAB/LATIN - PENALTI & PATEN)
+// FUNGSI: Mesin "Build & Drop" (DENGAN TOP BAR GLOBAL & TIMER)
 // ==========================================================
 
 let buildState = {
     skor: 0,
     soalAktif: 0,
     kataTerjawab: 0,
+    sisaWaktu: 0,
+    timerInterval: null,
     dataSoal: [
         {
             id: "b1",
@@ -29,7 +31,6 @@ let buildState = {
                 { id: "w5", teks: "الْمَسْجِدِ" }
             ]
         },
-        // CONTOH SOAL NON-ARAB (LATIN) - Sistem akan otomatis mendeteksi arah kiri-ke-kanan
         {
             id: "b3",
             arti: "Buku itu ada di atas meja kayu",
@@ -56,12 +57,42 @@ function bukaSetupGame(jenisGame) {
     }
 }
 
+function jalankanTimerBuild() {
+    let elDurasi = document.getElementById('lobby-dnd-durasi');
+    buildState.sisaWaktu = elDurasi ? parseInt(elDurasi.value) : 15;
+    
+    if (buildState.timerInterval) clearInterval(buildState.timerInterval);
+    if (typeof updateTimerDnd === 'function') updateTimerDnd(buildState.sisaWaktu);
+
+    buildState.timerInterval = setInterval(() => {
+        buildState.sisaWaktu--;
+        if (typeof updateTimerDnd === 'function') updateTimerDnd(buildState.sisaWaktu);
+
+        if (buildState.sisaWaktu <= 5 && buildState.sisaWaktu > 0) {
+             if (typeof playTick === 'function') playTick(900);
+        }
+
+        if (buildState.sisaWaktu <= 0) {
+            clearInterval(buildState.timerInterval);
+            if (typeof playSoundEffect === 'function') playSoundEffect('habis');
+            
+            // Waktu habis = Langsung akhiri game dengan skor seadanya
+            selebrasiKemenanganBuild();
+        }
+    }, 1000);
+}
+
 function mulaiGameBuild(lanjutSoalBerikutnya = false) {
-    const container = amankanLayarPenuhDragDrop();
+    const subtitleEl = document.getElementById('dnd-topbar-subtitle');
+    if (subtitleEl) subtitleEl.innerText = "Sedang Bermain...";
+
+    const container = document.getElementById('dnd-game-container');
+    if (!container) return;
     
     if (!lanjutSoalBerikutnya) {
         buildState.skor = 0;
         buildState.soalAktif = 0;
+        if (typeof updateSkorDnd === 'function') updateSkorDnd(0);
     }
     
     buildState.kataTerjawab = 0;
@@ -73,36 +104,25 @@ function mulaiGameBuild(lanjutSoalBerikutnya = false) {
     let gridKiri = jumlahKata <= 4 ? "grid-cols-2" : "grid-cols-3 md:grid-cols-4";
     let tinggiKotak = "h-14 md:h-20";
 
-    // =======================================================
-    // AUTO-DETEKSI BAHASA (Untuk arah susunan dan font)
-    // =======================================================
     let isArabic = soalSekarang.susunan.some(item => /[\u0600-\u06FF]/.test(item.teks));
-    let arahSusunan = isArabic ? 'flex-row-reverse' : 'flex-row'; // Arab dari Kanan, Latin dari Kiri
+    let arahSusunan = isArabic ? 'flex-row-reverse' : 'flex-row';
     let fontTeks = isArabic ? 'font-arabic text-2xl md:text-3xl' : 'font-black text-sm md:text-lg tracking-wide uppercase';
 
     container.innerHTML = `
-        <div class="max-w-7xl mx-auto p-2 md:p-4 mt-2 select-none fade-in pb-20">
+        <div class="max-w-7xl mx-auto p-2 md:p-4 mt-2 select-none fade-in pb-20 w-full h-full">
             
             <div class="flex flex-wrap justify-between items-center bg-slate-900 p-3 md:p-4 rounded-2xl shadow-[0_4px_20px_rgba(0,0,0,0.3)] mb-4 border border-slate-700 gap-3 relative z-10">
                 <h2 class="text-base md:text-xl font-black text-white flex items-center gap-2 drop-shadow-md shrink-0">
                     <i class="fa-solid fa-cubes text-violet-400"></i><span class="hidden sm:block">BUILD & DROP</span>
                 </h2>
                 
-                <div class="flex items-center gap-2 bg-slate-950 px-3 py-1.5 rounded-lg border border-slate-800 shadow-inner">
-                    <span class="text-[10px] text-slate-400 font-bold uppercase">Level</span>
+                <div class="flex items-center gap-2 bg-slate-950 px-4 py-2 rounded-xl border border-slate-800 shadow-inner">
+                    <span class="text-[10px] md:text-xs text-slate-400 font-bold uppercase">Level Soal:</span>
                     <span class="text-violet-400 font-black text-sm md:text-base">${buildState.soalAktif + 1} / ${buildState.dataSoal.length}</span>
-                </div>
-
-                <div class="flex items-center gap-2 md:gap-4 shrink-0">
-                    <div class="font-bold text-violet-400 bg-slate-800 px-3 md:px-4 py-1.5 md:py-2 rounded-xl border border-slate-700 shadow-inner flex items-center">
-                        <span class="text-[9px] md:text-xs text-slate-400 mr-2 uppercase hidden sm:block">Nilai:</span> 
-                        <span id="skor-build" class="font-black text-white text-base md:text-xl leading-none">${Math.round(buildState.skor)}</span>
-                    </div>
-                    <button onclick="bukaDragAndDropArena()" class="bg-slate-700 hover:bg-slate-600 text-slate-200 px-3 md:px-4 py-1.5 md:py-2 rounded-xl font-bold transition-colors border border-slate-600 text-[10px] md:text-sm">Keluar</button>
                 </div>
             </div>
 
-            <div class="flex flex-col lg:flex-row gap-4 md:gap-6 bg-[#0f172a] p-4 md:p-6 rounded-3xl border border-slate-800 shadow-[0_8px_30px_rgba(0,0,0,0.4)] relative overflow-hidden">
+            <div class="flex flex-col lg:flex-row gap-4 md:gap-6 bg-[#0f172a] p-4 md:p-6 rounded-3xl border border-slate-800 shadow-[0_8px_30px_rgba(0,0,0,0.4)] relative overflow-hidden min-h-[450px]">
                 
                 <div class="absolute top-0 left-1/4 w-96 h-96 bg-violet-500/10 rounded-full blur-[100px] pointer-events-none"></div>
                 <div class="absolute bottom-0 right-1/4 w-96 h-96 bg-fuchsia-500/10 rounded-full blur-[100px] pointer-events-none"></div>
@@ -133,7 +153,6 @@ function mulaiGameBuild(lanjutSoalBerikutnya = false) {
                             <p class="text-xs md:text-sm text-slate-300 font-bold tracking-wide">"${soalSekarang.arti}"</p>
                         </div>
                         
-                        <!-- Arah susunan dikontrol otomatis oleh arahSusunan -->
                         <div class="flex-1 p-3 md:p-6 flex ${arahSusunan} flex-wrap justify-center gap-2 md:gap-4 relative z-10 content-center" id="area-target-kalimat">
                             ${soalSekarang.susunan.map((item, index) => `
                                 <div class="kotak-target-build w-16 sm:w-20 md:w-24 lg:w-[100px] ${tinggiKotak} bg-slate-950 border-2 border-dashed border-slate-600 rounded-xl flex items-center justify-center transition-all shrink-0 relative overflow-hidden shadow-inner" data-target="${item.id}">
@@ -148,6 +167,7 @@ function mulaiGameBuild(lanjutSoalBerikutnya = false) {
         </div>
     `;
     pasangSensorBuild();
+    jalankanTimerBuild(); // Timer menyala setiap pindah level soal
 }
 
 function pasangSensorBuild() {
@@ -215,9 +235,6 @@ function pasangSensorBuild() {
                     kotakTarget.classList.remove('border-dashed', 'border-slate-600', 'bg-slate-950');
                     kotakTarget.classList.add('border-solid', 'border-violet-500', 'bg-violet-900/30', 'terisi', 'shadow-[0_0_10px_rgba(139,92,246,0.3)]');
                     
-                    // ==========================================
-                    // SISTEM PENALTI 25% (SAMA DENGAN GAME LAIN)
-                    // ==========================================
                     let totalNilaiGame = 100;
                     let totalKataSemuaSoal = buildState.dataSoal.reduce((acc, curr) => acc + curr.susunan.length, 0);
                     let nilaiPerKata = totalNilaiGame / totalKataSemuaSoal;
@@ -228,10 +245,15 @@ function pasangSensorBuild() {
                     buildState.skor += nilaiDidapat;
                     buildState.kataTerjawab++;
                     
-                    document.getElementById('skor-build').innerText = Math.round(buildState.skor);
+                    // UPDATE SKOR DI TOP BAR GLOBAL
+                    if (typeof updateSkorDnd === 'function') updateSkorDnd(Math.round(buildState.skor));
+
                     if (typeof playSoundEffect === 'function') playSoundEffect('correct'); 
 
                     if (buildState.kataTerjawab === soalSekarang.susunan.length) {
+                        // Matikan timer sejenak karena soal sudah selesai disusun
+                        if (buildState.timerInterval) clearInterval(buildState.timerInterval);
+                        
                         buildState.soalAktif++;
                         if (buildState.soalAktif < buildState.dataSoal.length) {
                             setTimeout(() => mulaiGameBuild(true), 1200);
@@ -259,10 +281,15 @@ function pasangSensorBuild() {
 }
 
 function selebrasiKemenanganBuild() {
+    if (buildState.timerInterval) clearInterval(buildState.timerInterval);
+    
     let nilaiAkhir = Math.round(buildState.skor);
     if (typeof playCelebrationAudio === 'function') playCelebrationAudio(nilaiAkhir);
     
-    const container = document.getElementById('main-content');
+    const subtitleEl = document.getElementById('dnd-topbar-subtitle');
+    if (subtitleEl) subtitleEl.innerText = "Permainan Selesai";
+
+    const container = document.getElementById('dnd-game-container');
     container.innerHTML = `
         <div class="max-w-2xl mx-auto mt-10 p-8 bg-slate-900 rounded-[2.5rem] text-center border border-slate-700 shadow-[0_0_40px_rgba(139,92,246,0.2)] fade-in">
             <i class="fa-solid fa-medal text-6xl text-amber-400 mb-6 animate-bounce drop-shadow-[0_0_15px_rgba(251,191,36,0.5)]"></i>
@@ -274,7 +301,7 @@ function selebrasiKemenanganBuild() {
             </div>
             
             <div class="flex justify-center gap-4">
-                <button onclick="bukaDragAndDropArena()" class="bg-slate-700 hover:bg-slate-600 text-white font-bold py-3 px-6 rounded-2xl border border-slate-600 transition-colors">Menu Game</button>
+                <button onclick="keluarFullscreenDnd()" class="bg-slate-700 hover:bg-slate-600 text-white font-bold py-3 px-6 rounded-2xl border border-slate-600 transition-colors">Menu Game</button>
                 <button onclick="mulaiGameBuild()" class="bg-violet-600 hover:bg-violet-500 text-white font-black py-3 px-8 rounded-2xl shadow-[0_0_15px_rgba(139,92,246,0.4)] transition-transform">MAIN LAGI</button>
             </div>
         </div>
