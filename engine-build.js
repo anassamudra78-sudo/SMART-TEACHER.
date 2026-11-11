@@ -58,8 +58,8 @@ function bukaSetupGame(jenisGame) {
 }
 
 function jalankanTimerBuild() {
-    let elDurasi = document.getElementById('lobby-dnd-durasi');
-    buildState.sisaWaktu = elDurasi ? parseInt(elDurasi.value) : 15;
+    // Ambil dari variabel global
+    buildState.sisaWaktu = window.dndDurasiPilihan || 15;
     
     if (buildState.timerInterval) clearInterval(buildState.timerInterval);
     if (typeof updateTimerDnd === 'function') updateTimerDnd(buildState.sisaWaktu);
@@ -75,8 +75,6 @@ function jalankanTimerBuild() {
         if (buildState.sisaWaktu <= 0) {
             clearInterval(buildState.timerInterval);
             if (typeof playSoundEffect === 'function') playSoundEffect('habis');
-            
-            // Waktu habis = Langsung akhiri game dengan skor seadanya
             selebrasiKemenanganBuild();
         }
     }, 1000);
