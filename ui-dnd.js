@@ -351,11 +351,26 @@ function mulaiHitungMundurDnd(detikTunggu) {
         }
     }, 1000);
 }
-// Menghapus elemen Fullscreen lalu mengembalikan ke menu utama
 function keluarFullscreenDnd() {
-    const fsDiv = document.getElementById('dnd-fullscreen-arena');
-    if (fsDiv) fsDiv.remove();
-    switchTab('dragdrop'); // Kembali ke pilihan game
+    window.isDragDropMode = false;
+    
+    // 1. Sembunyikan modal fullscreen
+    const modal = document.getElementById('dnd-arena-modal');
+    if (modal) modal.classList.add('hidden');
+    
+    // 2. Bersihkan kontainer game di dalam modal
+    const wadahGame = document.getElementById('dnd-game-container');
+    if (wadahGame) wadahGame.innerHTML = '';
+    
+    // 3. KEMBALIKAN KE LOBI UTAMA DENGAN TOP BAR LENGKAP
+    const mainContainer = document.getElementById('main-content');
+    if (mainContainer && typeof renderDragDropPage === 'function') {
+        renderDragDropPage(mainContainer);
+    } else if (typeof switchTab === 'function') {
+        switchTab('dragdrop');
+    }
+    
+    window.scrollTo(0, 0);
 }
 function updateLobbySiswaDnd() {
     const kelasId = document.getElementById('lobby-dnd-kelas').value;
