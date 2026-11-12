@@ -58,6 +58,7 @@ function bukaSetupGame(jenisGame) {
 }
 
 function jalankanTimerBuild() {
+    // Ambil dari variabel global
     buildState.sisaWaktu = window.dndDurasiPilihan || 15;
     
     if (buildState.timerInterval) clearInterval(buildState.timerInterval);
@@ -73,53 +74,26 @@ function jalankanTimerBuild() {
 
         if (buildState.sisaWaktu <= 0) {
             clearInterval(buildState.timerInterval);
-            if (typeof playDndSound === 'function') playDndSound('salah');
-            
-            // Lanjut ke soal kalimat berikutnya jika waktu habis
-            buildState.soalAktif++;
-            if (buildState.soalAktif < buildState.dataSoal.length) {
-                setTimeout(() => mulaiGameBuild(true), 800);
-            } else {
-                selebrasiKemenanganBuild();
-            }
+            if (typeof playSoundEffect === 'function') playSoundEffect('habis');
+            selebrasiKemenanganBuild();
         }
     }, 1000);
 }
 
 function mulaiGameBuild(lanjutSoalBerikutnya = false) {
     const subtitleEl = document.getElementById('dnd-topbar-subtitle');
+    if (subtitleEl) subtitleEl.innerText = "Sedang Bermain...";
+
     const container = document.getElementById('dnd-game-container');
     if (!container) return;
-
-    // 1. Jika baru mulai dari lobi, tarik data, terapkan rentang soal & acak jika dipilih
+    
+    if (AppState.db.dnd && AppState.db.dnd.build && AppState.db.dnd.build.length > 0) {
+        buildState.dataSoal = JSON.parse(JSON.stringify(AppState.db.dnd.build));
+    }
     if (!lanjutSoalBerikutnya) {
         buildState.skor = 0;
         buildState.soalAktif = 0;
         if (typeof updateSkorDnd === 'function') updateSkorDnd(0);
-
-        let sumberData = (AppState.db.dnd && AppState.db.dnd.build && AppState.db.dnd.build.length > 0)
-            ? JSON.parse(JSON.stringify(AppState.db.dnd.build))
-            : JSON.parse(JSON.stringify(buildState.dataSoal));
-
-        // Terapkan filter Rentang Soal dari Lobi (Mulai Dari ... Sampai ...)
-        const dari = (window.dndRentang && window.dndRentang.dari) ? window.dndRentang.dari : 1;
-        const sampai = (window.dndRentang && window.dndRentang.sampai) ? window.dndRentang.sampai : sumberData.length;
-        sumberData = sumberData.slice(dari - 1, sampai);
-
-        if (window.dndRentang && window.dndRentang.acak) {
-            sumberData.sort(() => Math.random() - 0.5);
-        }
-
-        buildState.dataSoal = sumberData;
-    }
-
-    if (!buildState.dataSoal || buildState.soalAktif >= buildState.dataSoal.length) {
-        selebrasiKemenanganBuild();
-        return;
-    }
-
-    if (subtitleEl) {
-        subtitleEl.innerText = `Build & Drop • Soal ${buildState.soalAktif + 1} dari ${buildState.dataSoal.length}`;
     }
     
     buildState.kataTerjawab = 0;
@@ -136,67 +110,65 @@ function mulaiGameBuild(lanjutSoalBerikutnya = false) {
     let fontTeks = isArabic ? 'font-arabic text-2xl md:text-3xl' : 'font-black text-sm md:text-lg tracking-wide uppercase';
 
     container.innerHTML = `
-        <div class="min-h-screen w-full bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-950 py-3 px-2">
-            <div class="max-w-7xl mx-auto p-2 md:p-4 mt-1 select-none fade-in pb-20 w-full h-full">
+        <div class="max-w-7xl mx-auto p-2 md:p-4 mt-2 select-none fade-in pb-20 w-full h-full">
+            
+            <div class="flex flex-wrap justify-between items-center bg-slate-900 p-3 md:p-4 rounded-2xl shadow-[0_4px_20px_rgba(0,0,0,0.3)] mb-4 border border-slate-700 gap-3 relative z-10">
+                <h2 class="text-base md:text-xl font-black text-white flex items-center gap-2 drop-shadow-md shrink-0">
+                    <i class="fa-solid fa-cubes text-violet-400"></i><span class="hidden sm:block">BUILD & DROP</span>
+                </h2>
                 
-                <div class="flex flex-wrap justify-between items-center bg-slate-900/90 backdrop-blur-md p-3 md:p-4 rounded-2xl shadow-[0_4px_20px_rgba(0,0,0,0.3)] mb-4 border border-indigo-500/20 gap-3 relative z-10">
-                    <h2 class="text-base md:text-xl font-black text-white flex items-center gap-2 drop-shadow-md shrink-0">
-                        <i class="fa-solid fa-cubes text-violet-400"></i><span class="hidden sm:block">BUILD & DROP</span>
-                    </h2>
+                <div class="flex items-center gap-2 bg-slate-950 px-4 py-2 rounded-xl border border-slate-800 shadow-inner">
+                    <span class="text-[10px] md:text-xs text-slate-400 font-bold uppercase">Level Soal:</span>
+                    <span class="text-violet-400 font-black text-sm md:text-base">${buildState.soalAktif + 1} / ${buildState.dataSoal.length}</span>
+                </div>
+            </div>
+
+            <div class="flex flex-col lg:flex-row gap-4 md:gap-6 bg-[#0f172a] p-4 md:p-6 rounded-3xl border border-slate-800 shadow-[0_8px_30px_rgba(0,0,0,0.4)] relative overflow-hidden min-h-[450px]">
+                
+                <div class="absolute top-0 left-1/4 w-96 h-96 bg-violet-500/10 rounded-full blur-[100px] pointer-events-none"></div>
+                <div class="absolute bottom-0 right-1/4 w-96 h-96 bg-fuchsia-500/10 rounded-full blur-[100px] pointer-events-none"></div>
+
+                <div class="w-full lg:w-5/12 flex flex-col z-10" id="wadah-kiri-build">
+                    <div class="flex justify-between items-center border-b border-slate-700/50 pb-2 mb-4">
+                        <h3 class="font-bold text-slate-400 uppercase tracking-widest text-xs">Potongan Kata</h3>
+                        <span class="bg-slate-800 text-slate-300 text-[10px] font-bold px-2 py-0.5 rounded border border-slate-700">${jumlahKata} Balok</span>
+                    </div>
                     
-                    <div class="flex items-center gap-2 bg-slate-950/80 px-4 py-2 rounded-xl border border-indigo-500/30 shadow-inner">
-                        <span class="text-[10px] md:text-xs text-slate-400 font-bold uppercase">Soal Kalimat:</span>
-                        <span class="text-violet-400 font-black text-sm md:text-base">${buildState.soalAktif + 1} / ${buildState.dataSoal.length}</span>
+                    <div class="grid ${gridKiri} gap-2 md:gap-3" id="grid-balok-build">
+                        ${buildState.potonganAcak.map(item => `
+                            <div class="kartu-soal-build bg-slate-800 border-2 border-slate-600 text-white touch-none rounded-xl flex justify-center items-center ${tinggiKotak} shadow-lg transition-transform cursor-grab relative overflow-hidden p-2" data-id="${item.id}" data-salah="0">
+                                <span class="drop-shadow-md text-center leading-none pointer-events-none ${fontTeks}">${item.teks}</span>
+                            </div>
+                        `).join('')}
                     </div>
                 </div>
 
-                <div class="flex flex-col lg:flex-row gap-4 md:gap-6 bg-slate-900/90 backdrop-blur-md p-4 md:p-6 rounded-3xl border border-indigo-500/20 shadow-[0_8px_30px_rgba(0,0,0,0.5)] relative overflow-hidden min-h-[450px]">
-                    
-                    <div class="absolute top-0 left-1/4 w-96 h-96 bg-violet-500/10 rounded-full blur-[100px] pointer-events-none"></div>
-                    <div class="absolute bottom-0 right-1/4 w-96 h-96 bg-fuchsia-500/10 rounded-full blur-[100px] pointer-events-none"></div>
+                <div class="hidden lg:block w-px bg-slate-700/50 mx-1 z-10"></div>
 
-                    <div class="w-full lg:w-5/12 flex flex-col z-10" id="wadah-kiri-build">
-                        <div class="flex justify-between items-center border-b border-slate-700/50 pb-2 mb-4">
-                            <h3 class="font-bold text-slate-300 uppercase tracking-widest text-xs">Potongan Kata</h3>
-                            <span class="bg-slate-800 text-slate-300 text-[10px] font-bold px-2 py-0.5 rounded border border-slate-700">${jumlahKata} Balok</span>
+                <div class="w-full lg:w-7/12 flex flex-col z-10">
+                    <h3 class="text-center font-bold text-slate-400 mb-4 uppercase tracking-widest text-xs border-b border-slate-700/50 pb-2">Susun Menjadi Kalimat</h3>
+                    
+                    <div class="flex flex-col h-full bg-slate-900 border-2 border-dashed border-violet-500/40 rounded-2xl relative overflow-hidden transition-all min-h-[250px]">
+                        
+                        <div class="bg-violet-950/40 border-b border-violet-500/30 p-3 md:p-4 text-center shrink-0 z-10">
+                            <p class="text-xs md:text-sm text-slate-300 font-bold tracking-wide">"${soalSekarang.arti}"</p>
                         </div>
                         
-                        <div class="grid ${gridKiri} gap-2 md:gap-3" id="grid-balok-build">
-                            ${buildState.potonganAcak.map(item => `
-                                <div class="kartu-soal-build bg-slate-800 border-2 border-slate-600 text-white touch-none rounded-xl flex justify-center items-center ${tinggiKotak} shadow-lg transition-transform cursor-grab relative overflow-hidden p-2" data-id="${item.id}" data-salah="0">
-                                    <span class="drop-shadow-md text-center leading-none pointer-events-none ${fontTeks}">${item.teks}</span>
+                        <div class="flex-1 p-3 md:p-6 flex ${arahSusunan} flex-wrap justify-center gap-2 md:gap-4 relative z-10 content-center" id="area-target-kalimat">
+                            ${soalSekarang.susunan.map((item, index) => `
+                                <div class="kotak-target-build w-16 sm:w-20 md:w-24 lg:w-[100px] ${tinggiKotak} bg-slate-950 border-2 border-dashed border-slate-600 rounded-xl flex items-center justify-center transition-all shrink-0 relative overflow-hidden shadow-inner" data-target="${item.id}">
+                                    <span class="text-slate-600 text-[10px] md:text-xs font-bold absolute bottom-1 right-1 md:bottom-1.5 md:right-1.5 opacity-50">${index + 1}</span>
                                 </div>
                             `).join('')}
                         </div>
                     </div>
-
-                    <div class="hidden lg:block w-px bg-slate-700/50 mx-1 z-10"></div>
-
-                    <div class="w-full lg:w-7/12 flex flex-col z-10">
-                        <h3 class="text-center font-bold text-slate-300 mb-4 uppercase tracking-widest text-xs border-b border-slate-700/50 pb-2">Susun Menjadi Kalimat</h3>
-                        
-                        <div class="flex flex-col h-full bg-slate-950/70 border-2 border-dashed border-violet-500/40 rounded-2xl relative overflow-hidden transition-all min-h-[250px]">
-                            
-                            <div class="bg-violet-950/40 border-b border-violet-500/30 p-3 md:p-4 text-center shrink-0 z-10">
-                                <p class="text-xs md:text-sm text-slate-200 font-bold tracking-wide">"${soalSekarang.arti}"</p>
-                            </div>
-                            
-                            <div class="flex-1 p-3 md:p-6 flex ${arahSusunan} flex-wrap justify-center gap-2 md:gap-4 relative z-10 content-center" id="area-target-kalimat">
-                                ${soalSekarang.susunan.map((item, index) => `
-                                    <div class="kotak-target-build w-16 sm:w-20 md:w-24 lg:w-[100px] ${tinggiKotak} bg-slate-900 border-2 border-dashed border-slate-600 rounded-xl flex items-center justify-center transition-all shrink-0 relative overflow-hidden shadow-inner" data-target="${item.id}">
-                                        <span class="text-slate-600 text-[10px] md:text-xs font-bold absolute bottom-1 right-1 md:bottom-1.5 md:right-1.5 opacity-50">${index + 1}</span>
-                                    </div>
-                                `).join('')}
-                            </div>
-                        </div>
-                    </div>
-
                 </div>
+
             </div>
         </div>
     `;
     pasangSensorBuild();
-    jalankanTimerBuild();
+    jalankanTimerBuild(); // Timer menyala setiap pindah level soal
 }
 
 function pasangSensorBuild() {
@@ -261,7 +233,7 @@ function pasangSensorBuild() {
                     
                     kotakTarget.innerHTML = '';
                     kotakTarget.appendChild(kartu);
-                    kotakTarget.classList.remove('border-dashed', 'border-slate-600', 'bg-slate-900');
+                    kotakTarget.classList.remove('border-dashed', 'border-slate-600', 'bg-slate-950');
                     kotakTarget.classList.add('border-solid', 'border-violet-500', 'bg-violet-900/30', 'terisi', 'shadow-[0_0_10px_rgba(139,92,246,0.3)]');
                     
                     let totalNilaiGame = 100;
@@ -274,31 +246,26 @@ function pasangSensorBuild() {
                     buildState.skor += nilaiDidapat;
                     buildState.kataTerjawab++;
                     
+                    // UPDATE SKOR DI TOP BAR GLOBAL
                     if (typeof updateSkorDnd === 'function') updateSkorDnd(Math.round(buildState.skor));
 
-                    // Putar efek suara benar DND per potongan kata
-                    if (typeof playDndSound === 'function') playDndSound('benar'); 
+                    if (typeof playSoundEffect === 'function') playSoundEffect('correct'); 
 
-                    // Cek jika 1 kalimat selesai disusun sempurna
                     if (buildState.kataTerjawab === soalSekarang.susunan.length) {
+                        // Matikan timer sejenak karena soal sudah selesai disusun
                         if (buildState.timerInterval) clearInterval(buildState.timerInterval);
                         
-                        // Putar suara kuis benar saat 1 soal kalimat selesai sempurna!
-                        if (typeof playDndSound === 'function') playDndSound('selesai');
-                        if (typeof confetti === 'function') confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
-
                         buildState.soalAktif++;
                         if (buildState.soalAktif < buildState.dataSoal.length) {
-                            setTimeout(() => mulaiGameBuild(true), 1800);
+                            setTimeout(() => mulaiGameBuild(true), 1200);
                         } else {
-                            setTimeout(() => selebrasiKemenanganBuild(), 1800);
+                            setTimeout(() => selebrasiKemenanganBuild(), 800);
                         }
                     }
                 } else {
                     kartu.style.position = 'static';
                     wadahKiri.appendChild(kartu);
-                    // Putar efek suara salah DND per potongan kata
-                    if (typeof playDndSound === 'function') playDndSound('salah'); 
+                    if (typeof playSoundEffect === 'function') playSoundEffect('wrong'); 
                     
                     let salahCount = parseInt(kartu.getAttribute('data-salah')) || 0;
                     kartu.setAttribute('data-salah', salahCount + 1);
@@ -316,7 +283,6 @@ function pasangSensorBuild() {
 
 function selebrasiKemenanganBuild() {
     if (buildState.timerInterval) clearInterval(buildState.timerInterval);
-    if (typeof stopDndBGM === 'function') stopDndBGM();
     
     let nilaiAkhir = Math.round(buildState.skor);
     if (typeof playCelebrationAudio === 'function') playCelebrationAudio(nilaiAkhir);
@@ -326,21 +292,18 @@ function selebrasiKemenanganBuild() {
 
     const container = document.getElementById('dnd-game-container');
     container.innerHTML = `
-        <div class="min-h-screen w-full bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-950 py-8 px-4">
-            <div class="max-w-2xl mx-auto p-8 bg-slate-900/95 rounded-[2.5rem] text-center border border-indigo-500/30 shadow-[0_0_40px_rgba(139,92,246,0.2)] fade-in">
-                <i class="fa-solid fa-medal text-6xl text-amber-400 mb-6 animate-bounce drop-shadow-[0_0_15px_rgba(251,191,36,0.5)]"></i>
-                <h1 class="text-3xl md:text-4xl font-black text-white mb-2">KALIMAT SEMPURNA!</h1>
-                <p class="text-xs text-slate-400">Semua susunan kalimat pada rentang soal telah diselesaikan.</p>
-                
-                <div class="bg-slate-800/80 p-6 rounded-3xl mb-8 mt-6 border border-slate-700">
-                    <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Nilai Akhir</p>
-                    <p class="text-7xl font-black text-violet-400 drop-shadow-[0_0_15px_rgba(139,92,246,0.4)]">${nilaiAkhir}</p>
-                </div>
-                
-                <div class="flex justify-center gap-4">
-                    <button onclick="keluarFullscreenDnd()" class="bg-slate-700 hover:bg-slate-600 text-white font-bold py-3 px-6 rounded-2xl border border-slate-600 transition-colors">Menu Game</button>
-                    <button onclick="startDndBGM(); mulaiGameBuild(false);" class="bg-violet-600 hover:bg-violet-500 text-white font-black py-3 px-8 rounded-2xl shadow-[0_0_15px_rgba(139,92,246,0.4)] transition-transform">MAIN LAGI</button>
-                </div>
+        <div class="max-w-2xl mx-auto mt-10 p-8 bg-slate-900 rounded-[2.5rem] text-center border border-slate-700 shadow-[0_0_40px_rgba(139,92,246,0.2)] fade-in">
+            <i class="fa-solid fa-medal text-6xl text-amber-400 mb-6 animate-bounce drop-shadow-[0_0_15px_rgba(251,191,36,0.5)]"></i>
+            <h1 class="text-3xl md:text-4xl font-black text-white mb-2">KALIMAT SEMPURNA!</h1>
+            
+            <div class="bg-slate-800 p-6 rounded-3xl mb-8 mt-6 border border-slate-700">
+                <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Nilai Akhir</p>
+                <p class="text-7xl font-black text-violet-400 drop-shadow-[0_0_15px_rgba(139,92,246,0.4)]">${nilaiAkhir}</p>
+            </div>
+            
+            <div class="flex justify-center gap-4">
+                <button onclick="keluarFullscreenDnd()" class="bg-slate-700 hover:bg-slate-600 text-white font-bold py-3 px-6 rounded-2xl border border-slate-600 transition-colors">Menu Game</button>
+                <button onclick="mulaiGameBuild()" class="bg-violet-600 hover:bg-violet-500 text-white font-black py-3 px-8 rounded-2xl shadow-[0_0_15px_rgba(139,92,246,0.4)] transition-transform">MAIN LAGI</button>
             </div>
         </div>
     `;
