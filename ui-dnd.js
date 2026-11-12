@@ -1,3 +1,49 @@
+// =========================================================================
+// PENGENDALI AUDIO KHUSUS DRAG & DROP ARENA
+// =========================================================================
+const DND_AUDIO_URLS = {
+    bgm: "https://anassamudra78-sudo.github.io/audio-smart-teacher/Sound%20kuis%20berjalan.mp3",
+    benar: "https://anassamudra78-sudo.github.io/audio-smart-teacher/benardnd.mp3",
+    salah: "https://anassamudra78-sudo.github.io/audio-smart-teacher/salahdnd.mp3",
+    selesai: "https://anassamudra78-sudo.github.io/audio-smart-teacher/Sound%20effect%20kuis%20Benar%20.mp3"
+};
+
+let dndAudioObjs = { bgm: null, benar: null, salah: null, selesai: null };
+
+function initAudioDnd() {
+    if (!dndAudioObjs.bgm) {
+        dndAudioObjs.bgm = new Audio(DND_AUDIO_URLS.bgm);
+        dndAudioObjs.bgm.loop = true;
+    }
+    if (!dndAudioObjs.benar) dndAudioObjs.benar = new Audio(DND_AUDIO_URLS.benar);
+    if (!dndAudioObjs.salah) dndAudioObjs.salah = new Audio(DND_AUDIO_URLS.salah);
+    if (!dndAudioObjs.selesai) dndAudioObjs.selesai = new Audio(DND_AUDIO_URLS.selesai);
+}
+
+function startDndBGM() {
+    initAudioDnd();
+    if (dndAudioObjs.bgm) {
+        dndAudioObjs.bgm.volume = 0.7;
+        dndAudioObjs.bgm.currentTime = 0;
+        dndAudioObjs.bgm.play().catch(e => console.log("BGM DND:", e));
+    }
+}
+
+function stopDndBGM() {
+    if (dndAudioObjs.bgm) {
+        dndAudioObjs.bgm.pause();
+        dndAudioObjs.bgm.currentTime = 0;
+    }
+}
+
+function playDndSound(jenis) {
+    initAudioDnd();
+    const sfx = dndAudioObjs[jenis];
+    if (sfx) {
+        sfx.currentTime = 0;
+        sfx.play().catch(e => console.log("SFX DND:", e));
+    }
+}
 // ==========================================================
 // FILE: ui-dragdrop.js / UI-KUIS.JS (VERSI FINAL PASTI BERUBAH)
 // ==========================================================
