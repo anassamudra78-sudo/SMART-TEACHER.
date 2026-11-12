@@ -170,49 +170,64 @@ function amankanLayarPenuhDragDrop() {
 function bukaLobiDragDrop(jenisGame) {
     gameDndTerpilih = jenisGame;
     
-    // 1. Langsung buka modal fullscreen (Kamar khusus yang sudah ada Top Bar-nya)
     const modal = document.getElementById('dnd-arena-modal');
     if (modal) modal.classList.remove('hidden');
     window.isDragDropMode = true;
 
-    // 2. Ubah judul dinamis di Top Bar sesuai game yang dipilih
     let namaGame = jenisGame === 'match' ? 'MATCH & DROP' : (jenisGame === 'sort' ? 'SORT & DROP' : 'BUILD & DROP');
     const subtitleEl = document.getElementById('dnd-topbar-subtitle');
     if (subtitleEl) subtitleEl.innerText = `Persiapan: ${namaGame}`;
 
-    // 3. Bidik wadah kosong di bawah Top Bar
     const container = document.getElementById('dnd-game-container');
     if (!container) return;
+
+    // Hitung total nomor soal/paket yang tersedia
+    let totalPaket = 1;
+    if (AppState.db.dnd) {
+        if (jenisGame === 'match' && AppState.db.dnd.match) {
+            totalPaket = new Set(AppState.db.dnd.match.map(x => x.noSoal || 1)).size || 1;
+        } else if (jenisGame === 'sort' && AppState.db.dnd.sort) {
+            totalPaket = new Set(AppState.db.dnd.sort.map(x => x.noSoal || 1)).size || 1;
+        } else if (jenisGame === 'build' && AppState.db.dnd.build) {
+            totalPaket = AppState.db.dnd.build.length || 1;
+        }
+    }
 
     let kelasOpts = AppState.db.kelas.map(k => `<option value="${k.id}">${k.kode}</option>`).join('');
     let mapelOpts = AppState.db.mapel.map(m => `<option value="${m.id}">${m.nama}</option>`).join('');
 
-    // 4. Masukkan HANYA form lobi ke dalam wadah (Top bar lama dihapus)
     container.innerHTML = `
         <div class="max-w-xl mx-auto p-4 select-none fade-in pb-12 mt-4 sm:mt-8 w-full">
             <div class="bg-slate-900/95 p-6 sm:p-8 rounded-[2rem] border-2 border-amber-500/30 shadow-2xl relative overflow-hidden text-center z-20">
                 
                 <i class="fa-solid fa-user-graduate text-5xl text-amber-400 mb-4 animate-bounce"></i>
-                <h3 class="text-2xl font-black text-white mb-1">Identitas Pemain & Mode Game</h3>
-                <p class="text-xs text-slate-400 mb-5">Pilih mode game dan pemain untuk memulai permainan!</p>
+                <h3 class="text-2xl font-black text-white mb-1">Identitas Pemain & Rentang Soal</h3>
+                <p class="text-xs text-slate-400 mb-5">Atur nomor soal yang dimainkan dan pilih pemain!</p>
 
-                <div class="grid grid-cols-2 gap-2 p-1.5 bg-slate-800 rounded-2xl mb-5 border border-slate-700">
-                    <button class="py-2.5 text-xs font-extrabold rounded-xl transition-all bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-md flex items-center justify-center">
-                        <i class="fa-solid fa-user mr-1.5"></i> Single Player
-                    </button>
-                    <button class="py-2.5 text-xs font-extrabold rounded-xl transition-all text-slate-400 hover:text-white flex items-center justify-center">
-                        <i class="fa-solid fa-bolt text-amber-400 mr-1.5"></i> Mode Duel (2 Siswa)
-                    </button>
+                <!-- RENTANG NOMOR SOAL -->
+                <div class="bg-slate-950/70 border border-indigo-500/30 p-3.5 rounded-2xl mb-5">
+                    <p class="text-[11px] font-black text-indigo-400 uppercase tracking-wider mb-2"><i class="fa-solid fa-list-ol mr-1.5"></i>Rentang Paket Soal (Tersedia: ${totalPaket} Soal)</p>
+                    <div class="grid grid-cols-2 gap-3 text-left">
+                        <div>
+                            <label class="block text-[10px] font-bold text-slate-400 mb-1 uppercase">Mulai Dari Soal</label>
+                            <input type="number" id="dnd-soal-dari" value="1" min="1" max="${totalPaket}" class="w-full bg-slate-900 border border-slate-700 focus:border-indigo-500 text-white rounded-xl px-3 py-2 text-center font-black text-sm outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold text-slate-400 mb-1 uppercase">Sampai Soal</label>
+                            <input type="number" id="dnd-soal-sampai" value="${totalPaket}" min="1" max="${totalPaket}" class="w-full bg-slate-900 border border-slate-700 focus:border-indigo-500 text-white rounded-xl px-3 py-2 text-center font-black text-sm outline-none">
+                        </div>
+                    </div>
                 </div>
 
                 <div class="space-y-4 text-left mt-3">
                     <div>
                         <label class="text-xs font-bold text-slate-300 block mb-1">⏱️ Durasi Waktu Per Soal</label>
                         <select id="lobby-dnd-durasi" class="w-full p-2.5 rounded-xl bg-slate-800 text-white border border-slate-700 outline-none focus:border-amber-500 text-xs">
-                            <option value="10">10 Detik</option>
-                            <option value="15" selected>15 Detik (Default)</option>
-                            <option value="30">30 Detik</option>
+                            <option value="15">15 Detik</option>
+                            <option value="30" selected>30 Detik (Disarankan)</option>
+                            <option value="45">45 Detik</option>
                             <option value="60">60 Detik</option>
+                            <option value="90">90 Detik</option>
                         </select>
                     </div>
 
@@ -245,22 +260,11 @@ function bukaLobiDragDrop(jenisGame) {
                         <input type="text" id="lobby-dnd-manual" placeholder="Atau ketik nama manual..." class="w-full p-2.5 rounded-xl bg-slate-800 text-white border border-slate-700 outline-none focus:border-amber-500 text-xs transition-colors">
                     </div>
 
-                    <div>
-                        <label class="text-xs font-bold text-slate-300 block mb-1">4. Simpan Nilai ke Kategori (Opsional)</label>
-                        <select id="lobby-dnd-kategori" class="w-full p-2.5 rounded-xl bg-slate-800 text-white border border-slate-700 outline-none focus:border-amber-500 text-xs transition-colors">
-                            <option value="">-- Tidak Disimpan (Hanya Latihan) --</option>
-                            <option value="Tugas (TP/Bab 1)">Tugas (TP/Bab 1)</option>
-                            <option value="Sumatif (TP/Bab 1)">Sumatif (TP/Bab 1)</option>
-                            <option value="Tugas (TP/Bab 2)">Tugas (TP/Bab 2)</option>
-                            <option value="Sumatif (TP/Bab 2)">Sumatif (TP/Bab 2)</option>
-                        </select>
-                    </div>
-
                     <div class="p-3 bg-slate-800/80 border border-slate-700 rounded-xl flex items-center justify-between">
                         <label for="dnd-acak-soal" class="text-xs font-bold text-slate-300 cursor-pointer flex items-center select-none">
-                            <i class="fa-solid fa-shuffle text-amber-400 mr-2.5"></i> Acak Urutan Soal (Shuffle)
+                            <i class="fa-solid fa-shuffle text-amber-400 mr-2.5"></i> Acak Urutan Paket Soal
                         </label>
-                        <input type="checkbox" id="dnd-acak-soal" class="w-5 h-5 accent-amber-500 cursor-pointer" checked>
+                        <input type="checkbox" id="dnd-acak-soal" class="w-5 h-5 accent-amber-500 cursor-pointer">
                     </div>
                 </div>
 
@@ -270,10 +274,6 @@ function bukaLobiDragDrop(jenisGame) {
                 <button onclick="keluarFullscreenDnd()" class="w-full mt-2.5 text-slate-400 font-bold hover:text-white py-1.5 text-xs transition-colors">
                     Batal / Kembali
                 </button>
-            </div>
-            
-            <div class="text-center mt-6 opacity-50">
-                <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest">SMART TEACHER Interactive Game Engine • Drag & Drop Edition</p>
             </div>
         </div>
     `;
@@ -377,8 +377,9 @@ function mulaiHitungMundurDnd(detikTunggu) {
 }
 
 function keluarFullscreenDnd() {
+    stopDndBGM();
     window.isDragDropMode = false;
-    
+    // ... biarkan kode di bawahnya tetap sama    
     // 1. Tutup layar hitam / modal game (jika user keluar dari dalam game)
     const modal = document.getElementById('dnd-arena-modal');
     if (modal) modal.classList.add('hidden');
@@ -546,15 +547,26 @@ function masukKeArenaGameDnd() {
         return showAlert("Peringatan", "Harap Pilih Kelas, Mapel, dan Siswa ATAU Ketik nama manual!", "error");
     }
 
-    // --- TAMBAHAN KUNCI: Simpan durasi ke memori global SEBELUM Lobi dihapus ---
     const durasiEl = document.getElementById('lobby-dnd-durasi');
-    window.dndDurasiPilihan = durasiEl ? parseInt(durasiEl.value) : 15;
+    window.dndDurasiPilihan = durasiEl ? parseInt(durasiEl.value) : 30;
 
-    // Baru jalankan mesin game yang akan menimpa layar lobi
+    const dariEl = document.getElementById('dnd-soal-dari');
+    const sampaiEl = document.getElementById('dnd-soal-sampai');
+    const acakEl = document.getElementById('dnd-acak-soal');
+
+    window.dndRentang = {
+        dari: dariEl ? (parseInt(dariEl.value) || 1) : 1,
+        sampai: sampaiEl ? (parseInt(sampaiEl.value) || 999) : 999,
+        acak: acakEl ? acakEl.checked : false
+    };
+
+    startDndBGM();
+
     if (gameDndTerpilih === 'match' && typeof mulaiGameMatch === 'function') mulaiGameMatch();
     else if (gameDndTerpilih === 'sort' && typeof mulaiGameSort === 'function') mulaiGameSort();
     else if (gameDndTerpilih === 'build' && typeof mulaiGameBuild === 'function') mulaiGameBuild();
-}// Fungsi untuk membuka halaman Drag & Drop Arena dari tombol menu
+}
+// Fungsi untuk membuka halaman Drag & Drop Arena dari tombol menu
 function bukaDragAndDropArena() {
     const container = document.getElementById('main-content');
     
@@ -633,87 +645,18 @@ function toggleDndBGM() {
     const btnMusic = document.getElementById('dnd-topbar-music');
     
     if (isDndMusicPlaying) {
-        if (AppState.audio.elements.bgm) AppState.audio.elements.bgm.play().catch(e => console.log(e));
+        if (dndAudioObjs.bgm) dndAudioObjs.bgm.play().catch(e => console.log(e));
         if (btnMusic) {
             btnMusic.innerHTML = '<i class="fa-solid fa-volume-high mr-1.5"></i> Musik Nyala';
             btnMusic.className = "bg-emerald-500 hover:bg-emerald-400 text-slate-900 px-3 py-1.5 rounded-xl text-xs font-black flex items-center transition-colors";
         }
     } else {
-        if (AppState.audio.elements.bgm) AppState.audio.elements.bgm.pause();
+        if (dndAudioObjs.bgm) dndAudioObjs.bgm.pause();
         if (btnMusic) {
             btnMusic.innerHTML = '<i class="fa-solid fa-volume-xmark mr-1.5"></i> Musik Mati';
             btnMusic.className = "bg-rose-600 hover:bg-rose-500 text-white px-3 py-1.5 rounded-xl text-xs font-black flex items-center transition-colors";
         }
     }
-}
-
-// =========================================================================
-// STUDIO SOAL DRAG & DROP (RUANG EDITOR GURU)
-// =========================================================================
-
-function bukaEditorSoalDnd() {
-    const mc = document.getElementById('main-content');
-    if (!mc) return;
-    
-    // 1. Inisialisasi Database Khusus DND jika belum ada di aplikasi
-    if (!AppState.db.dnd) {
-        AppState.db.dnd = { match: [], sort: [], build: [] };
-    }
-
-    // 2. Render tampilan Dashboard Studio Soal
-    mc.innerHTML = `
-        <div class="max-w-5xl mx-auto space-y-6 fade-in pb-10 mt-4 px-2 sm:px-0">
-            
-            <div class="flex justify-between items-center bg-slate-900 p-4 rounded-2xl shadow-xl border border-slate-700">
-                <h2 class="text-lg sm:text-xl font-black text-white flex items-center gap-2">
-                    <i class="fa-solid fa-pen-ruler text-indigo-400"></i> <span class="hidden sm:inline">Studio Soal Drag & Drop</span>
-                </h2>
-                <button onclick="renderDragDropPage(document.getElementById('main-content'))" class="bg-slate-800 hover:bg-rose-600 text-slate-300 hover:text-white px-4 py-2 rounded-xl text-xs font-bold border border-slate-700 hover:border-rose-500 transition-all flex items-center">
-                    <i class="fa-solid fa-arrow-left mr-1.5"></i> Kembali ke Lobi
-                </button>
-            </div>
-
-            <div class="bg-indigo-950/30 border border-indigo-500/30 p-4 rounded-2xl text-center">
-                <p class="text-sm text-indigo-200 font-bold">Pilih jenis game Drag & Drop yang ingin Bapak kelola soalnya:</p>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <!-- Card Editor Match -->
-                <div class="bg-slate-800 p-6 rounded-3xl border-2 border-emerald-500/30 text-center shadow-xl relative overflow-hidden group hover:border-emerald-500 transition-colors">
-                    <div class="absolute top-0 right-0 w-32 h-32 bg-emerald-500/10 rounded-full blur-2xl pointer-events-none"></div>
-                    <i class="fa-solid fa-puzzle-piece text-5xl text-emerald-400 mb-4 drop-shadow-lg group-hover:scale-110 transition-transform"></i>
-                    <h3 class="text-xl font-black text-white mb-2">Match & Drop</h3>
-                    <p class="text-xs text-slate-400 mb-6">Buat bank soal memasangkan balok (Kosakata ke Arti/Definisi).</p>
-                    <button onclick="bukaFormEditorDnd('match')" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-xl transition-all shadow-md">
-                        Kelola Soal Match
-                    </button>
-                </div>
-
-                <!-- Card Editor Sort -->
-                <div class="bg-slate-800 p-6 rounded-3xl border-2 border-amber-500/30 text-center shadow-xl relative overflow-hidden group hover:border-amber-500 transition-colors">
-                    <div class="absolute top-0 right-0 w-32 h-32 bg-amber-500/10 rounded-full blur-2xl pointer-events-none"></div>
-                    <i class="fa-solid fa-layer-group text-5xl text-amber-400 mb-4 drop-shadow-lg group-hover:scale-110 transition-transform"></i>
-                    <h3 class="text-xl font-black text-white mb-2">Sort & Drop</h3>
-                    <p class="text-xs text-slate-400 mb-6">Buat bank soal pengelompokan kategori (Misal: Isim & Fi'il).</p>
-                    <button onclick="bukaFormEditorDnd('sort')" class="w-full bg-amber-500 hover:bg-amber-400 text-slate-900 font-black py-3 rounded-xl transition-all shadow-md">
-                        Kelola Soal Sort
-                    </button>
-                </div>
-
-                <!-- Card Editor Build -->
-                <div class="bg-slate-800 p-6 rounded-3xl border-2 border-violet-500/30 text-center shadow-xl relative overflow-hidden group hover:border-violet-500 transition-colors">
-                    <div class="absolute top-0 right-0 w-32 h-32 bg-violet-500/10 rounded-full blur-2xl pointer-events-none"></div>
-                    <i class="fa-solid fa-cubes text-5xl text-violet-400 mb-4 drop-shadow-lg group-hover:scale-110 transition-transform"></i>
-                    <h3 class="text-xl font-black text-white mb-2">Build & Drop</h3>
-                    <p class="text-xs text-slate-400 mb-6">Buat bank soal menyusun urutan potongan kata menjadi kalimat.</p>
-                    <button onclick="bukaFormEditorDnd('build')" class="w-full bg-violet-600 hover:bg-violet-500 text-white font-bold py-3 rounded-xl transition-all shadow-md">
-                        Kelola Soal Build
-                    </button>
-                </div>
-            </div>
-        </div>
-    `;
-    window.scrollTo(0, 0);
 }
 
 // =========================================================================
@@ -798,20 +741,20 @@ function bukaFormEditorDnd(jenis) {
 
 
 // =========================================================================
-// 1. EDITOR MATCH & DROP (LENGKAP EXCEL & MANUAL)
+// 1. EDITOR MATCH & DROP (MENDUKUNG NOMOR SOAL / PAKET RONDE)
 // =========================================================================
 function renderEditorMatchDnd(container) {
     if (!AppState.db.dnd.match || AppState.db.dnd.match.length === 0) {
          AppState.db.dnd.match = [
-            { id: "m1", tipe: "teks", soal: "كِتَابٌ", arti: "Buku" },
-            { id: "m2", tipe: "gambar", soal: "🦆", arti: "Bebek" }
+            { id: "m1", noSoal: 1, tipe: "teks", soal: "كِتَابٌ", arti: "Buku" },
+            { id: "m2", noSoal: 1, tipe: "gambar", soal: "🦆", arti: "Bebek" }
          ];
     }
 
-    let daftarSoalHtml = AppState.db.dnd.match.map((item, index) => `
+    let daftarSoalHtml = AppState.db.dnd.match.map((item) => `
         <div class="bg-slate-800 p-3 rounded-xl border border-slate-700 flex justify-between items-center mb-3 hover:border-emerald-500/50 transition-colors">
             <div class="flex items-center gap-3 md:gap-4">
-                <span class="bg-emerald-900/50 text-emerald-400 font-black w-8 h-8 flex items-center justify-center rounded-lg text-xs border border-emerald-500/30 shrink-0">${index + 1}</span>
+                <span class="bg-indigo-600/30 text-indigo-300 font-black px-2.5 py-1.5 rounded-lg text-[10px] border border-indigo-500/40 shrink-0">SOAL #${item.noSoal || 1}</span>
                 <div>
                     <p class="${item.tipe === 'gambar' ? 'text-2xl' : 'font-arabic text-xl'} text-white leading-none mb-1">${item.soal}</p>
                     <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Arti: <span class="text-emerald-300">${item.arti}</span> <span class="ml-2 px-1.5 py-0.5 bg-slate-700 rounded text-slate-300 text-[9px]">${item.tipe}</span></p>
@@ -827,7 +770,7 @@ function renderEditorMatchDnd(container) {
         <div class="max-w-6xl mx-auto space-y-6 fade-in pb-10 mt-4 px-2 sm:px-0">
             <div class="flex justify-between items-center bg-slate-900 p-4 rounded-2xl shadow-xl border border-slate-700">
                 <h2 class="text-base sm:text-xl font-black text-white flex items-center gap-2">
-                    <i class="fa-solid fa-puzzle-piece text-emerald-400"></i> Editor Match & Drop
+                    <i class="fa-solid fa-puzzle-piece text-emerald-400"></i> Editor Match & Drop (Multi-Soal)
                 </h2>
                 <button onclick="bukaEditorSoalDnd()" class="bg-slate-800 hover:bg-rose-600 text-slate-300 hover:text-white px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl text-xs font-bold border border-slate-700 hover:border-rose-500 transition-all flex items-center">
                     <i class="fa-solid fa-arrow-left mr-1.5"></i> Kembali
@@ -838,7 +781,7 @@ function renderEditorMatchDnd(container) {
                 <div class="lg:col-span-1 space-y-6">
                     <div class="bg-slate-800 p-5 rounded-3xl border border-slate-700 shadow-xl">
                         <h3 class="font-black text-emerald-400 mb-3 uppercase tracking-widest text-sm flex items-center"><i class="fa-solid fa-file-excel mr-2"></i> Import Excel</h3>
-                        <p class="text-[10px] text-slate-400 mb-4 leading-relaxed">Download template Excel, isi soal, lalu upload kembali ke sini.</p>
+                        <p class="text-[10px] text-slate-400 mb-4 leading-relaxed">Isi kolom <b>No Soal</b> (misal 1 untuk 5 pasangan pertama, 2 untuk 7 pasangan berikutnya).</p>
                         <button onclick="downloadTemplateMatchExcel()" class="w-full mb-4 bg-slate-700 hover:bg-slate-600 text-emerald-400 font-bold py-2.5 rounded-xl text-xs transition-colors border border-slate-600 flex items-center justify-center">
                             <i class="fa-solid fa-download mr-2"></i> Download Template
                         </button>
@@ -855,21 +798,25 @@ function renderEditorMatchDnd(container) {
                         <h3 class="font-black text-emerald-400 mb-4 uppercase tracking-widest text-sm flex items-center"><i class="fa-solid fa-plus-circle mr-2"></i> Tambah Manual</h3>
                         <div class="space-y-4">
                             <div>
+                                <label class="text-[11px] font-bold text-slate-400 block mb-1.5 uppercase">Nomor Paket Soal</label>
+                                <input type="number" id="match-input-nosoal" value="1" min="1" class="w-full bg-slate-900 border border-slate-700 text-white text-sm font-black rounded-xl p-3 outline-none focus:border-emerald-500">
+                            </div>
+                            <div>
                                 <label class="text-[11px] font-bold text-slate-400 block mb-1.5 uppercase">Tipe Balok</label>
-                                <select id="match-input-tipe" class="w-full bg-slate-900 border border-slate-700 text-white text-sm rounded-xl p-3 outline-none focus:border-emerald-500 font-bold transition-colors">
+                                <select id="match-input-tipe" class="w-full bg-slate-900 border border-slate-700 text-white text-sm rounded-xl p-3 outline-none focus:border-emerald-500 font-bold">
                                     <option value="teks">Teks (Arab/Latin)</option>
                                     <option value="gambar">Gambar (Emoji)</option>
                                 </select>
                             </div>
                             <div>
                                 <label class="text-[11px] font-bold text-slate-400 block mb-1.5 uppercase">Soal (Kosakata/Emoji)</label>
-                                <input type="text" id="match-input-soal" class="w-full bg-slate-900 border border-slate-700 text-white font-arabic text-xl rounded-xl p-3 outline-none focus:border-emerald-500 transition-colors" dir="auto" placeholder="Contoh: كِتَابٌ">
+                                <input type="text" id="match-input-soal" class="w-full bg-slate-900 border border-slate-700 text-white font-arabic text-xl rounded-xl p-3 outline-none focus:border-emerald-500" dir="auto" placeholder="Contoh: كِتَابٌ">
                             </div>
                             <div>
                                 <label class="text-[11px] font-bold text-slate-400 block mb-1.5 uppercase">Arti (Pasangan)</label>
-                                <input type="text" id="match-input-arti" class="w-full bg-slate-900 border border-slate-700 text-white text-sm font-bold rounded-xl p-3 outline-none focus:border-emerald-500 transition-colors" placeholder="Contoh: Buku">
+                                <input type="text" id="match-input-arti" class="w-full bg-slate-900 border border-slate-700 text-white text-sm font-bold rounded-xl p-3 outline-none focus:border-emerald-500" placeholder="Contoh: Buku">
                             </div>
-                            <button onclick="tambahSoalMatch()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-black py-3 rounded-xl shadow-lg transition-transform hover:scale-[1.02] flex items-center justify-center">
+                            <button onclick="tambahSoalMatch()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-black py-3 rounded-xl shadow-lg flex items-center justify-center">
                                 <i class="fa-solid fa-floppy-disk mr-2"></i> Simpan ke Daftar
                             </button>
                         </div>
@@ -878,13 +825,13 @@ function renderEditorMatchDnd(container) {
 
                 <div class="lg:col-span-2 bg-slate-900 p-5 sm:p-6 rounded-3xl border border-slate-700 shadow-inner flex flex-col lg:h-[80vh]">
                     <div class="flex justify-between items-center mb-4 border-b border-slate-800 pb-3 shrink-0">
-                        <h3 class="font-black text-white text-sm sm:text-base flex items-center"><i class="fa-solid fa-list mr-2 text-slate-400"></i>Daftar Pasangan (<span class="text-emerald-400 ml-1">${AppState.db.dnd.match.length}</span>)</h3>
-                        <button onclick="simpanKeDatabaseMatch()" class="bg-indigo-600 hover:bg-indigo-500 text-white text-[10px] sm:text-xs font-bold px-3 sm:px-4 py-2 rounded-xl shadow-md transition-transform hover:scale-105 flex items-center">
+                        <h3 class="font-black text-white text-sm sm:text-base flex items-center"><i class="fa-solid fa-list mr-2 text-slate-400"></i>Daftar Item (<span class="text-emerald-400 ml-1">${AppState.db.dnd.match.length}</span>)</h3>
+                        <button onclick="simpanKeDatabaseMatch()" class="bg-indigo-600 hover:bg-indigo-500 text-white text-[10px] sm:text-xs font-bold px-3 sm:px-4 py-2 rounded-xl shadow-md flex items-center">
                             <i class="fa-solid fa-cloud-arrow-up mr-1.5"></i> Simpan Permanen
                         </button>
                     </div>
                     <div class="flex-1 overflow-y-auto pr-2 custom-scrollbar">
-                        ${daftarSoalHtml || '<div class="text-center bg-slate-800/50 rounded-2xl py-12 border border-dashed border-slate-700"><i class="fa-solid fa-box-open text-4xl text-slate-600 mb-3"></i><p class="text-slate-400 text-xs font-bold">Belum ada pasangan soal.</p></div>'}
+                        ${daftarSoalHtml || '<div class="text-center bg-slate-800/50 rounded-2xl py-12 border border-dashed border-slate-700"><p class="text-slate-400 text-xs font-bold">Belum ada pasangan soal.</p></div>'}
                     </div>
                 </div>
             </div>
@@ -893,12 +840,13 @@ function renderEditorMatchDnd(container) {
 }
 
 function tambahSoalMatch() {
+    const noSoal = parseInt(document.getElementById('match-input-nosoal').value) || 1;
     const tipe = document.getElementById('match-input-tipe').value;
     const soal = document.getElementById('match-input-soal').value.trim();
     const arti = document.getElementById('match-input-arti').value.trim();
     if (!soal || !arti) return alert('Soal dan Arti tidak boleh kosong!');
     let idUnik = 'm_' + Date.now();
-    AppState.db.dnd.match.push({ id: idUnik, tipe: tipe, soal: soal, arti: arti });
+    AppState.db.dnd.match.push({ id: idUnik, noSoal: noSoal, tipe: tipe, soal: soal, arti: arti });
     renderEditorMatchDnd(document.getElementById('main-content'));
 }
 
@@ -915,10 +863,12 @@ function simpanKeDatabaseMatch() {
 function downloadTemplateMatchExcel() {
     if (typeof XLSX === 'undefined') return alert('Library Excel belum siap.');
     const ws_data = [
-        ['Tipe Balok', 'Soal (Kosakata/Emoji)', 'Arti (Pasangan)'],
-        ['PENTING: Kolom Tipe Balok HANYA boleh diisi teks atau gambar.', '', ''],
-        ['teks', 'كِتَابٌ', 'Buku'],
-        ['gambar', '🚗', 'Mobil']
+        ['No Soal (Ronde)', 'Tipe Balok', 'Soal (Kosakata/Emoji)', 'Arti (Pasangan)'],
+        ['PENTING: No Soal diisi angka (1, 2, 3...). Tipe diisi teks atau gambar.', '', '', ''],
+        [1, 'teks', 'كِتَابٌ', 'Buku'],
+        [1, 'teks', 'قَلَمٌ', 'Pena'],
+        [2, 'gambar', '🚗', 'Mobil'],
+        [2, 'gambar', '✈️', 'Pesawat']
     ];
     const ws = XLSX.utils.aoa_to_sheet(ws_data);
     const wb = XLSX.utils.book_new();
@@ -939,19 +889,20 @@ function bacaExcelMatch(event) {
             let jumlahBerhasil = 0;
             for (let i = 2; i < jsonRows.length; i++) {
                 let row = jsonRows[i];
-                if (!row || row.length < 3) continue;
-                let tipe = row[0] ? String(row[0]).trim().toLowerCase() : 'teks';
-                let soal = row[1] ? String(row[1]).trim() : '';
-                let arti = row[2] ? String(row[2]).trim() : '';
+                if (!row || row.length < 4) continue;
+                let noSoal = parseInt(row[0]) || 1;
+                let tipe = row[1] ? String(row[1]).trim().toLowerCase() : 'teks';
+                let soal = row[2] ? String(row[2]).trim() : '';
+                let arti = row[3] ? String(row[3]).trim() : '';
                 if (!soal || !arti) continue;
                 if (tipe !== 'teks' && tipe !== 'gambar') tipe = 'teks';
                 let idUnik = 'm_' + Date.now() + '_' + i;
-                AppState.db.dnd.match.push({ id: idUnik, tipe: tipe, soal: soal, arti: arti });
+                AppState.db.dnd.match.push({ id: idUnik, noSoal: noSoal, tipe: tipe, soal: soal, arti: arti });
                 jumlahBerhasil++;
             }
             if (jumlahBerhasil > 0) {
                 renderEditorMatchDnd(document.getElementById('main-content'));
-                alert(`${jumlahBerhasil} soal match berhasil diimport!`);
+                alert(`${jumlahBerhasil} item soal match berhasil diimport!`);
             }
         } catch (err) {
             alert('Gagal membaca Excel: ' + err.message);
@@ -963,20 +914,20 @@ function bacaExcelMatch(event) {
 
 
 // =========================================================================
-// 2. EDITOR SORT & DROP (LENGKAP EXCEL & MANUAL)
+// 2. EDITOR SORT & DROP (MENDUKUNG NOMOR SOAL / PAKET RONDE)
 // =========================================================================
 function renderEditorSortDnd(container) {
     if (!AppState.db.dnd.sort || AppState.db.dnd.sort.length === 0) {
          AppState.db.dnd.sort = [
-            { id: "s1", soal: "كِتَابٌ", arti: "Buku", kat: "isim", tipe: "teks" },
-            { id: "s2", soal: "🏃", arti: "Berlari", kat: "fiil", tipe: "gambar" }
+            { id: "s1", noSoal: 1, soal: "كِتَابٌ", arti: "Buku", kat: "isim", tipe: "teks" },
+            { id: "s2", noSoal: 1, soal: "🏃", arti: "Berlari", kat: "fiil", tipe: "gambar" }
          ];
     }
 
-    let daftarSoalHtml = AppState.db.dnd.sort.map((item, index) => `
+    let daftarSoalHtml = AppState.db.dnd.sort.map((item) => `
         <div class="bg-slate-800 p-3 rounded-xl border border-slate-700 flex justify-between items-center mb-3 hover:border-amber-500/50 transition-colors">
             <div class="flex items-center gap-3 md:gap-4">
-                <span class="bg-amber-900/50 text-amber-400 font-black w-8 h-8 flex items-center justify-center rounded-lg text-xs border border-amber-500/30 shrink-0">${index + 1}</span>
+                <span class="bg-indigo-600/30 text-indigo-300 font-black px-2.5 py-1.5 rounded-lg text-[10px] border border-indigo-500/40 shrink-0">SOAL #${item.noSoal || 1}</span>
                 <div>
                     <p class="${item.tipe === 'gambar' ? 'text-2xl' : 'font-arabic text-xl'} text-white leading-none mb-1">${item.soal}</p>
                     <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Arti: <span class="text-amber-300">${item.arti}</span> | Kategori: <span class="text-indigo-400 uppercase font-black">${item.kat}</span></p>
@@ -992,7 +943,7 @@ function renderEditorSortDnd(container) {
         <div class="max-w-6xl mx-auto space-y-6 fade-in pb-10 mt-4 px-2 sm:px-0">
             <div class="flex justify-between items-center bg-slate-900 p-4 rounded-2xl shadow-xl border border-slate-700">
                 <h2 class="text-base sm:text-xl font-black text-white flex items-center gap-2">
-                    <i class="fa-solid fa-layer-group text-amber-400"></i> Editor Sort & Drop
+                    <i class="fa-solid fa-layer-group text-amber-400"></i> Editor Sort & Drop (Multi-Soal)
                 </h2>
                 <button onclick="bukaEditorSoalDnd()" class="bg-slate-800 hover:bg-rose-600 text-slate-300 hover:text-white px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl text-xs font-bold border border-slate-700 hover:border-rose-500 transition-all flex items-center">
                     <i class="fa-solid fa-arrow-left mr-1.5"></i> Kembali
@@ -1003,7 +954,7 @@ function renderEditorSortDnd(container) {
                 <div class="lg:col-span-1 space-y-6">
                     <div class="bg-slate-800 p-5 rounded-3xl border border-slate-700 shadow-xl">
                         <h3 class="font-black text-amber-400 mb-3 uppercase tracking-widest text-sm flex items-center"><i class="fa-solid fa-file-excel mr-2"></i> Import Excel</h3>
-                        <p class="text-[10px] text-slate-400 mb-4 leading-relaxed">Download template Excel sort, isi soal dan kategorinya, lalu upload.</p>
+                        <p class="text-[10px] text-slate-400 mb-4 leading-relaxed">Isi kolom <b>No Soal</b> untuk mengelompokkan balok per ronde permainan.</p>
                         <button onclick="downloadTemplateSortExcel()" class="w-full mb-4 bg-slate-700 hover:bg-slate-600 text-amber-400 font-bold py-2.5 rounded-xl text-xs transition-colors border border-slate-600 flex items-center justify-center">
                             <i class="fa-solid fa-download mr-2"></i> Download Template
                         </button>
@@ -1020,25 +971,29 @@ function renderEditorSortDnd(container) {
                         <h3 class="font-black text-amber-400 mb-4 uppercase tracking-widest text-sm flex items-center"><i class="fa-solid fa-plus-circle mr-2"></i> Tambah Manual</h3>
                         <div class="space-y-4">
                             <div>
+                                <label class="text-[11px] font-bold text-slate-400 block mb-1.5 uppercase">Nomor Paket Soal</label>
+                                <input type="number" id="sort-input-nosoal" value="1" min="1" class="w-full bg-slate-900 border border-slate-700 text-white text-sm font-black rounded-xl p-3 outline-none focus:border-amber-500">
+                            </div>
+                            <div>
                                 <label class="text-[11px] font-bold text-slate-400 block mb-1.5 uppercase">Tipe Balok</label>
-                                <select id="sort-input-tipe" class="w-full bg-slate-900 border border-slate-700 text-white text-sm rounded-xl p-3 outline-none focus:border-amber-500 font-bold transition-colors">
+                                <select id="sort-input-tipe" class="w-full bg-slate-900 border border-slate-700 text-white text-sm rounded-xl p-3 outline-none focus:border-amber-500 font-bold">
                                     <option value="teks">Teks (Arab/Latin)</option>
                                     <option value="gambar">Gambar (Emoji)</option>
                                 </select>
                             </div>
                             <div>
                                 <label class="text-[11px] font-bold text-slate-400 block mb-1.5 uppercase">Soal</label>
-                                <input type="text" id="sort-input-soal" class="w-full bg-slate-900 border border-slate-700 text-white font-arabic text-xl rounded-xl p-3 outline-none focus:border-amber-500 transition-colors" dir="auto" placeholder="Contoh: كِتَابٌ">
+                                <input type="text" id="sort-input-soal" class="w-full bg-slate-900 border border-slate-700 text-white font-arabic text-xl rounded-xl p-3 outline-none focus:border-amber-500" dir="auto" placeholder="Contoh: كِتَابٌ">
                             </div>
                             <div>
                                 <label class="text-[11px] font-bold text-slate-400 block mb-1.5 uppercase">Arti</label>
-                                <input type="text" id="sort-input-arti" class="w-full bg-slate-900 border border-slate-700 text-white text-sm font-bold rounded-xl p-3 outline-none focus:border-amber-500 transition-colors" placeholder="Contoh: Buku">
+                                <input type="text" id="sort-input-arti" class="w-full bg-slate-900 border border-slate-700 text-white text-sm font-bold rounded-xl p-3 outline-none focus:border-amber-500" placeholder="Contoh: Buku">
                             </div>
                             <div>
                                 <label class="text-[11px] font-bold text-slate-400 block mb-1.5 uppercase">Kategori (isim / fiil)</label>
-                                <input type="text" id="sort-input-kat" class="w-full bg-slate-900 border border-slate-700 text-white text-sm font-bold rounded-xl p-3 outline-none focus:border-amber-500 transition-colors" placeholder="isim atau fiil">
+                                <input type="text" id="sort-input-kat" class="w-full bg-slate-900 border border-slate-700 text-white text-sm font-bold rounded-xl p-3 outline-none focus:border-amber-500" placeholder="isim atau fiil">
                             </div>
-                            <button onclick="tambahSoalSort()" class="w-full bg-amber-500 hover:bg-amber-400 text-slate-900 font-black py-3 rounded-xl shadow-lg transition-transform hover:scale-[1.02] flex items-center justify-center">
+                            <button onclick="tambahSoalSort()" class="w-full bg-amber-500 hover:bg-amber-400 text-slate-900 font-black py-3 rounded-xl shadow-lg flex items-center justify-center">
                                 <i class="fa-solid fa-floppy-disk mr-2"></i> Simpan ke Daftar
                             </button>
                         </div>
@@ -1047,13 +1002,13 @@ function renderEditorSortDnd(container) {
 
                 <div class="lg:col-span-2 bg-slate-900 p-5 sm:p-6 rounded-3xl border border-slate-700 shadow-inner flex flex-col lg:h-[80vh]">
                     <div class="flex justify-between items-center mb-4 border-b border-slate-800 pb-3 shrink-0">
-                        <h3 class="font-black text-white text-sm sm:text-base flex items-center"><i class="fa-solid fa-list mr-2 text-slate-400"></i>Daftar Soal Sort (<span class="text-amber-400 ml-1">${AppState.db.dnd.sort.length}</span>)</h3>
-                        <button onclick="simpanKeDatabaseSort()" class="bg-indigo-600 hover:bg-indigo-500 text-white text-[10px] sm:text-xs font-bold px-3 sm:px-4 py-2 rounded-xl shadow-md transition-transform hover:scale-105 flex items-center">
+                        <h3 class="font-black text-white text-sm sm:text-base flex items-center"><i class="fa-solid fa-list mr-2 text-slate-400"></i>Daftar Item Sort (<span class="text-amber-400 ml-1">${AppState.db.dnd.sort.length}</span>)</h3>
+                        <button onclick="simpanKeDatabaseSort()" class="bg-indigo-600 hover:bg-indigo-500 text-white text-[10px] sm:text-xs font-bold px-3 sm:px-4 py-2 rounded-xl shadow-md flex items-center">
                             <i class="fa-solid fa-cloud-arrow-up mr-1.5"></i> Simpan Permanen
                         </button>
                     </div>
                     <div class="flex-1 overflow-y-auto pr-2 custom-scrollbar">
-                        ${daftarSoalHtml || '<div class="text-center bg-slate-800/50 rounded-2xl py-12 border border-dashed border-slate-700"><i class="fa-solid fa-box-open text-4xl text-slate-600 mb-3"></i><p class="text-slate-400 text-xs font-bold">Belum ada soal sort.</p></div>'}
+                        ${daftarSoalHtml || '<div class="text-center bg-slate-800/50 rounded-2xl py-12 border border-dashed border-slate-700"><p class="text-slate-400 text-xs font-bold">Belum ada soal sort.</p></div>'}
                     </div>
                 </div>
             </div>
@@ -1062,13 +1017,14 @@ function renderEditorSortDnd(container) {
 }
 
 function tambahSoalSort() {
+    const noSoal = parseInt(document.getElementById('sort-input-nosoal').value) || 1;
     const tipe = document.getElementById('sort-input-tipe').value;
     const soal = document.getElementById('sort-input-soal').value.trim();
     const arti = document.getElementById('sort-input-arti').value.trim();
     const kat = document.getElementById('sort-input-kat').value.trim().toLowerCase();
     if (!soal || !arti || !kat) return alert('Semua kolom wajib diisi!');
     let idUnik = 's_' + Date.now();
-    AppState.db.dnd.sort.push({ id: idUnik, soal: soal, arti: arti, kat: kat, tipe: tipe });
+    AppState.db.dnd.sort.push({ id: idUnik, noSoal: noSoal, soal: soal, arti: arti, kat: kat, tipe: tipe });
     renderEditorSortDnd(document.getElementById('main-content'));
 }
 
@@ -1085,10 +1041,11 @@ function simpanKeDatabaseSort() {
 function downloadTemplateSortExcel() {
     if (typeof XLSX === 'undefined') return alert('Library Excel belum siap.');
     const ws_data = [
-        ['Tipe Balok', 'Soal (Kosakata/Emoji)', 'Arti / Keterangan', 'Kategori (isim / fiil)'],
-        ['PENTING: Kolom Kategori isi dengan isim atau fiil.', '', '', ''],
-        ['teks', 'كِتَابٌ', 'Buku', 'isim'],
-        ['gambar', '🏃', 'Berlari', 'fiil']
+        ['No Soal (Ronde)', 'Tipe Balok', 'Soal (Kosakata/Emoji)', 'Arti / Keterangan', 'Kategori (isim / fiil)'],
+        ['PENTING: No Soal diisi angka (1, 2, 3...). Kategori diisi isim atau fiil.', '', '', '', ''],
+        [1, 'teks', 'كِتَابٌ', 'Buku', 'isim'],
+        [1, 'gambar', '🏃', 'Berlari', 'fiil'],
+        [2, 'teks', 'مَسْجِدٌ', 'Masjid', 'isim']
     ];
     const ws = XLSX.utils.aoa_to_sheet(ws_data);
     const wb = XLSX.utils.book_new();
@@ -1109,20 +1066,21 @@ function bacaExcelSort(event) {
             let jumlahBerhasil = 0;
             for (let i = 2; i < jsonRows.length; i++) {
                 let row = jsonRows[i];
-                if (!row || row.length < 4) continue;
-                let tipe = row[0] ? String(row[0]).trim().toLowerCase() : 'teks';
-                let soal = row[1] ? String(row[1]).trim() : '';
-                let arti = row[2] ? String(row[2]).trim() : '';
-                let kat = row[3] ? String(row[3]).trim().toLowerCase() : 'isim';
+                if (!row || row.length < 5) continue;
+                let noSoal = parseInt(row[0]) || 1;
+                let tipe = row[1] ? String(row[1]).trim().toLowerCase() : 'teks';
+                let soal = row[2] ? String(row[2]).trim() : '';
+                let arti = row[3] ? String(row[3]).trim() : '';
+                let kat = row[4] ? String(row[4]).trim().toLowerCase() : 'isim';
                 if (!soal || !arti) continue;
                 if (tipe !== 'teks' && tipe !== 'gambar') tipe = 'teks';
                 let idUnik = 's_' + Date.now() + '_' + i;
-                AppState.db.dnd.sort.push({ id: idUnik, soal: soal, arti: arti, kat: kat, tipe: tipe });
+                AppState.db.dnd.sort.push({ id: idUnik, noSoal: noSoal, soal: soal, arti: arti, kat: kat, tipe: tipe });
                 jumlahBerhasil++;
             }
             if (jumlahBerhasil > 0) {
                 renderEditorSortDnd(document.getElementById('main-content'));
-                alert(`${jumlahBerhasil} soal sort berhasil diimport!`);
+                alert(`${jumlahBerhasil} item soal sort berhasil diimport!`);
             }
         } catch (err) {
             alert('Gagal membaca file: ' + err.message);
@@ -1131,7 +1089,6 @@ function bacaExcelSort(event) {
     };
     reader.readAsArrayBuffer(file);
 }
-
 
 // =========================================================================
 // 3. EDITOR BUILD & DROP (LENGKAP EXCEL & MANUAL)
