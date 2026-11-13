@@ -371,17 +371,24 @@ function pasangSensorSort() {
                     // REMOTE CONTROL TOP BAR
                     if (typeof updateSkorDnd === 'function') updateSkorDnd(Math.round(sortState.skor));
 
-                    sortState.itemTerjawab++;
-                    if (typeof playSoundEffect === 'function') playSoundEffect('correct'); 
+                   sortState.itemTerjawab++;
+                    if (typeof playDndSfx === 'function') playDndSfx('benar'); // <-- Audio Benar
 
                     if (sortState.itemTerjawab === sortState.dataSoal.length) {
                         if (sortState.timerInterval) clearInterval(sortState.timerInterval);
-                        setTimeout(() => selebrasiKemenanganSort(), 400);
+                        if (typeof playDndSfx === 'function') playDndSfx('selesai'); // <-- Audio Kamu Hebat
+                        
+                        sortIndexRonde++;
+                        if (sortIndexRonde < sortPaketRonde.length) {
+                            setTimeout(() => mulaiGameSort(false, true), 1200); // Lanjut soal
+                        } else {
+                            setTimeout(() => selebrasiKemenanganSort(), 1200); // Menang
+                        }
                     }
-                } else {
+             } else {
                     kartu.style.position = 'static';
                     wadahKiri.appendChild(kartu);
-                    if (typeof playSoundEffect === 'function') playSoundEffect('wrong'); 
+                    if (typeof playDndSfx === 'function') playDndSfx('salah'); // <-- Audio Salah 
                     
                     let idSoal = kartu.getAttribute('data-id');
                     let soalData = sortState.dataSoal.find(s => s.id === idSoal);
