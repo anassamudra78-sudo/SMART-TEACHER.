@@ -2,7 +2,8 @@
 // FILE: engine-sort.js
 // FUNGSI: Mesin "Sort & Drop" (DENGAN TOP BAR GLOBAL & TIMER)
 // ==========================================================
-
+let sortPaketRonde = [];
+let sortIndexRonde = 0;
 let sortState = {
     skor: 0,
     itemTerjawab: 0,
@@ -76,8 +77,15 @@ function jalankanTimerSort(isRenderUlang) {
 
         if (sortState.sisaWaktu <= 0) {
             clearInterval(sortState.timerInterval);
-            if (typeof playSoundEffect === 'function') playSoundEffect('habis');
-            selebrasiKemenanganSort();
+            if (typeof playDndSfx === 'function') playDndSfx('salah');
+            
+            // Lanjut ke paket soal berikutnya jika waktu ronde habis
+            sortIndexRonde++;
+            if (sortIndexRonde < sortPaketRonde.length) {
+                setTimeout(() => mulaiGameSort(false, true), 1000);
+            } else {
+                selebrasiKemenanganSort();
+            }
         }
     }, 1000);
 }
@@ -89,16 +97,46 @@ function mulaiGameSort(isRenderUlang = false) {
     const container = document.getElementById('dnd-game-container');
     if (!container) return;
 
-    if (!isRenderUlang) {
+    if (!isRenderUlang && !lanjutRondeBerikutnya) {
         sortState.skor = 0;
-        sortState.itemTerjawab = 0;
+        sortIndexRonde = 0;
         if (typeof updateSkorDnd === 'function') updateSkorDnd(0);
-        if (AppState.db.dnd && AppState.db.dnd.sort && AppState.db.dnd.sort.length > 0) {
-            sortState.dataSoalAsli = JSON.parse(JSON.stringify(AppState.db.dnd.sort));
-        }
+
+        let sumberData = (AppState.db.dnd && AppState.db.dnd.sort && AppState.db.dnd.sort.length > 0)
+            ? JSON.parse(JSON.stringify(AppState.db.dnd.sort))
+            : JSON.parse(JSON.stringify(sortState.dataSoalAsli));
+
+        let kelompok = {};
+        sumberData.forEach(item => {
+            let no = parseInt(item.noSoal) || 1;
+            if (!kelompok[no]) kelompok[no] = [];
+            kelompok[no].push(item);
+        });
+
+        let daftarNomor = Object.keys(kelompok).map(Number).sort((a, b) => a - b);
+        
+        const dari = (window.dndRentang && window.dndRentang.dari) ? window.dndRentang.dari : 1;
+        const sampai = (window.dndRentang && window.dndRentang.sampai) ? window.dndRentang.sampai : daftarNomor.length;
+        daftarNomor = daftarNomor.filter(no => no >= dari && no <= sampai);
+
+        sortPaketRonde = daftarNomor.map(no => ({ noSoal: no, items: kelompok[no] }));
+    }
+
+    if (sortPaketRonde.length === 0 || sortIndexRonde >= sortPaketRonde.length) {
+        selebrasiKemenanganSort();
+        return;
+    }
+
+    const paketAktif = sortPaketRonde[sortIndexRonde];
+
+    if (!isRenderUlang) {
+        sortState.itemTerjawab = 0;
+        sortState.dataSoalAsli = paketAktif.items;
         sortState.dataSoal = sortState.dataSoalAsli.map(item => ({...item, terjawab: false, salah: 0})).sort(() => Math.random() - 0.5);
     }
 
+    
+    if (subtitleEl) subtitleEl.innerText = `Sort & Drop • Soal ${sortIndexRonde + 1} dari ${sortPaketRonde.length}`;
     let isKiriKanan = sortState.layout === 'kiri-kanan';
     let skala = hitungSkalaOtomatisSort(sortState.dataSoal.length, isKiriKanan);
 
