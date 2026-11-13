@@ -2,6 +2,8 @@
 // FILE: engine-match.js
 // FUNGSI: Mesin Game "Match & Drop" (DENGAN TOP BAR GLOBAL)
 // ==========================================================
+let matchPaketRonde = [];
+let matchIndexRonde = 0;
 let matchState = {
     skor: 0,
     pasanganTerjawab: 0,
@@ -93,37 +95,70 @@ function jalankanTimerMatch() {
              if (typeof playTick === 'function') playTick(900);
         }
 
-        if (matchState.sisaWaktu <= 0) {
+       if (matchState.sisaWaktu <= 0) {
             clearInterval(matchState.timerInterval);
-            if (typeof playSoundEffect === 'function') playSoundEffect('habis');
-            selebrasiKemenangan();
+            if (typeof playDndSfx === 'function') playDndSfx('salah');
+            
+            // Lanjut ke soal berikutnya
+            matchIndexRonde++;
+            if (matchIndexRonde < matchPaketRonde.length) {
+                setTimeout(() => mulaiGameMatch(true), 1000);
+            } else {
+                selebrasiKemenangan();
+            }
         }
     }, 1000);
 }
 
-function mulaiGameMatch() {
+function mulaiGameMatch(lanjutRondeBerikutnya = false) {
     const subtitleEl = document.getElementById('dnd-topbar-subtitle');
-    if (subtitleEl) subtitleEl.innerText = "Sedang Bermain...";
-
     const container = document.getElementById('dnd-game-container');
     if (!container) return;
     
-    matchState.skor = 0;
-    matchState.pasanganTerjawab = 0;
-    
-    // Reset Skor di Top Bar ke 0
-    if (typeof updateSkorDnd === 'function') updateSkorDnd(0);
-    
-// --- SAMBUNGAN DATABASE STUDIO SOAL ---
-    if (AppState.db.dnd && AppState.db.dnd.match && AppState.db.dnd.match.length > 0) {
-        matchState.dataSoal = JSON.parse(JSON.stringify(AppState.db.dnd.match));
+    // 1. Jika baru main dari lobi, siapkan rentang soalnya
+    if (!lanjutRondeBerikutnya) {
+        matchState.skor = 0;
+        matchIndexRonde = 0;
+        if (typeof updateSkorDnd === 'function') updateSkorDnd(0);
+        
+        let sumberData = (AppState.db.dnd && AppState.db.dnd.match && AppState.db.dnd.match.length > 0)
+            ? JSON.parse(JSON.stringify(AppState.db.dnd.match))
+            : JSON.parse(JSON.stringify(matchState.dataSoal));
+
+        // Kelompokkan per nomor soal
+        let kelompok = {};
+        sumberData.forEach(item => {
+            let no = parseInt(item.noSoal) || 1;
+            if (!kelompok[no]) kelompok[no] = [];
+            kelompok[no].push(item);
+        });
+
+        let daftarNomor = Object.keys(kelompok).map(Number).sort((a, b) => a - b);
+        
+        // Saring sesuai inputan rentang guru
+        const dari = (window.dndRentang && window.dndRentang.dari) ? window.dndRentang.dari : 1;
+        const sampai = (window.dndRentang && window.dndRentang.sampai) ? window.dndRentang.sampai : daftarNomor.length;
+        daftarNomor = daftarNomor.filter(no => no >= dari && no <= sampai);
+
+        matchPaketRonde = daftarNomor.map(no => ({ noSoal: no, items: kelompok[no] }));
     }
-    // --------------------------------------
+
+    if (matchPaketRonde.length === 0 || matchIndexRonde >= matchPaketRonde.length) {
+        selebrasiKemenangan();
+        return;
+    }
+
+    // 2. Pasang data untuk Ronde saat ini
+    const paketAktif = matchPaketRonde[matchIndexRonde];
+    matchState.dataSoal = paketAktif.items;
+    matchState.pasanganTerjawab = 0;
+
+    if (subtitleEl) subtitleEl.innerText = `Match & Drop • Soal ${matchIndexRonde + 1} dari ${matchPaketRonde.length}`;
+
     let soalAcak = [...matchState.dataSoal].sort(() => Math.random() - 0.5);
     let artiAcak = [...matchState.dataSoal].sort(() => Math.random() - 0.5);
-
     let skala = hitungSkalaOtomatis(matchState.dataSoal.length);
-
+    
     container.innerHTML = `
         <div class="max-w-7xl mx-auto p-2 md:p-4 mt-2 select-none fade-in pb-20 w-full h-full">
             <div class="flex flex-col lg:flex-row gap-4 md:gap-6 bg-[#0f172a] p-4 md:p-6 rounded-3xl border border-slate-800 shadow-[0_8px_30px_rgba(0,0,0,0.4)] relative overflow-hidden h-full min-h-[500px]">
@@ -241,10 +276,16 @@ function pasangSensorSederhana() {
                   matchState.pasanganTerjawab++;
                     if (typeof playDndSfx === 'function') playDndSfx('benar'); // <-- Audio Benar DND
 
-                    if (matchState.pasanganTerjawab === matchState.dataSoal.length) {
+                   if (matchState.pasanganTerjawab === matchState.dataSoal.length) {
                         if (matchState.timerInterval) clearInterval(matchState.timerInterval);
-                        if (typeof playDndSfx === 'function') playDndSfx('selesai'); // <-- Audio Selesai (Kamu Hebat)
-                        setTimeout(() => selebrasiKemenangan(), 400);
+                        if (typeof playDndSfx === 'function') playDndSfx('selesai'); 
+                        
+                        matchIndexRonde++;
+                        if (matchIndexRonde < matchPaketRonde.length) {
+                            setTimeout(() => mulaiGameMatch(true), 1200); // Lanjut ke soal berikutnya
+                        } else {
+                            setTimeout(() => selebrasiKemenangan(), 1200); // Jika soal habis, baru menang
+                        }
                     }
                } else {
                     kartu.style.position = 'static';
