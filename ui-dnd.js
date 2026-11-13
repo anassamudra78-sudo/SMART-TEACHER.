@@ -1,47 +1,26 @@
 // =========================================================================
-// PENGENDALI AUDIO KHUSUS DRAG & DROP ARENA
+// PENGENDALI AUDIO KHUSUS DRAG & DROP
 // =========================================================================
-const DND_AUDIO_URLS = {
-    bgm: "https://anassamudra78-sudo.github.io/audio-smart-teacher/Sound%20kuis%20berjalan.mp3",
-    benar: "https://anassamudra78-sudo.github.io/audio-smart-teacher/benardnd.mp3",
-    salah: "https://anassamudra78-sudo.github.io/audio-smart-teacher/salahdnd.mp3",
-    selesai: "https://anassamudra78-sudo.github.io/audio-smart-teacher/Sound%20effect%20kuis%20Benar%20.mp3"
+const DND_AUDIO = {
+    bgm: new Audio("https://anassamudra78-sudo.github.io/audio-smart-teacher/Sound%20kuis%20berjalan.mp3"),
+    benar: new Audio("https://anassamudra78-sudo.github.io/audio-smart-teacher/benardnd.mp3"),
+    salah: new Audio("https://anassamudra78-sudo.github.io/audio-smart-teacher/salahdnd.mp3"),
+    selesai: new Audio("https://anassamudra78-sudo.github.io/audio-smart-teacher/Sound%20effect%20kuis%20Benar%20.mp3")
 };
+DND_AUDIO.bgm.loop = true;
 
-let dndAudioObjs = { bgm: null, benar: null, salah: null, selesai: null };
-
-function initAudioDnd() {
-    if (!dndAudioObjs.bgm) {
-        dndAudioObjs.bgm = new Audio(DND_AUDIO_URLS.bgm);
-        dndAudioObjs.bgm.loop = true;
-    }
-    if (!dndAudioObjs.benar) dndAudioObjs.benar = new Audio(DND_AUDIO_URLS.benar);
-    if (!dndAudioObjs.salah) dndAudioObjs.salah = new Audio(DND_AUDIO_URLS.salah);
-    if (!dndAudioObjs.selesai) dndAudioObjs.selesai = new Audio(DND_AUDIO_URLS.selesai);
+function playDndBgm() { 
+    DND_AUDIO.bgm.volume = 0.7; 
+    DND_AUDIO.bgm.play().catch(e => console.log(e)); 
 }
-
-function startDndBGM() {
-    initAudioDnd();
-    if (dndAudioObjs.bgm) {
-        dndAudioObjs.bgm.volume = 0.7;
-        dndAudioObjs.bgm.currentTime = 0;
-        dndAudioObjs.bgm.play().catch(e => console.log("BGM DND:", e));
-    }
+function stopDndBgm() { 
+    DND_AUDIO.bgm.pause(); 
+    DND_AUDIO.bgm.currentTime = 0; 
 }
-
-function stopDndBGM() {
-    if (dndAudioObjs.bgm) {
-        dndAudioObjs.bgm.pause();
-        dndAudioObjs.bgm.currentTime = 0;
-    }
-}
-
-function playDndSound(jenis) {
-    initAudioDnd();
-    const sfx = dndAudioObjs[jenis];
-    if (sfx) {
-        sfx.currentTime = 0;
-        sfx.play().catch(e => console.log("SFX DND:", e));
+function playDndSfx(jenis) { 
+    if (DND_AUDIO[jenis]) {
+        DND_AUDIO[jenis].currentTime = 0; 
+        DND_AUDIO[jenis].play().catch(e => console.log(e)); 
     }
 }
 // ==========================================================
@@ -206,6 +185,13 @@ function bukaLobiDragDrop(jenisGame) {
                 </div>
 
                 <div class="space-y-4 text-left mt-3">
+                <!-- RENTANG SOAL (MINI) -->
+                    <div class="flex items-center gap-2 mb-2 bg-slate-800/50 p-2 rounded-xl border border-slate-700">
+                        <label class="text-[11px] font-bold text-slate-300 whitespace-nowrap"><i class="fa-solid fa-list-ol mr-1"></i> Rentang Soal :</label>
+                        <input type="number" id="dnd-soal-dari" placeholder="1" min="1" class="w-12 p-1 rounded-lg bg-slate-900 text-white border border-slate-600 text-center text-[11px] outline-none focus:border-amber-500">
+                        <span class="text-[11px] text-slate-400 font-bold">sampai</span>
+                        <input type="number" id="dnd-soal-sampai" placeholder="Akhir" class="w-12 p-1 rounded-lg bg-slate-900 text-white border border-slate-600 text-center text-[11px] outline-none focus:border-amber-500">
+                    </div>
                     <div>
                         <label class="text-xs font-bold text-slate-300 block mb-1">⏱️ Durasi Waktu Per Soal</label>
                         <select id="lobby-dnd-durasi" class="w-full p-2.5 rounded-xl bg-slate-800 text-white border border-slate-700 outline-none focus:border-amber-500 text-xs">
