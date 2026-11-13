@@ -238,17 +238,18 @@ function pasangSensorSederhana() {
                     // UPDATE SKOR DI TOP BAR!
                     if (typeof updateSkorDnd === 'function') updateSkorDnd(Math.round(matchState.skor));
 
-                    matchState.pasanganTerjawab++;
-                    if (typeof playSoundEffect === 'function') playSoundEffect('correct'); 
+                  matchState.pasanganTerjawab++;
+                    if (typeof playDndSfx === 'function') playDndSfx('benar'); // <-- Audio Benar DND
 
                     if (matchState.pasanganTerjawab === matchState.dataSoal.length) {
-                        if (matchState.timerInterval) clearInterval(matchState.timerInterval); // Matikan timer menang
+                        if (matchState.timerInterval) clearInterval(matchState.timerInterval);
+                        if (typeof playDndSfx === 'function') playDndSfx('selesai'); // <-- Audio Selesai (Kamu Hebat)
                         setTimeout(() => selebrasiKemenangan(), 400);
                     }
-                } else {
+               } else {
                     kartu.style.position = 'static';
                     wadahKiri.appendChild(kartu);
-                    if (typeof playSoundEffect === 'function') playSoundEffect('wrong'); 
+                    if (typeof playDndSfx === 'function') playDndSfx('salah'); // <-- Audio Salah DND 
                     
                     let salahCount = parseInt(kartu.getAttribute('data-salah')) || 0;
                     kartu.setAttribute('data-salah', salahCount + 1);
