@@ -363,6 +363,7 @@ function mulaiHitungMundurDnd(detikTunggu) {
 }
 
 function keluarFullscreenDnd() {
+    if (typeof stopDndBgm === 'function') stopDndBgm();
     window.isDragDropMode = false;
     
     // 1. Tutup layar hitam / modal game (jika user keluar dari dalam game)
@@ -535,7 +536,15 @@ function masukKeArenaGameDnd() {
     // --- TAMBAHAN KUNCI: Simpan durasi ke memori global SEBELUM Lobi dihapus ---
     const durasiEl = document.getElementById('lobby-dnd-durasi');
     window.dndDurasiPilihan = durasiEl ? parseInt(durasiEl.value) : 15;
-
+// --- TAMBAHAN BARU: Simpan rentang soal dan nyalakan musik ---
+    const dariEl = document.getElementById('dnd-soal-dari');
+    const sampaiEl = document.getElementById('dnd-soal-sampai');
+    window.dndRentang = {
+        dari: dariEl && dariEl.value ? parseInt(dariEl.value) : 1,
+        sampai: sampaiEl && sampaiEl.value ? parseInt(sampaiEl.value) : 999
+    };
+    if (typeof playDndBgm === 'function') playDndBgm();
+    
     // Baru jalankan mesin game yang akan menimpa layar lobi
     if (gameDndTerpilih === 'match' && typeof mulaiGameMatch === 'function') mulaiGameMatch();
     else if (gameDndTerpilih === 'sort' && typeof mulaiGameSort === 'function') mulaiGameSort();
