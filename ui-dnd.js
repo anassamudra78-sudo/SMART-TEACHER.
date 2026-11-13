@@ -148,6 +148,19 @@ function amankanLayarPenuhDragDrop() {
 
 function bukaLobiDragDrop(jenisGame) {
     gameDndTerpilih = jenisGame;
+    // Trik meniru kuis: Putar audio diam-diam (volume 0) saat klik pertama masuk lobi
+    if (typeof DND_AUDIO !== 'undefined') {
+        try {
+            ['benar', 'salah', 'selesai'].forEach(sfx => {
+                DND_AUDIO[sfx].volume = 0;
+                DND_AUDIO[sfx].play().then(() => {
+                    DND_AUDIO[sfx].pause();
+                    DND_AUDIO[sfx].currentTime = 0;
+                    DND_AUDIO[sfx].volume = 1; // Kembalikan volume ke normal untuk dipakai di dalam game
+                }).catch(e => e);
+            });
+        } catch(err) {}
+    }
     
     // 1. Langsung buka modal fullscreen (Kamar khusus yang sudah ada Top Bar-nya)
     const modal = document.getElementById('dnd-arena-modal');
