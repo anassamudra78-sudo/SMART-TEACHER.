@@ -72,10 +72,17 @@ function jalankanTimerBuild() {
              if (typeof playTick === 'function') playTick(900);
         }
 
-        if (buildState.sisaWaktu <= 0) {
+      if (buildState.sisaWaktu <= 0) {
             clearInterval(buildState.timerInterval);
-            if (typeof playSoundEffect === 'function') playSoundEffect('habis');
-            selebrasiKemenanganBuild();
+            if (typeof playDndSfx === 'function') playDndSfx('salah');
+            
+            // Waktu habis, otomatis lanjut soal berikutnya
+            buildState.soalAktif++;
+            if (buildState.soalAktif < buildState.dataSoal.length) {
+                setTimeout(() => mulaiGameBuild(true), 1000);
+            } else {
+                selebrasiKemenanganBuild();
+            }
         }
     }, 1000);
 }
@@ -87,14 +94,28 @@ function mulaiGameBuild(lanjutSoalBerikutnya = false) {
     const container = document.getElementById('dnd-game-container');
     if (!container) return;
     
-    if (AppState.db.dnd && AppState.db.dnd.build && AppState.db.dnd.build.length > 0) {
-        buildState.dataSoal = JSON.parse(JSON.stringify(AppState.db.dnd.build));
-    }
     if (!lanjutSoalBerikutnya) {
         buildState.skor = 0;
         buildState.soalAktif = 0;
         if (typeof updateSkorDnd === 'function') updateSkorDnd(0);
+
+        let sumberData = (AppState.db.dnd && AppState.db.dnd.build && AppState.db.dnd.build.length > 0)
+            ? JSON.parse(JSON.stringify(AppState.db.dnd.build))
+            : JSON.parse(JSON.stringify(buildState.dataSoal));
+
+        // Terapkan batas dari lobi (Mulai Dari ... Sampai ...)
+        const dari = (window.dndRentang && window.dndRentang.dari) ? window.dndRentang.dari : 1;
+        const sampai = (window.dndRentang && window.dndRentang.sampai) ? window.dndRentang.sampai : sumberData.length;
+        
+        buildState.dataSoal = sumberData.slice(dari - 1, sampai);
     }
+
+    if (!buildState.dataSoal || buildState.soalAktif >= buildState.dataSoal.length) {
+        selebrasiKemenanganBuild();
+        return;
+    }
+    
+    if (subtitleEl) subtitleEl.innerText = `Build & Drop • Soal ${buildState.soalAktif + 1} dari ${buildState.dataSoal.length}`;
     
     buildState.kataTerjawab = 0;
     let soalSekarang = buildState.dataSoal[buildState.soalAktif];
@@ -249,23 +270,23 @@ function pasangSensorBuild() {
                     // UPDATE SKOR DI TOP BAR GLOBAL
                     if (typeof updateSkorDnd === 'function') updateSkorDnd(Math.round(buildState.skor));
 
-                    if (typeof playSoundEffect === 'function') playSoundEffect('correct'); 
+                   if (typeof playDndSfx === 'function') playDndSfx('benar'); // <-- Audio Benar DND
 
                     if (buildState.kataTerjawab === soalSekarang.susunan.length) {
-                        // Matikan timer sejenak karena soal sudah selesai disusun
                         if (buildState.timerInterval) clearInterval(buildState.timerInterval);
+                        if (typeof playDndSfx === 'function') playDndSfx('selesai'); // <-- Audio Kamu Hebat
                         
                         buildState.soalAktif++;
                         if (buildState.soalAktif < buildState.dataSoal.length) {
                             setTimeout(() => mulaiGameBuild(true), 1200);
                         } else {
-                            setTimeout(() => selebrasiKemenanganBuild(), 800);
+                            setTimeout(() => selebrasiKemenanganBuild(), 1200);
                         }
                     }
-                } else {
+              } else {
                     kartu.style.position = 'static';
                     wadahKiri.appendChild(kartu);
-                    if (typeof playSoundEffect === 'function') playSoundEffect('wrong'); 
+                    if (typeof playDndSfx === 'function') playDndSfx('salah'); // <-- Audio Salah DND 
                     
                     let salahCount = parseInt(kartu.getAttribute('data-salah')) || 0;
                     kartu.setAttribute('data-salah', salahCount + 1);
