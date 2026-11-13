@@ -847,10 +847,13 @@ function renderEditorMatchDnd(container) {
                     </div>
 
                     <div class="bg-slate-800 p-5 rounded-3xl border border-slate-700 shadow-xl">
-                        <h3 class="font-black text-emerald-400 mb-4 uppercase tracking-widest text-sm flex items-center"><i class="fa-solid fa-plus-circle mr-2"></i> Tambah Manual</h3>
-                        <div class="space-y-4">
-                            <div>
-                                <label class="text-[11px] font-bold text-slate-400 block mb-1.5 uppercase">Tipe Balok</label>
+                        <h3 class="text-xs font-black text-emerald-400 mb-4 uppercase tracking-widest"><i class="fa-solid fa-circle-plus mr-1"></i> Tambah Manual</h3>
+
+<!-- TAMBAHAN: INPUT NOMOR SOAL (PAKET) -->
+<label class="block text-[10px] font-bold text-slate-400 mb-1 uppercase">Nomor Soal Ke Berapa?</label>
+<input type="number" id="dnd-editor-nosoal" value="1" min="1" class="w-full bg-slate-900 border border-slate-700 focus:border-emerald-500 text-white rounded-lg px-3 py-2 mb-3 text-xs outline-none">
+                   
+<label class="block text-[10px] font-bold text-slate-400 mb-1 uppercase">Tipe Balok</label>
                                 <select id="match-input-tipe" class="w-full bg-slate-900 border border-slate-700 text-white text-sm rounded-xl p-3 outline-none focus:border-emerald-500 font-bold transition-colors">
                                     <option value="teks">Teks (Arab/Latin)</option>
                                     <option value="gambar">Gambar (Emoji)</option>
