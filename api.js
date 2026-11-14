@@ -60,7 +60,9 @@ const AppState = {
             biasa: "https://raw.githubusercontent.com/anassamudra78-sudo/audio-smart-teacher/main/biasa.mp3",
             motivasi: "https://raw.githubusercontent.com/anassamudra78-sudo/audio-smart-teacher/main/motivasi.mp3",
             terpilih: "https://raw.githubusercontent.com/anassamudra78-sudo/audio-smart-teacher/main/terpilih.mp3",
-            podium: "https://cdn.jsdelivr.net/gh/anassamudra78-sudo/audio-smart-teacher@main/SEKOR3TERBAIK.mp3"
+            podium: "https://cdn.jsdelivr.net/gh/anassamudra78-sudo/audio-smart-teacher@main/SEKOR3TERBAIK.mp3",
+            benardnd: "https://raw.githubusercontent.com/anassamudra78-sudo/audio-smart-teacher/main/benardnd.mp3",
+        salahdnd: "https://raw.githubusercontent.com/anassamudra78-sudo/audio-smart-teacher/main/salahdnd.mp3"
         }
     }
 };
