@@ -866,7 +866,6 @@ function renderEditorMatchDnd(container) {
                                 <span>Klik untuk Upload Excel</span>
                             </div>
                         </div>
-                    </div>
 
                     <div class="bg-slate-800 p-5 rounded-3xl border border-slate-700 shadow-xl">
                         <h3 class="text-xs font-black text-emerald-400 mb-4 uppercase tracking-widest"><i class="fa-solid fa-circle-plus mr-1"></i> Tambah Manual</h3>
