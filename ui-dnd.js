@@ -1416,3 +1416,46 @@ function playDndSfx(jenis) {
         }, 400);
     }
 }
+
+// ==========================================
+// FUNGSI EDIT UNTUK MODE MATCH
+// ==========================================
+function editSoalMatch(id) {
+    // 1. Cari datanya di dalam database sementara
+    const item = AppState.db.dnd.match.find(x => x.id === id);
+    if (!item) return;
+
+    // 2. Tembakkan kembali datanya ke kotak isian form
+    if (document.getElementById('dnd-editor-nosoal')) document.getElementById('dnd-editor-nosoal').value = item.noSoal || 1;
+    if (document.getElementById('match-input-tipe')) document.getElementById('match-input-tipe').value = item.tipe || 'teks';
+    if (document.getElementById('match-input-soal')) document.getElementById('match-input-soal').value = item.soal || '';
+    if (document.getElementById('match-input-arti')) document.getElementById('match-input-arti').value = item.arti || '';
+
+    // 3. Hapus dari daftar bawah agar tidak dobel saat disimpan ulang
+    AppState.db.dnd.match = AppState.db.dnd.match.filter(x => x.id !== id);
+
+    // 4. Segarkan layar
+    renderEditorMatchDnd(document.getElementById('main-content'));
+}
+
+// ==========================================
+// FUNGSI EDIT UNTUK MODE SORT
+// ==========================================
+function editSoalSort(id) {
+    // 1. Cari datanya di dalam database sementara
+    const item = AppState.db.dnd.sort.find(x => x.id === id);
+    if (!item) return;
+
+    // 2. Tembakkan kembali datanya ke kotak isian form
+    // (Sesuaikan ID input-nya jika di form Sort Bapak namanya berbeda)
+    if (document.getElementById('dnd-editor-nosoal')) document.getElementById('dnd-editor-nosoal').value = item.noSoal || 1;
+    if (document.getElementById('sort-input-tipe')) document.getElementById('sort-input-tipe').value = item.tipe || 'teks';
+    if (document.getElementById('sort-input-soal')) document.getElementById('sort-input-soal').value = item.soal || '';
+    if (document.getElementById('sort-input-kategori')) document.getElementById('sort-input-kategori').value = item.kategori || item.arti || '';
+
+    // 3. Hapus dari daftar bawah
+    AppState.db.dnd.sort = AppState.db.dnd.sort.filter(x => x.id !== id);
+
+    // 4. Segarkan layar
+    renderEditorSortDnd(document.getElementById('main-content'));
+}
