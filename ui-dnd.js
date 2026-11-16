@@ -1324,3 +1324,16 @@ function bacaExcelBuild(event) {
     };
     reader.readAsArrayBuffer(file);
 }
+
+// JEMBATAN SAKTI: Menghubungkan DND ke Mesin Suara Kuis
+function playDndSfx(jenis) {
+    if (typeof playSoundEffect !== 'function') return;
+    
+    if (jenis === 'benar') {
+        playSoundEffect('benardnd'); // Putar MP3 DND Benar
+    } else if (jenis === 'salah') {
+        playSoundEffect('salahdnd'); // Putar MP3 DND Salah
+    } else if (jenis === 'selesai') {
+        playSoundEffect('correct');  // Putar MP3 Benar bawaan Kuis
+    }
+}
