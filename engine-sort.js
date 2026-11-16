@@ -97,7 +97,7 @@ function mulaiGameSort(isRenderUlang = false) {
     const container = document.getElementById('dnd-game-container');
     if (!container) return;
 
-    if (!isRenderUlang && !lanjutRondeBerikutnya) {
+    if (!isRenderUlang && (typeof lanjutRondeBerikutnya === 'undefined' || !lanjutRondeBerikutnya)) {
         sortState.skor = 0;
         sortIndexRonde = 0;
         if (typeof updateSkorDnd === 'function') updateSkorDnd(0);
