@@ -894,7 +894,6 @@ function renderEditorMatchDnd(container) {
                             </button>
                         </div>
                     </div>
-                </div>
 
                 <div class="lg:col-span-2 bg-slate-900 p-5 sm:p-6 rounded-3xl border border-slate-700 shadow-inner flex flex-col lg:h-[80vh]">
                     <div class="flex justify-between items-center mb-4 border-b border-slate-800 pb-3 shrink-0">
