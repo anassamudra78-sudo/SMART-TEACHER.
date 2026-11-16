@@ -825,21 +825,61 @@ function renderEditorMatchDnd(container) {
          ];
     }
 
-    let daftarSoalHtml = AppState.db.dnd.match.map((item, index) => `
-        <div class="bg-slate-800 p-3 rounded-xl border border-slate-700 flex justify-between items-center mb-3 hover:border-emerald-500/50 transition-colors">
-            <div class="flex items-center gap-3 md:gap-4">
-                <span class="bg-emerald-900/50 text-emerald-400 font-black w-8 h-8 flex items-center justify-center rounded-lg text-xs border border-emerald-500/30 shrink-0">${index + 1}</span>
-                <div>
-                    <p class="${item.tipe === 'gambar' ? 'text-2xl' : 'font-arabic text-xl'} text-white leading-none mb-1">${item.soal}</p>
-                    <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Arti: <span class="text-emerald-300">${item.arti}</span> <span class="ml-2 px-1.5 py-0.5 bg-slate-700 rounded text-slate-300 text-[9px]">${item.tipe}</span></p>
-                </div>
-            </div>
-            <button onclick="hapusSoalMatch('${item.id}')" class="w-8 h-8 rounded-lg bg-rose-500/10 text-rose-400 hover:bg-rose-500 hover:text-white flex items-center justify-center transition-colors shrink-0">
-                <i class="fa-solid fa-trash-can text-xs"></i>
-            </button>
-        </div>
-    `).join('');
+   let daftarSoalHtml = '';
+if (AppState.db.dnd.match && AppState.db.dnd.match.length > 0) {
+    let kelompokMatch = {};
+    AppState.db.dnd.match.forEach((item, index) => {
+        let no = item.noSoal || 1;
+        if (!kelompokMatch[no]) kelompokMatch[no] = [];
+        item.indexAsli = index;
+        kelompokMatch[no].push(item);
+    });
 
+    let daftarNomor = Object.keys(kelompokMatch).map(Number).sort((a, b) => a - b);
+    
+    daftarNomor.forEach(no => {
+        // HEADER KELOMPOK (KOTAK HIJAU)
+        daftarSoalHtml += `
+        <div class="mb-5 bg-slate-800/40 border border-slate-700/50 rounded-2xl p-4">
+            <div class="flex items-center mb-3">
+                <span class="bg-emerald-600 text-white text-xs font-bold px-3 py-1.5 rounded-lg shadow-md">Soal ${no}</span>
+            </div>
+            <div class="space-y-2">
+        `;
+        
+        // ISI SOAL MATCH & TOMBOL AKSI
+        kelompokMatch[no].forEach(item => {
+            let tipeTampilan = item.tipe === 'gambar' ? 'text-2xl' : 'font-arabic text-xl';
+            daftarSoalHtml += `
+                <div class="bg-slate-800 p-3 rounded-xl border border-slate-700 flex justify-between items-center">
+                    <div class="flex items-center gap-3 md:gap-4">
+                        <span class="bg-emerald-900/50 text-emerald-400 font-black w-8 h-8 flex items-center justify-center rounded-lg">${item.indexAsli + 1}</span>
+                        <div>
+                            <p class="${tipeTampilan} text-white" dir="rtl">${item.soal}</p>
+                            <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Arti: <span class="text-emerald-400">${item.arti}</span></p>
+                        </div>
+                    </div>
+                    <div class="flex gap-2 shrink-0">
+                        <!-- TOMBOL PENSIL (EDIT) -->
+                        <button onclick="editSoalMatch('${item.id}')" class="w-8 h-8 rounded-lg bg-blue-500/10 text-blue-500 hover:bg-blue-500 hover:text-white flex items-center justify-center transition-colors">
+                            <i class="fa-solid fa-pencil text-xs"></i>
+                        </button>
+                        <!-- TOMBOL TONG SAMPAH (HAPUS) -->
+                        <button onclick="hapusSoalMatch('${item.id}')" class="w-8 h-8 rounded-lg bg-rose-500/10 text-rose-500 hover:bg-rose-500 hover:text-white flex items-center justify-center transition-colors">
+                            <i class="fa-solid fa-trash-can text-xs"></i>
+                        </button>
+                    </div>
+                </div>
+            `;
+        });
+        
+        // TUTUP KELOMPOK
+        daftarSoalHtml += `
+            </div>
+        </div>
+        `;
+    });
+}
     container.innerHTML = `
         <div class="max-w-6xl mx-auto space-y-6 fade-in pb-10 mt-4 px-2 sm:px-0">
             <div class="flex justify-between items-center bg-slate-900 p-4 rounded-2xl shadow-xl border border-slate-700">
@@ -911,12 +951,14 @@ function renderEditorMatchDnd(container) {
 }
 
 function tambahSoalMatch() {
+    const noSoal = document.getElementById('dnd-editor-nosoal') ? document.getElementById('dnd-editor-nosoal').value : 1;
     const tipe = document.getElementById('match-input-tipe').value;
     const soal = document.getElementById('match-input-soal').value.trim();
     const arti = document.getElementById('match-input-arti').value.trim();
     if (!soal || !arti) return alert('Soal dan Arti tidak boleh kosong!');
     let idUnik = 'm_' + Date.now();
-    AppState.db.dnd.match.push({ id: idUnik, tipe: tipe, soal: soal, arti: arti });
+    // Tambahkan noSoal ke dalam penyimpanan!
+    AppState.db.dnd.match.push({ id: idUnik, noSoal: noSoal, tipe: tipe, soal: soal, arti: arti });
     renderEditorMatchDnd(document.getElementById('main-content'));
 }
 
@@ -991,21 +1033,62 @@ function renderEditorSortDnd(container) {
          ];
     }
 
-    let daftarSoalHtml = AppState.db.dnd.sort.map((item, index) => `
-        <div class="bg-slate-800 p-3 rounded-xl border border-slate-700 flex justify-between items-center mb-3 hover:border-amber-500/50 transition-colors">
-            <div class="flex items-center gap-3 md:gap-4">
-                <span class="bg-amber-900/50 text-amber-400 font-black w-8 h-8 flex items-center justify-center rounded-lg text-xs border border-amber-500/30 shrink-0">${index + 1}</span>
-                <div>
-                    <p class="${item.tipe === 'gambar' ? 'text-2xl' : 'font-arabic text-xl'} text-white leading-none mb-1">${item.soal}</p>
-                    <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Arti: <span class="text-amber-300">${item.arti}</span> | Kategori: <span class="text-indigo-400 uppercase font-black">${item.kat}</span></p>
+   let daftarSoalHtml = '';
+    if (AppState.db.dnd.sort && AppState.db.dnd.sort.length > 0) {
+        let kelompokSort = {};
+        AppState.db.dnd.sort.forEach((item, index) => {
+            let no = item.noSoal || 1;
+            if (!kelompokSort[no]) kelompokSort[no] = [];
+            item.indexAsli = index;
+            kelompokSort[no].push(item);
+        });
+
+        let daftarNomor = Object.keys(kelompokSort).map(Number).sort((a, b) => a - b);
+        
+        daftarNomor.forEach(no => {
+            // HEADER KELOMPOK (KOTAK ORANYE)
+            daftarSoalHtml += `
+            <div class="mb-5 bg-slate-800/40 border border-slate-700/50 rounded-2xl p-4">
+                <div class="flex items-center mb-3">
+                    <span class="bg-orange-500 text-white text-xs font-bold px-3 py-1.5 rounded-lg shadow-md">Soal ${no}</span>
+                </div>
+                <div class="space-y-2">
+            `;
+            
+            // ISI SOAL SORT & TOMBOL AKSI
+            kelompokSort[no].forEach(item => {
+                let tipeTampilan = item.tipe === 'gambar' ? 'text-2xl' : 'font-arabic text-xl';
+                let teksKategori = item.kategori || item.arti || '-';
+                daftarSoalHtml += `
+                    <div class="bg-slate-800 p-3 rounded-xl border border-slate-700 flex justify-between items-center">
+                        <div class="flex items-center gap-3 md:gap-4">
+                            <span class="bg-orange-900/50 text-orange-400 font-black w-8 h-8 flex items-center justify-center rounded-lg">${item.indexAsli + 1}</span>
+                            <div>
+                                <p class="${tipeTampilan} text-white" dir="rtl">${item.soal}</p>
+                                <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Kategori: <span class="text-orange-400">${teksKategori}</span></p>
+                            </div>
+                        </div>
+                        <div class="flex gap-2 shrink-0">
+                            <!-- TOMBOL PENSIL (EDIT) -->
+                            <button onclick="editSoalSort('${item.id}')" class="w-8 h-8 rounded-lg bg-blue-500/10 text-blue-500 hover:bg-blue-500 hover:text-white flex items-center justify-center transition-colors">
+                                <i class="fa-solid fa-pencil text-xs"></i>
+                            </button>
+                            <!-- TOMBOL TONG SAMPAH (HAPUS) -->
+                            <button onclick="hapusSoalSort('${item.id}')" class="w-8 h-8 rounded-lg bg-rose-500/10 text-rose-500 hover:bg-rose-500 hover:text-white flex items-center justify-center transition-colors">
+                                <i class="fa-solid fa-trash-can text-xs"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            // TUTUP KELOMPOK
+            daftarSoalHtml += `
                 </div>
             </div>
-            <button onclick="hapusSoalSort('${item.id}')" class="w-8 h-8 rounded-lg bg-rose-500/10 text-rose-400 hover:bg-rose-500 hover:text-white flex items-center justify-center transition-colors shrink-0">
-                <i class="fa-solid fa-trash-can text-xs"></i>
-            </button>
-        </div>
-    `).join('');
-
+            `;
+        });
+    }
     container.innerHTML = `
         <div class="max-w-6xl mx-auto space-y-6 fade-in pb-10 mt-4 px-2 sm:px-0">
             <div class="flex justify-between items-center bg-slate-900 p-4 rounded-2xl shadow-xl border border-slate-700">
