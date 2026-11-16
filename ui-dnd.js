@@ -1330,10 +1330,13 @@ function playDndSfx(jenis) {
     if (typeof playSoundEffect !== 'function') return;
     
     if (jenis === 'benar') {
-        playSoundEffect('benardnd'); // Putar MP3 DND Benar
+        playSoundEffect('benardnd');
     } else if (jenis === 'salah') {
-        playSoundEffect('salahdnd'); // Putar MP3 DND Salah
+        playSoundEffect('salahdnd');
     } else if (jenis === 'selesai') {
-        playSoundEffect('correct');  // Putar MP3 Benar bawaan Kuis
+        // Beri napas 0.4 detik agar tidak tabrakan dengan suara balok terakhir
+        setTimeout(() => {
+            playSoundEffect('correct');
+        }, 400);
     }
 }
