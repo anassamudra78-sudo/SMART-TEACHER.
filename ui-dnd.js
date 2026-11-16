@@ -148,18 +148,32 @@ function amankanLayarPenuhDragDrop() {
 
 function bukaLobiDragDrop(jenisGame) {
     gameDndTerpilih = jenisGame;
-    // Trik meniru kuis: Putar audio diam-diam (volume 0) saat klik pertama masuk lobi
-    if (typeof DND_AUDIO !== 'undefined') {
+   // 1. Sulap URL jadi mesin Audio jika belum dibentuk oleh sistem
+    if (AppState.audio && AppState.audio.elements) {
+        if (!AppState.audio.elements['benardnd']) {
+            AppState.audio.elements['benardnd'] = new Audio(AppState.audio.customUrls['benardnd']);
+        }
+        if (!AppState.audio.elements['salahdnd']) {
+            AppState.audio.elements['salahdnd'] = new Audio(AppState.audio.customUrls['salahdnd']);
+        }
+        
+        // 2. Pancing browser untuk buka gembok audio saat tombol diklik (Volume 0)
         try {
-            ['benar', 'salah', 'selesai'].forEach(sfx => {
-                DND_AUDIO[sfx].volume = 0;
-                DND_AUDIO[sfx].play().then(() => {
-                    DND_AUDIO[sfx].pause();
-                    DND_AUDIO[sfx].currentTime = 0;
-                    DND_AUDIO[sfx].volume = 1; // Kembalikan volume ke normal untuk dipakai di dalam game
-                }).catch(e => e);
+            ['benardnd', 'salahdnd'].forEach(sfx => {
+                let sound = AppState.audio.elements[sfx];
+                if (sound) {
+                    sound.volume = 0; 
+                    let mainkan = sound.play();
+                    if (mainkan !== undefined) {
+                        mainkan.then(() => {
+                            sound.pause();
+                            sound.currentTime = 0;
+                            sound.volume = 1; // kembalikan ke normal untuk di dalam game
+                        }).catch(e => {});
+                    }
+                }
             });
-        } catch(err) {}
+        } catch(e) {}
     }
     
     // 1. Langsung buka modal fullscreen (Kamar khusus yang sudah ada Top Bar-nya)
