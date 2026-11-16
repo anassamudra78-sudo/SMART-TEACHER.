@@ -390,41 +390,36 @@ function mulaiHitungMundurDnd(detikTunggu) {
 }
 
 function keluarFullscreenDnd() {
-    if (typeof stopDndBgm === 'function') stopDndBgm();
-    window.isDragDropMode = false;
-    
-    // 1. Tutup layar hitam / modal game (jika user keluar dari dalam game)
-    const modal = document.getElementById('dnd-arena-modal');
-    if (modal) modal.classList.add('hidden');
-    
-    const wadahGame = document.getElementById('dnd-game-container');
-    if (wadahGame) wadahGame.innerHTML = '';
-    
-    // 2. KEMBALIKAN MAIN-CONTENT KE NORMAL (Cabut paksaan fullscreen)
-    const mc = document.getElementById('main-content');
-    if (mc) {
-        // Ini kunci mutlak agar Top Bar Global tidak tertutup lagi
-        mc.style.position = '';
-        mc.style.top = '';
-        mc.style.left = '';
-        mc.style.right = '';
-        mc.style.bottom = '';
-        mc.style.zIndex = '';
-        mc.style.backgroundColor = '';
-        mc.style.overflowY = '';
-        mc.style.padding = '';
-        mc.style.margin = '';
+    if (confirm('Yakin ingin menghentikan permainan dan keluar dari Arena?')) {
+        // 1. Sembunyikan layar DND & keluar dari mode Fullscreen
+        const modal = document.getElementById('dnd-arena-modal');
+        if (modal) modal.classList.add('hidden');
         
-        // 3. Bersihkan Lobi, lalu render ulang Menu Awal (3 Kotak)
-        mc.innerHTML = ''; 
-        if (typeof renderDragDropPage === 'function') {
-            renderDragDropPage(mc);
-        } else if (typeof switchTab === 'function') {
-            switchTab('dragdrop');
+        const exit = document.exitFullscreen || document.webkitExitFullscreen || document.msExitFullscreen;
+        if (exit && document.fullscreenElement) {
+            exit.call(document).catch(e => console.log(e));
         }
+        
+        // 2. Matikan paksa BGM dan semua sisa efek suara yang masih berbunyi
+        if (AppState.audio && AppState.audio.elements) {
+            ['bgm', 'benardnd', 'salahdnd', 'correct', 'selebrasi'].forEach(sfx => {
+                let sound = AppState.audio.elements[sfx];
+                if (sound) {
+                    sound.pause();
+                    sound.currentTime = 0;
+                }
+            });
+        }
+        
+        // 3. Cekik dan matikan semua Timer dari ketiga mesin game
+        if (typeof matchState !== 'undefined' && matchState.timerInterval) clearInterval(matchState.timerInterval);
+        if (typeof sortState !== 'undefined' && sortState.timerInterval) clearInterval(sortState.timerInterval);
+        if (typeof buildState !== 'undefined' && buildState.timerInterval) clearInterval(buildState.timerInterval);
+        
+        // 4. Sapu bersih sisa balok di arena agar layar bersih saat dibuka kembali nanti
+        const container = document.getElementById('dnd-game-container');
+        if (container) container.innerHTML = '';
     }
-    
-    window.scrollTo(0, 0);
 }
 
 function updateLobbySiswaDnd() {
