@@ -843,7 +843,9 @@ if (AppState.db.dnd.match && AppState.db.dnd.match.length > 0) {
         
         // ISI SOAL MATCH & TOMBOL AKSI
         kelompokMatch[no].forEach(item => {
-            let tipeTampilan = item.tipe === 'gambar' ? 'text-2xl' : 'font-arabic text-xl';
+            // Deteksi otomatis: apakah isinya didominasi huruf Arab atau karakter lain (seperti Emoji)
+            let isArabic = /[\u0600-\u06FF]/.test(item.soal);
+            let tipeTampilan = item.tipe === 'gambar' || !isArabic ? 'text-4xl' : 'font-arabic text-2xl';
             daftarSoalHtml += `
                 <div class="bg-slate-800 p-3 rounded-xl border border-slate-700 flex justify-between items-center">
                     <div class="flex items-center gap-3 md:gap-4">
