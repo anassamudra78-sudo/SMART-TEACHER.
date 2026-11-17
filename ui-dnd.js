@@ -947,14 +947,38 @@ if (AppState.db.dnd.match && AppState.db.dnd.match.length > 0) {
 }
 
 function tambahSoalMatch() {
-    const noSoal = document.getElementById('dnd-editor-nosoal') ? document.getElementById('dnd-editor-nosoal').value : 1;
-    const tipe = document.getElementById('match-input-tipe').value;
-    const soal = document.getElementById('match-input-soal').value.trim();
-    const arti = document.getElementById('match-input-arti').value.trim();
+    let inputNo = document.getElementById('dnd-editor-nosoal');
+    let inputTipe = document.getElementById('match-input-tipe');
+    let inputSoal = document.getElementById('match-input-soal');
+    let inputArti = document.getElementById('match-input-arti');
+
+    const noSoal = inputNo ? inputNo.value : 1;
+    const tipe = inputTipe ? inputTipe.value : 'teks';
+    const soal = inputSoal ? inputSoal.value.trim() : '';
+    const arti = inputArti ? inputArti.value.trim() : '';
+
     if (!soal || !arti) return alert('Soal dan Arti tidak boleh kosong!');
-    let idUnik = 'm_' + Date.now();
-    // Tambahkan noSoal ke dalam penyimpanan!
-    AppState.db.dnd.match.push({ id: idUnik, noSoal: noSoal, tipe: tipe, soal: soal, arti: arti });
+
+    if (idEditMatch) {
+        // JIKA SEDANG EDIT: Timpa data lama
+        let item = AppState.db.dnd.match.find(x => x.id === idEditMatch);
+        if (item) {
+            item.noSoal = noSoal;
+            item.tipe = tipe;
+            item.soal = soal;
+            item.arti = arti;
+        }
+        idEditMatch = null; // Buka kunci
+    } else {
+        // JIKA BIKIN BARU: Masukkan data baru
+        let idUnik = 'm_' + Date.now();
+        AppState.db.dnd.match.push({ id: idUnik, noSoal: noSoal, tipe: tipe, soal: soal, arti: arti });
+    }
+
+    // Bersihkan kotak isian
+    if (inputSoal) inputSoal.value = '';
+    if (inputArti) inputArti.value = '';
+    
     renderEditorMatchDnd(document.getElementById('main-content'));
 }
 
@@ -1429,24 +1453,28 @@ function playDndSfx(jenis) {
 // ==========================================
 // FUNGSI EDIT UNTUK MODE MATCH
 // ==========================================
+let idEditMatch = null; // Wajib taruh di luar/di atas fungsi edit
+
 function editSoalMatch(id) {
-    // 1. Cari datanya di dalam database sementara
     const item = AppState.db.dnd.match.find(x => x.id === id);
     if (!item) return;
 
-    // 2. Tembakkan kembali datanya ke kotak isian form
-    if (document.getElementById('dnd-editor-nosoal')) document.getElementById('dnd-editor-nosoal').value = item.noSoal || 1;
-    if (document.getElementById('match-input-tipe')) document.getElementById('match-input-tipe').value = item.tipe || 'teks';
-    if (document.getElementById('match-input-soal')) document.getElementById('match-input-soal').value = item.soal || '';
-    if (document.getElementById('match-input-arti')) document.getElementById('match-input-arti').value = item.arti || '';
+    // Tembakkan isi data ke kotak form di atas (TANPA MENGHAPUS)
+    let inputNo = document.getElementById('dnd-editor-nosoal');
+    let inputTipe = document.getElementById('match-input-tipe');
+    let inputSoal = document.getElementById('match-input-soal');
+    let inputArti = document.getElementById('match-input-arti');
 
-    // 3. Hapus dari daftar bawah agar tidak dobel saat disimpan ulang
-    AppState.db.dnd.match = AppState.db.dnd.match.filter(x => x.id !== id);
+    if (inputNo) inputNo.value = item.noSoal || 1;
+    if (inputTipe) inputTipe.value = item.tipe || 'teks';
+    if (inputSoal) inputSoal.value = item.soal || '';
+    if (inputArti) inputArti.value = item.arti || '';
 
-    // 4. Segarkan layar
-    renderEditorMatchDnd(document.getElementById('main-content'));
+    idEditMatch = id; // Kunci ID-nya
+
+    // Melompat ke atas
+    window.scrollTo({ top: 0, behavior: 'smooth' });
 }
-
 // ==========================================
 // FUNGSI EDIT UNTUK MODE SORT
 // ==========================================
