@@ -983,8 +983,17 @@ function tambahSoalMatch() {
 }
 
 function hapusSoalMatch(id) {
+    // 1. KUNCI POSISI SCROLL LAYAR SAAT INI
+    let posisiLayar = window.scrollY;
+
+    // 2. Eksekusi Hapus Data
     AppState.db.dnd.match = AppState.db.dnd.match.filter(item => item.id !== id);
+    
+    // 3. Render Ulang Layar
     renderEditorMatchDnd(document.getElementById('main-content'));
+
+    // 4. KEMBALIKAN POSISI LAYAR SEKETIKA (Tanpa Lompat ke Atas)
+    window.scrollTo(0, posisiLayar);
 }
 
 function simpanKeDatabaseMatch() {
@@ -1192,19 +1201,54 @@ function renderEditorSortDnd(container) {
 }
 
 function tambahSoalSort() {
-    const tipe = document.getElementById('sort-input-tipe').value;
-    const soal = document.getElementById('sort-input-soal').value.trim();
-    const arti = document.getElementById('sort-input-arti').value.trim();
-    const kat = document.getElementById('sort-input-kat').value.trim().toLowerCase();
-    if (!soal || !arti || !kat) return alert('Semua kolom wajib diisi!');
-    let idUnik = 's_' + Date.now();
-    AppState.db.dnd.sort.push({ id: idUnik, soal: soal, arti: arti, kat: kat, tipe: tipe });
+    let inputNo = document.getElementById('dnd-editor-nosoal');
+    let inputTipe = document.getElementById('sort-input-tipe');
+    let inputSoal = document.getElementById('sort-input-soal');
+    let inputKategori = document.getElementById('sort-input-kategori');
+
+    const noSoal = inputNo ? inputNo.value : 1;
+    const tipe = inputTipe ? inputTipe.value : 'teks';
+    const soal = inputSoal ? inputSoal.value.trim() : '';
+    const kategori = inputKategori ? inputKategori.value.trim() : '';
+
+    if (!soal || !kategori) return alert('Soal dan Kategori tidak boleh kosong!');
+
+    if (idEditSort) {
+        // JIKA SEDANG EDIT: Timpa data lama, jangan bikin baru
+        let item = AppState.db.dnd.sort.find(x => x.id === idEditSort);
+        if (item) {
+            item.noSoal = noSoal;
+            item.tipe = tipe;
+            item.soal = soal;
+            item.kategori = kategori;
+            item.arti = kategori; // Samakan agar aman
+        }
+        idEditSort = null; // Buka kunci setelah selesai edit
+    } else {
+        // JIKA BIKIN BARU: Masukkan sebagai data baru
+        let idUnik = 's_' + Date.now();
+        AppState.db.dnd.sort.push({ id: idUnik, noSoal: noSoal, tipe: tipe, soal: soal, kategori: kategori, arti: kategori });
+    }
+
+    // Bersihkan kotak isian setelah berhasil disimpan
+    if (inputSoal) inputSoal.value = '';
+    if (inputKategori) inputKategori.value = '';
+    
+    // Munculkan ulang daftarnya
     renderEditorSortDnd(document.getElementById('main-content'));
 }
-
 function hapusSoalSort(id) {
+    // 1. KUNCI POSISI SCROLL LAYAR SAAT INI
+    let posisiLayar = window.scrollY;
+
+    // 2. Eksekusi Hapus Data
     AppState.db.dnd.sort = AppState.db.dnd.sort.filter(item => item.id !== id);
+    
+    // 3. Render Ulang Layar
     renderEditorSortDnd(document.getElementById('main-content'));
+
+    // 4. KEMBALIKAN POSISI LAYAR SEKETIKA
+    window.scrollTo(0, posisiLayar);
 }
 
 function simpanKeDatabaseSort() {
@@ -1377,8 +1421,17 @@ function tambahSoalBuild() {
 }
 
 function hapusSoalBuild(id) {
+    // 1. KUNCI POSISI SCROLL
+    let posisiLayar = window.scrollY;
+
+    // 2. Eksekusi Hapus Data
     AppState.db.dnd.build = AppState.db.dnd.build.filter(item => item.id !== id);
+    
+    // 3. Render Ulang Layar
     renderEditorBuildDnd(document.getElementById('main-content'));
+
+    // 4. KEMBALIKAN POSISI LAYAR SEKETIKA
+    window.scrollTo(0, posisiLayar);
 }
 
 function simpanKeDatabaseBuild() {
@@ -1478,21 +1531,25 @@ function editSoalMatch(id) {
 // ==========================================
 // FUNGSI EDIT UNTUK MODE SORT
 // ==========================================
+let idEditSort = null; // Penanda pintar untuk Sort (wajib di luar fungsi)
+
 function editSoalSort(id) {
-    // 1. Cari datanya di dalam database sementara
     const item = AppState.db.dnd.sort.find(x => x.id === id);
     if (!item) return;
 
-    // 2. Tembakkan kembali datanya ke kotak isian form
-    // (Sesuaikan ID input-nya jika di form Sort Bapak namanya berbeda)
-    if (document.getElementById('dnd-editor-nosoal')) document.getElementById('dnd-editor-nosoal').value = item.noSoal || 1;
-    if (document.getElementById('sort-input-tipe')) document.getElementById('sort-input-tipe').value = item.tipe || 'teks';
-    if (document.getElementById('sort-input-soal')) document.getElementById('sort-input-soal').value = item.soal || '';
-    if (document.getElementById('sort-input-kategori')) document.getElementById('sort-input-kategori').value = item.kategori || item.arti || '';
+    // Tembakkan isi data ke kotak form atas (TANPA MENGHAPUS DATA BAWAH)
+    let inputNo = document.getElementById('dnd-editor-nosoal');
+    let inputTipe = document.getElementById('sort-input-tipe');
+    let inputSoal = document.getElementById('sort-input-soal');
+    let inputKategori = document.getElementById('sort-input-kategori');
 
-    // 3. Hapus dari daftar bawah
-    AppState.db.dnd.sort = AppState.db.dnd.sort.filter(x => x.id !== id);
+    if (inputNo) inputNo.value = item.noSoal || 1;
+    if (inputTipe) inputTipe.value = item.tipe || 'teks';
+    if (inputSoal) inputSoal.value = item.soal || '';
+    if (inputKategori) inputKategori.value = item.kategori || item.arti || '';
 
-    // 4. Segarkan layar
-    renderEditorSortDnd(document.getElementById('main-content'));
+    idEditSort = id; // Kunci ID-nya
+
+    // Melompat mulus ke atas
+    window.scrollTo({ top: 0, behavior: 'smooth' });
 }
