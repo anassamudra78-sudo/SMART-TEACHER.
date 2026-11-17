@@ -116,10 +116,18 @@ function mulaiGameSort(isRenderUlang = false) {
         let daftarNomor = Object.keys(kelompok).map(Number).sort((a, b) => a - b);
         
         const dari = (window.dndRentang && window.dndRentang.dari) ? window.dndRentang.dari : 1;
-        const sampai = (window.dndRentang && window.dndRentang.sampai) ? window.dndRentang.sampai : daftarNomor.length;
+        const sampai = (window.dndRentang && window.dndRentang.sampai) ? window.dndRentang.sampai : Math.max(...daftarNomor);
+        
+        // Perbaikan Filter: Pastikan benar-benar mengambil rentang nomor yang diminta
         daftarNomor = daftarNomor.filter(no => no >= dari && no <= sampai);
 
-        sortPaketRonde = daftarNomor.map(no => ({ noSoal: no, items: kelompok[no] }));
+        // Perbaikan Lanjut: Pastikan paket yang dibentuk tidak kosong jika nomornya lompat
+        sortPaketRonde = daftarNomor.reduce((acc, no) => {
+            if (kelompok[no] && kelompok[no].length > 0) {
+                acc.push({ noSoal: no, items: kelompok[no] });
+            }
+            return acc;
+        }, []);
     }
 
     if (sortPaketRonde.length === 0 || sortIndexRonde >= sortPaketRonde.length) {
