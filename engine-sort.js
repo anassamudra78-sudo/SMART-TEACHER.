@@ -131,25 +131,29 @@ function mulaiGameSort(isRenderUlang = false) {
 
     if (!isRenderUlang) {
         sortState.itemTerjawab = 0;
-        sortState.dataSoalAsli = paketAktif.items;
+        
+        // ==========================================
+        // PERBAIKAN: BERSIHKAN TEKS KATEGORI DARI SPASI & HURUF KECIL
+        // ==========================================
+        sortState.dataSoalAsli = paketAktif.items.map(item => {
+            // Paksa jadi huruf besar & potong spasi gaib
+            let teksKategori = (item.kat || item.kategori || item.arti || "KATEGORI").toString().trim().toUpperCase();
+            return { ...item, katBersih: teksKategori };
+        });
+
         sortState.dataSoal = sortState.dataSoalAsli.map(item => ({...item, terjawab: false, salah: 0})).sort(() => Math.random() - 0.5);
 
-        // ==========================================
-        // FITUR BARU: GENERATE KOTAK OTOMATIS
-        // ==========================================
-        // 1. Ekstrak semua kategori unik dari soal saat ini
-        let kategoriUnik = [...new Set(sortState.dataSoalAsli.map(item => item.kat || item.kategori || item.arti))];
+        // Ekstrak kategori unik yang sudah super bersih (Dijamin tidak ada duplikat)
+        let kategoriUnik = [...new Set(sortState.dataSoalAsli.map(item => item.katBersih))];
         
-        // 2. Daftar warna dinamis untuk kotak
         let warnaTema = ['cyan', 'emerald', 'amber', 'rose', 'indigo', 'fuchsia'];
         
-        // 3. Bangun struktur kotak baru
         sortState.kategori = kategoriUnik.map((kat, index) => {
             return {
                 id: kat,
-                judul: kat.toUpperCase(),
-                subjudul: "Kategori", // Bisa diganti sesuai kebutuhan
-                tema: warnaTema[index % warnaTema.length] // Warna berputar otomatis
+                judul: kat,
+                subjudul: "KATEGORI",
+                tema: warnaTema[index % warnaTema.length]
             };
         });
     }
@@ -191,9 +195,6 @@ function mulaiGameSort(isRenderUlang = false) {
         ? `<h3 class="text-center font-bold text-slate-400 mb-4 uppercase tracking-widest text-xs border-b border-slate-700/50 pb-2">Kelompokkan ke Kotak</h3>`
         : `<h3 class="text-center font-bold text-slate-400 mb-2 uppercase tracking-widest text-[10px] border-b border-slate-700/50 pb-1">Kelompokkan ke Kotak</h3>`;
 
-    // ==========================================
-    // PERBAIKAN GRID KOTAK: OTOMATIS MENYESUAIKAN JUMLAH
-    // ==========================================
     let jmlKat = sortState.kategori.length;
     let mdCols = jmlKat === 1 ? 'md:grid-cols-1' : (jmlKat === 2 ? 'md:grid-cols-2' : (jmlKat === 3 ? 'md:grid-cols-3' : 'md:grid-cols-2 lg:grid-cols-4'));
     
@@ -221,14 +222,12 @@ function mulaiGameSort(isRenderUlang = false) {
                         ${sortState.dataSoal.map(item => {
                             if (item.terjawab) return `<div class="${skala.tinggiKotak} w-full invisible"></div>`;
                             
-                            // Deteksi ukuran otomatis (Mojibake Fix)
                             let isArabic = /[\\u0600-\\u06FF]/.test(item.soal);
                             let fontClass = item.tipe === 'gambar' || !isArabic ? 'text-4xl mt-1' : 'font-arabic text-2xl md:text-3xl mt-1';
                             
                             let isiKartu = `<span class="drop-shadow-lg text-center leading-none text-white pointer-events-none ${fontClass}">${item.soal}</span>`;
                             
-                            // Gunakan atribut 'data-kat' agar seragam dengan sensor permainan
-                            let kategoriItem = item.kat || item.kategori || item.arti;
+                            let kategoriItem = item.katBersih; // <-- Pakai versi bersih
                             
                             return `
                                 <div class="kartu-soal-sort bg-slate-800 border-2 border-slate-600 text-slate-200 touch-none rounded-xl md:rounded-2xl flex flex-col justify-center items-center ${skala.tinggiKotak} shadow-lg transition-transform cursor-grab relative overflow-hidden p-1" data-id="${item.id}" data-kat="${kategoriItem}">
@@ -264,7 +263,7 @@ function mulaiGameSort(isRenderUlang = false) {
                                 ? `area-drop-sort flex-1 p-2 md:p-3 flex flex-wrap content-start gap-1.5 md:gap-2 overflow-y-auto relative z-10`
                                 : `area-drop-sort flex-1 p-1.5 md:p-2 flex flex-wrap content-start gap-1.5 overflow-y-auto relative z-10`;
 
-                            let balokMasuk = sortState.dataSoal.filter(s => s.terjawab && (s.kat === kat.id || s.kategori === kat.id || s.arti === kat.id)).map(b => {
+                            let balokMasuk = sortState.dataSoal.filter(s => s.terjawab && s.katBersih === kat.id).map(b => {
                                 let visual = b.soal;
                                 let isArabic = /[\\u0600-\\u06FF]/.test(visual);
                                 let fontClassBawah = b.tipe === 'gambar' || !isArabic ? 'text-2xl' : 'font-arabic text-xl md:text-2xl';
@@ -274,7 +273,7 @@ function mulaiGameSort(isRenderUlang = false) {
                                         <div class="w-8 md:w-10 flex items-center justify-center shrink-0">
                                             <span class="${fontClassBawah} text-white drop-shadow-md text-center leading-none">${visual}</span>
                                         </div>
-                                        <span class="${teksArtiClass}">${b.kat || b.kategori || b.arti}</span>
+                                        <span class="${teksArtiClass}">${b.katBersih}</span>
                                     </div>
                                 `;
                             }).join('');
@@ -301,7 +300,7 @@ function mulaiGameSort(isRenderUlang = false) {
         </div>
     `;
     pasangSensorSort();
-    jalankanTimerSort(isRenderUlang); // Timer hidup
+    jalankanTimerSort(isRenderUlang); 
 }
 
 function pasangSensorSort() {
