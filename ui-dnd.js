@@ -984,41 +984,46 @@ function downloadTemplateMatchExcel() {
     XLSX.writeFile(wb, "Template_Soal_Match_Drop.xlsx");
 }
 
-function bacaExcelMatch(event) {
-    const file = event.target.files[0];
+function bacaExcelMatch(e) {
+    let file = e.target.files[0];
     if (!file) return;
-    const reader = new FileReader();
+
+    let reader = new FileReader();
     reader.onload = function(e) {
-        try {
-            const data = new Uint8Array(e.target.result);
-            const workbook = XLSX.read(data, { type: 'array' });
-            const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-            const jsonRows = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
-            let jumlahBerhasil = 0;
-            for (let i = 2; i < jsonRows.length; i++) {
-                let row = jsonRows[i];
-                if (!row || row.length < 3) continue;
-                let tipe = row[0] ? String(row[0]).trim().toLowerCase() : 'teks';
-                let soal = row[1] ? String(row[1]).trim() : '';
-                let arti = row[2] ? String(row[2]).trim() : '';
-                if (!soal || !arti) continue;
-                if (tipe !== 'teks' && tipe !== 'gambar') tipe = 'teks';
-                let idUnik = 'm_' + Date.now() + '_' + i;
-                AppState.db.dnd.match.push({ id: idUnik, tipe: tipe, soal: soal, arti: arti });
-                jumlahBerhasil++;
+        let data = new Uint8Array(e.target.result);
+        let workbook = XLSX.read(data, {type: 'array'});
+        let firstSheet = workbook.SheetNames[0];
+        let excelData = XLSX.utils.sheet_to_json(workbook.Sheets[firstSheet]);
+
+        if (!AppState.db.dnd.match) AppState.db.dnd.match = [];
+
+        excelData.forEach(row => {
+            // PENTING: Abaikan baris peringatan di Excel agar tidak error
+            if (row['Nomor Soal'] === 'Isi dengan angka (contoh: 1)') return;
+
+            // Sedot data sesuai dengan nama kolom persis di Excel
+            let noSoal = row['Nomor Soal'] || 1;
+            let tipe = row['Tipe Balok'] || 'teks';
+            let soal = row['Soal (Kosakata/Emoji)'] || '';
+            let arti = row['Arti (Pasangan)'] || '';
+
+            if (soal && arti) {
+                AppState.db.dnd.match.push({
+                    id: 'm_' + Date.now() + Math.random().toString(36).substr(2, 9),
+                    noSoal: parseInt(noSoal) || 1, // Memastikan nomor soal berupa angka
+                    tipe: tipe,
+                    soal: soal,
+                    arti: arti
+                });
             }
-            if (jumlahBerhasil > 0) {
-                renderEditorMatchDnd(document.getElementById('main-content'));
-                alert(`${jumlahBerhasil} soal match berhasil diimport!`);
-            }
-        } catch (err) {
-            alert('Gagal membaca Excel: ' + err.message);
-        }
-        event.target.value = '';
+        });
+
+        // Kosongkan kotak file agar bisa upload file yang sama berkali-kali
+        document.getElementById('file-excel-match').value = '';
+        renderEditorMatchDnd(document.getElementById('main-content'));
     };
     reader.readAsArrayBuffer(file);
 }
-
 
 // =========================================================================
 // 2. EDITOR SORT & DROP (LENGKAP EXCEL & MANUAL)
