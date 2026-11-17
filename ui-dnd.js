@@ -983,8 +983,9 @@ function tambahSoalMatch() {
 }
 
 function hapusSoalMatch(id) {
-    // 1. KUNCI POSISI SCROLL LAYAR SAAT INI
+    // 1. Kunci posisi dan "Ganjal" tinggi layar agar tidak ciut
     let posisiLayar = window.scrollY;
+    document.body.style.minHeight = document.body.scrollHeight + 'px';
 
     // 2. Eksekusi Hapus Data
     AppState.db.dnd.match = AppState.db.dnd.match.filter(item => item.id !== id);
@@ -992,8 +993,13 @@ function hapusSoalMatch(id) {
     // 3. Render Ulang Layar
     renderEditorMatchDnd(document.getElementById('main-content'));
 
-    // 4. KEMBALIKAN POSISI LAYAR SEKETIKA (Tanpa Lompat ke Atas)
+    // 4. Kembalikan posisi scroll 
     window.scrollTo(0, posisiLayar);
+
+    // 5. Cabut ganjalan setelah layar beres digambar (jeda waktu sangat halus)
+    setTimeout(() => {
+        document.body.style.minHeight = 'auto';
+    }, 50);
 }
 
 function simpanKeDatabaseMatch() {
@@ -1237,9 +1243,11 @@ function tambahSoalSort() {
     // Munculkan ulang daftarnya
     renderEditorSortDnd(document.getElementById('main-content'));
 }
+
 function hapusSoalSort(id) {
-    // 1. KUNCI POSISI SCROLL LAYAR SAAT INI
+    // 1. Kunci posisi dan "Ganjal" tinggi layar
     let posisiLayar = window.scrollY;
+    document.body.style.minHeight = document.body.scrollHeight + 'px';
 
     // 2. Eksekusi Hapus Data
     AppState.db.dnd.sort = AppState.db.dnd.sort.filter(item => item.id !== id);
@@ -1247,8 +1255,13 @@ function hapusSoalSort(id) {
     // 3. Render Ulang Layar
     renderEditorSortDnd(document.getElementById('main-content'));
 
-    // 4. KEMBALIKAN POSISI LAYAR SEKETIKA
+    // 4. Kembalikan posisi scroll
     window.scrollTo(0, posisiLayar);
+
+    // 5. Cabut ganjalan
+    setTimeout(() => {
+        document.body.style.minHeight = 'auto';
+    }, 50);
 }
 
 function simpanKeDatabaseSort() {
