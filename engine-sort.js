@@ -79,9 +79,10 @@ function jalankanTimerSort(isRenderUlang) {
             clearInterval(sortState.timerInterval);
             if (typeof playDndSfx === 'function') playDndSfx('salah');
             
-            // Lanjut ke paket soal berikutnya jika waktu ronde habis
+            // Lanjut ke paket soal berikutnya jika waktu habis
             sortIndexRonde++;
             if (sortIndexRonde < sortPaketRonde.length) {
+                // KUNCI RAHASIA: Kata 'true' wajib ada di sini agar mesin tidak mereset game!
                 setTimeout(() => mulaiGameSort(false, true), 1000);
             } else {
                 selebrasiKemenanganSort();
