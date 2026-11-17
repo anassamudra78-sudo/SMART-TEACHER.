@@ -1259,13 +1259,13 @@ function simpanKeDatabaseSort() {
 function downloadTemplateSortExcel() {
     if (typeof XLSX === 'undefined') return alert('Library Excel belum siap.');
     
-    // FORMAT BARU: Kolom Nomor Soal ditambahkan paling depan
+    // FORMAT BARU: Ada kolom 'Nomor Soal' di paling depan dan 'Kategori' di paling belakang
     const ws_data = [
         ['Nomor Soal', 'Tipe Balok', 'Soal (Kosakata/Emoji)', 'Kategori'],
         ['Isi dengan angka (contoh: 1)', 'PENTING: Kolom Tipe Balok HANYA boleh diisi teks atau gambar.', '', ''],
         [1, 'teks', 'كِتَابٌ', 'ISIM'],
         [1, 'gambar', '🏃‍♂️', 'FIIL'],
-        [2, 'teks', 'مِنْ', 'HURUF'] // Contoh soal nomor 2
+        [2, 'teks', 'مِنْ', 'HURUF']
     ];
     
     const ws = XLSX.utils.aoa_to_sheet(ws_data);
@@ -1274,42 +1274,50 @@ function downloadTemplateSortExcel() {
     XLSX.writeFile(wb, "Template_Soal_Sort_Drop.xlsx");
 }
 
-function bacaExcelSort(event) {
-    const file = event.target.files[0];
+function bacaExcelSort(e) {
+    let file = e.target.files[0];
     if (!file) return;
-    const reader = new FileReader();
+
+    let reader = new FileReader();
     reader.onload = function(e) {
-        try {
-            const data = new Uint8Array(e.target.result);
-            const workbook = XLSX.read(data, { type: 'array' });
-            const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-            const jsonRows = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
-            let jumlahBerhasil = 0;
-            for (let i = 2; i < jsonRows.length; i++) {
-                let row = jsonRows[i];
-                if (!row || row.length < 4) continue;
-                let tipe = row[0] ? String(row[0]).trim().toLowerCase() : 'teks';
-                let soal = row[1] ? String(row[1]).trim() : '';
-                let arti = row[2] ? String(row[2]).trim() : '';
-                let kat = row[3] ? String(row[3]).trim().toLowerCase() : 'isim';
-                if (!soal || !arti) continue;
-                if (tipe !== 'teks' && tipe !== 'gambar') tipe = 'teks';
-                let idUnik = 's_' + Date.now() + '_' + i;
-                AppState.db.dnd.sort.push({ id: idUnik, soal: soal, arti: arti, kat: kat, tipe: tipe });
-                jumlahBerhasil++;
+        let data = new Uint8Array(e.target.result);
+        let workbook = XLSX.read(data, {type: 'array'});
+        let firstSheet = workbook.SheetNames[0];
+        let excelData = XLSX.utils.sheet_to_json(workbook.Sheets[firstSheet]);
+
+        if (!AppState.db.dnd.sort) AppState.db.dnd.sort = [];
+
+        excelData.forEach(row => {
+            // Abaikan baris teks peringatan agar mesin tidak bingung
+            if (row['Nomor Soal'] === 'Isi dengan angka (contoh: 1)') return;
+
+            // Sedot data Excel sesuai judul kolom Sort
+            let noSoal = row['Nomor Soal'] || 1;
+            let tipe = row['Tipe Balok'] || 'teks';
+            let soal = row['Soal (Kosakata/Emoji)'] || '';
+            let kategori = row['Kategori'] || '';
+
+            if (soal && kategori) {
+                AppState.db.dnd.sort.push({
+                    id: 's_' + Date.now() + Math.random().toString(36).substr(2, 9),
+                    noSoal: parseInt(noSoal) || 1, // Pastikan jadi angka
+                    tipe: tipe,
+                    soal: soal,
+                    kategori: kategori,
+                    arti: kategori // Disamakan dengan kategori agar sistem tidak error
+                });
             }
-            if (jumlahBerhasil > 0) {
-                renderEditorSortDnd(document.getElementById('main-content'));
-                alert(`${jumlahBerhasil} soal sort berhasil diimport!`);
-            }
-        } catch (err) {
-            alert('Gagal membaca file: ' + err.message);
-        }
-        event.target.value = '';
+        });
+
+        // Kosongkan kotak file (Sesuaikan ID ini jika di HTML Bapak namanya beda)
+        let inputUpload = document.getElementById('file-excel-sort');
+        if (inputUpload) inputUpload.value = '';
+        
+        // Segarkan layar Sort
+        renderEditorSortDnd(document.getElementById('main-content'));
     };
     reader.readAsArrayBuffer(file);
 }
-
 
 // =========================================================================
 // 3. EDITOR BUILD & DROP (LENGKAP EXCEL & MANUAL)
