@@ -406,7 +406,7 @@ function pasangSensorSort() {
                         
                         sortIndexRonde++;
                         if (sortIndexRonde < sortPaketRonde.length) {
-                            setTimeout(() => mulaiGameSort(false), 1200); // Hapus 'true' agar mesin me-reset data untuk paket berikutnya
+                         setTimeout(() => mulaiGameSort(false, true), 1200); // Lanjut soal
                         } else {
                             setTimeout(() => selebrasiKemenanganSort(), 1200); // Menang
                         }
