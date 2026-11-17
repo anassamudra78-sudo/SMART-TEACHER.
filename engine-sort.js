@@ -90,14 +90,15 @@ function jalankanTimerSort(isRenderUlang) {
     }, 1000);
 }
 
-function mulaiGameSort(isRenderUlang = false) {
+function mulaiGameSort(isRenderUlang = false, isLanjutRonde = false) {
     const subtitleEl = document.getElementById('dnd-topbar-subtitle');
     if (subtitleEl) subtitleEl.innerText = "Sedang Bermain...";
 
     const container = document.getElementById('dnd-game-container');
     if (!container) return;
 
-    if (!isRenderUlang && (typeof lanjutRondeBerikutnya === 'undefined' || !lanjutRondeBerikutnya)) {
+    // PERBAIKAN: Jika statusnya isLanjutRonde, JANGAN reset index dan skor!
+    if (!isRenderUlang && !isLanjutRonde) {
         sortState.skor = 0;
         sortIndexRonde = 0;
         if (typeof updateSkorDnd === 'function') updateSkorDnd(0);
@@ -118,10 +119,9 @@ function mulaiGameSort(isRenderUlang = false) {
         const dari = (window.dndRentang && window.dndRentang.dari) ? window.dndRentang.dari : 1;
         const sampai = (window.dndRentang && window.dndRentang.sampai) ? window.dndRentang.sampai : Math.max(...daftarNomor);
         
-        // Perbaikan Filter: Pastikan benar-benar mengambil rentang nomor yang diminta
         daftarNomor = daftarNomor.filter(no => no >= dari && no <= sampai);
 
-        // Perbaikan Lanjut: Pastikan paket yang dibentuk tidak kosong jika nomornya lompat
+        // Pastikan ronde yang kosong (tidak ada soal) dilewati
         sortPaketRonde = daftarNomor.reduce((acc, no) => {
             if (kelompok[no] && kelompok[no].length > 0) {
                 acc.push({ noSoal: no, items: kelompok[no] });
@@ -140,20 +140,14 @@ function mulaiGameSort(isRenderUlang = false) {
     if (!isRenderUlang) {
         sortState.itemTerjawab = 0;
         
-        // ==========================================
-        // PERBAIKAN: BERSIHKAN TEKS KATEGORI DARI SPASI & HURUF KECIL
-        // ==========================================
         sortState.dataSoalAsli = paketAktif.items.map(item => {
-            // Paksa jadi huruf besar & potong spasi gaib
             let teksKategori = (item.kat || item.kategori || item.arti || "KATEGORI").toString().trim().toUpperCase();
             return { ...item, katBersih: teksKategori };
         });
 
         sortState.dataSoal = sortState.dataSoalAsli.map(item => ({...item, terjawab: false, salah: 0})).sort(() => Math.random() - 0.5);
 
-        // Ekstrak kategori unik yang sudah super bersih (Dijamin tidak ada duplikat)
         let kategoriUnik = [...new Set(sortState.dataSoalAsli.map(item => item.katBersih))];
-        
         let warnaTema = ['cyan', 'emerald', 'amber', 'rose', 'indigo', 'fuchsia'];
         
         sortState.kategori = kategoriUnik.map((kat, index) => {
@@ -212,7 +206,6 @@ function mulaiGameSort(isRenderUlang = false) {
 
     container.innerHTML = `
         <div class="${classContainer}">
-            
             <div class="${classHeader}">
                 <div class="flex items-center bg-slate-950 p-1 rounded-lg border border-slate-800 shrink-0 shadow-inner">
                     <button onclick="ubahGayaLayoutSort('kiri-kanan')" class="px-4 md:px-6 py-2 rounded-md text-[10px] md:text-xs font-bold transition-all ${isKiriKanan ? 'bg-amber-600 text-slate-900 shadow-md' : 'text-slate-500 hover:text-white'}">Layout Kiri-Kanan</button>
@@ -234,13 +227,12 @@ function mulaiGameSort(isRenderUlang = false) {
                             let fontClass = item.tipe === 'gambar' || !isArabic ? 'text-4xl mt-1' : 'font-arabic text-2xl md:text-3xl mt-1';
                             
                             let isiKartu = `<span class="drop-shadow-lg text-center leading-none text-white pointer-events-none ${fontClass}">${item.soal}</span>`;
-                            
-                            let kategoriItem = item.katBersih; // <-- Pakai versi bersih
+                            let kategoriItem = item.katBersih; 
                             
                             return `
                                 <div class="kartu-soal-sort bg-slate-800 border-2 border-slate-600 text-slate-200 touch-none rounded-xl md:rounded-2xl flex flex-col justify-center items-center ${skala.tinggiKotak} shadow-lg transition-transform cursor-grab relative overflow-hidden p-1" data-id="${item.id}" data-kat="${kategoriItem}">
                                     ${isiKartu}
-                                     </div>
+                                </div>
                             `;
                         }).join('')}
                     </div>
