@@ -968,12 +968,16 @@ function simpanKeDatabaseMatch() {
 
 function downloadTemplateMatchExcel() {
     if (typeof XLSX === 'undefined') return alert('Library Excel belum siap.');
+    
+    // FORMAT BARU: Kolom Nomor Soal ditambahkan paling depan
     const ws_data = [
-        ['Tipe Balok', 'Soal (Kosakata/Emoji)', 'Arti (Pasangan)'],
-        ['PENTING: Kolom Tipe Balok HANYA boleh diisi teks atau gambar.', '', ''],
-        ['teks', 'كِتَابٌ', 'Buku'],
-        ['gambar', '🚗', 'Mobil']
+        ['Nomor Soal', 'Tipe Balok', 'Soal (Kosakata/Emoji)', 'Arti (Pasangan)'],
+        ['Isi dengan angka (contoh: 1)', 'PENTING: Kolom Tipe Balok HANYA boleh diisi teks atau gambar.', '', ''],
+        [1, 'teks', 'كِتَابٌ', 'Buku'],
+        [1, 'gambar', '🚗', 'Mobil'],
+        [2, 'teks', 'قَلَمٌ', 'Pena'] // Contoh soal nomor 2
     ];
+    
     const ws = XLSX.utils.aoa_to_sheet(ws_data);
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Template_Match_Drop");
@@ -1179,12 +1183,16 @@ function simpanKeDatabaseSort() {
 
 function downloadTemplateSortExcel() {
     if (typeof XLSX === 'undefined') return alert('Library Excel belum siap.');
+    
+    // FORMAT BARU: Kolom Nomor Soal ditambahkan paling depan
     const ws_data = [
-        ['Tipe Balok', 'Soal (Kosakata/Emoji)', 'Arti / Keterangan', 'Kategori (isim / fiil)'],
-        ['PENTING: Kolom Kategori isi dengan isim atau fiil.', '', '', ''],
-        ['teks', 'كِتَابٌ', 'Buku', 'isim'],
-        ['gambar', '🏃', 'Berlari', 'fiil']
+        ['Nomor Soal', 'Tipe Balok', 'Soal (Kosakata/Emoji)', 'Kategori'],
+        ['Isi dengan angka (contoh: 1)', 'PENTING: Kolom Tipe Balok HANYA boleh diisi teks atau gambar.', '', ''],
+        [1, 'teks', 'كِتَابٌ', 'ISIM'],
+        [1, 'gambar', '🏃‍♂️', 'FIIL'],
+        [2, 'teks', 'مِنْ', 'HURUF'] // Contoh soal nomor 2
     ];
+    
     const ws = XLSX.utils.aoa_to_sheet(ws_data);
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Template_Sort_Drop");
