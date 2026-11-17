@@ -232,8 +232,7 @@ function mulaiGameSort(isRenderUlang = false) {
                             return `
                                 <div class="kartu-soal-sort bg-slate-800 border-2 border-slate-600 text-slate-200 touch-none rounded-xl md:rounded-2xl flex flex-col justify-center items-center ${skala.tinggiKotak} shadow-lg transition-transform cursor-grab relative overflow-hidden p-1" data-id="${item.id}" data-kat="${kategoriItem}">
                                     ${isiKartu}
-                                    <span class="text-[9px] text-slate-400 font-bold uppercase mt-1 pointer-events-none tracking-widest">${kategoriItem}</span>
-                                </div>
+                                     </div>
                             `;
                         }).join('')}
                     </div>
