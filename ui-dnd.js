@@ -818,13 +818,7 @@ function bukaFormEditorDnd(jenis) {
 // 1. EDITOR MATCH & DROP (LENGKAP EXCEL & MANUAL)
 // =========================================================================
 function renderEditorMatchDnd(container) {
-    if (!AppState.db.dnd.match || AppState.db.dnd.match.length === 0) {
-         AppState.db.dnd.match = [
-            { id: "m1", tipe: "teks", soal: "كِتَابٌ", arti: "Buku" },
-            { id: "m2", tipe: "gambar", soal: "🦆", arti: "Bebek" }
-         ];
-    }
-
+   if (!AppState.db.dnd.match) AppState.db.dnd.match = [];
    let daftarSoalHtml = '';
 if (AppState.db.dnd.match && AppState.db.dnd.match.length > 0) {
     let kelompokMatch = {};
