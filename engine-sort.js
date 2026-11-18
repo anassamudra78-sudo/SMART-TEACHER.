@@ -29,16 +29,19 @@ let sortState = {
 
 function hitungSkalaOtomatisSort(jumlahSoal, isKiriKanan) {
     if (isKiriKanan) {
-        if (jumlahSoal <= 8) {
-            return { tinggiKotak: "h-14 md:h-16", teksArab: "text-2xl md:text-3xl", teksEmoji: "text-4xl", gap: "gap-2 md:gap-3", gridKiri: "grid-cols-2 md:grid-cols-2" };
+        if (jumlahSoal <= 6) {
+            // min-h membuat kotak bisa melar otomatis ke bawah
+            return { tinggiKotak: "min-h-[4rem] py-2 h-auto", teksArab: "text-2xl md:text-3xl", gap: "gap-3", gridKiri: "grid-cols-2" };
         } else {
-            return { tinggiKotak: "h-10 md:h-12", teksArab: "text-xl", teksEmoji: "text-2xl md:text-3xl", gap: "gap-2", gridKiri: "grid-cols-3 md:grid-cols-4" };
+            // Kolom dibatasi maksimal 2 (jangan 4) agar kalimat panjang punya ruang menyamping
+            return { tinggiKotak: "min-h-[3rem] py-2 h-auto", teksArab: "text-lg md:text-xl", gap: "gap-2", gridKiri: "grid-cols-2" };
         }
     } else {
-        if (jumlahSoal <= 8) {
-            return { tinggiKotak: "h-10 md:h-12", teksArab: "text-xl md:text-2xl", teksEmoji: "text-2xl md:text-3xl", gap: "gap-1.5 md:gap-2", gridKiri: "grid-cols-4" };
+        // Layout Atas-Bawah
+        if (jumlahSoal <= 6) {
+            return { tinggiKotak: "min-h-[3rem] py-2 h-auto", teksArab: "text-xl md:text-2xl", gap: "gap-2", gridKiri: "grid-cols-2 md:grid-cols-3" };
         } else {
-            return { tinggiKotak: "h-8 md:h-10", teksArab: "text-lg", teksEmoji: "text-xl", gap: "gap-1 md:gap-1.5", gridKiri: "grid-cols-5 md:grid-cols-6 lg:grid-cols-8" };
+            return { tinggiKotak: "min-h-[2.5rem] py-2 h-auto", teksArab: "text-lg", gap: "gap-2", gridKiri: "grid-cols-2 md:grid-cols-3" };
         }
     }
 }
@@ -224,10 +227,10 @@ function mulaiGameSort(isRenderUlang = false, isLanjutRonde = false) {
                         ${sortState.dataSoal.map(item => {
                             if (item.terjawab) return `<div class="${skala.tinggiKotak} w-full invisible"></div>`;
                             
-                            let isArabic = /[\\u0600-\\u06FF]/.test(item.soal);
-                            let fontClass = item.tipe === 'gambar' || !isArabic ? 'text-4xl mt-1' : 'font-arabic text-2xl md:text-3xl mt-1';
+                            let isArabic = /[\u0600-\u06FF]/.test(item.soal);
+let fontClass = item.tipe === 'gambar' || !isArabic ? 'text-4xl' : 'font-arabic ' + skala.teksArab;
                             
-                            let isiKartu = `<span class="drop-shadow-lg text-center leading-none text-white pointer-events-none ${fontClass}">${item.soal}</span>`;
+let isiKartu = `<span class="drop-shadow-lg text-center leading-normal whitespace-normal break-words px-1 text-white pointer-events-none w-full ${fontClass}">${item.soal}</span>`;
                             let kategoriItem = item.katBersih; 
                             
                             return `
@@ -266,12 +269,12 @@ function mulaiGameSort(isRenderUlang = false, isLanjutRonde = false) {
                             let balokMasuk = sortState.dataSoal.filter(s => s.terjawab && s.katBersih === kat.id).map(b => {
                                 let visual = b.soal;
                                 let isArabic = /[\\u0600-\\u06FF]/.test(visual);
-                                let fontClassBawah = b.tipe === 'gambar' || !isArabic ? 'text-2xl' : 'font-arabic text-xl md:text-2xl';
+                               let fontClassBawah = b.tipe === 'gambar' || !isArabic ? 'text-2xl' : 'font-arabic ' + skala.teksArab;
                                 
-                                return `
-                                    <div class="${balokItemClass}">
-                                        <div class="w-8 md:w-10 flex items-center justify-center shrink-0">
-                                            <span class="${fontClassBawah} text-white drop-shadow-md text-center leading-none">${visual}</span>
+return `
+    <div class="${balokItemClass} h-auto min-h-[3rem]">
+        <div class="w-8 md:w-10 flex items-center justify-center shrink-0">
+            <span class="${fontClassBawah} text-white drop-shadow-md text-center leading-normal whitespace-normal break-words">${visual}</span>
                                         </div>
                                         <span class="${teksArtiClass}">${b.katBersih}</span>
                                     </div>
@@ -373,13 +376,13 @@ function pasangSensorSort() {
                         ? `text-[9px] md:text-[10px] font-bold text-slate-300 uppercase truncate border-l border-slate-600 pl-2.5 ml-2.5 flex-1`
                         : `text-[9px] font-bold text-slate-300 uppercase truncate border-l border-slate-600 pl-2 ml-2 flex-1`;
 
-                    let fontClass = soalData.tipe === 'gambar' ? 'text-lg md:text-xl' : 'font-arabic text-xl md:text-2xl';
+                  let fontClass = soalData.tipe === 'gambar' || !(/[\u0600-\u06FF]/.test(soalData.soal)) ? 'text-lg md:text-xl' : 'font-arabic ' + skala.teksArab;
 
-                    let elemenMasuk = document.createElement('div');
-                    elemenMasuk.className = balokItemClass;
-                    elemenMasuk.innerHTML = `
-                        <div class="w-8 md:w-10 flex items-center justify-center shrink-0">
-                            <span class="${fontClass} text-white drop-shadow-md text-center leading-none">${soalData.soal}</span>
+let elemenMasuk = document.createElement('div');
+elemenMasuk.className = balokItemClass + " h-auto min-h-[3rem]";
+elemenMasuk.innerHTML = `
+    <div class="w-8 md:w-10 flex items-center justify-center shrink-0">
+        <span class="${fontClass} text-white drop-shadow-md text-center leading-normal whitespace-normal break-words">${soalData.soal}</span>
                         </div>
                         <span class="${teksArtiClass}">${soalData.arti}</span>
                     `;
