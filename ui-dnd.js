@@ -933,9 +933,9 @@ if (AppState.db.dnd.match && AppState.db.dnd.match.length > 0) {
                 <div class="lg:col-span-2 bg-slate-900 p-5 sm:p-6 rounded-3xl border border-slate-700 shadow-inner flex flex-col lg:h-[80vh]">
                     <div class="flex justify-between items-center mb-4 border-b border-slate-800 pb-3 shrink-0">
                         <h3 class="font-black text-white text-sm sm:text-base flex items-center"><i class="fa-solid fa-list mr-2 text-slate-400"></i>Daftar Pasangan (<span class="text-emerald-400 ml-1">${AppState.db.dnd.match.length}</span>)</h3>
-                        <button onclick="simpanKeDatabaseMatch()" class="bg-indigo-600 hover:bg-indigo-500 text-white text-[10px] sm:text-xs font-bold px-3 sm:px-4 py-2 rounded-xl shadow-md transition-transform hover:scale-105 flex items-center">
-                            <i class="fa-solid fa-cloud-arrow-up mr-1.5"></i> Simpan Permanen
-                        </button>
+                        <button onclick="hapusSemuaMatch()" class="bg-rose-600 hover:bg-rose-500 text-white text-xs md:text-sm font-bold py-2 px-3 md:px-4 rounded-lg mr-2 transition-colors border border-rose-500 shadow-md">
+    <i class="fa-solid fa-trash-can md:mr-2"></i> <span class="hidden md:inline">Hapus Semua</span>
+</button>
                     </div>
                     <div class="flex-1 overflow-y-auto pr-2 custom-scrollbar">
                         ${daftarSoalHtml || '<div class="text-center bg-slate-800/50 rounded-2xl py-12 border border-dashed border-slate-700"><i class="fa-solid fa-box-open text-4xl text-slate-600 mb-3"></i><p class="text-slate-400 text-xs font-bold">Belum ada pasangan soal.</p></div>'}
@@ -980,6 +980,7 @@ function tambahSoalMatch() {
     if (inputArti) inputArti.value = '';
     
     renderEditorMatchDnd(document.getElementById('main-content'));
+    if (typeof saveDatabase === 'function') saveDatabase();
 }
 
 function hapusSoalMatch(id) {
@@ -992,7 +993,7 @@ function hapusSoalMatch(id) {
     
     // 3. Render Ulang Layar
     renderEditorMatchDnd(document.getElementById('main-content'));
-
+if (typeof saveDatabase === 'function') saveDatabase();
     // 4. Kembalikan posisi scroll 
     window.scrollTo(0, posisiLayar);
 
@@ -1193,9 +1194,9 @@ function renderEditorSortDnd(container) {
                 <div class="lg:col-span-2 bg-slate-900 p-5 sm:p-6 rounded-3xl border border-slate-700 shadow-inner flex flex-col lg:h-[80vh]">
                     <div class="flex justify-between items-center mb-4 border-b border-slate-800 pb-3 shrink-0">
                         <h3 class="font-black text-white text-sm sm:text-base flex items-center"><i class="fa-solid fa-list mr-2 text-slate-400"></i>Daftar Soal Sort (<span class="text-amber-400 ml-1">${AppState.db.dnd.sort.length}</span>)</h3>
-                        <button onclick="simpanKeDatabaseSort()" class="bg-indigo-600 hover:bg-indigo-500 text-white text-[10px] sm:text-xs font-bold px-3 sm:px-4 py-2 rounded-xl shadow-md transition-transform hover:scale-105 flex items-center">
-                            <i class="fa-solid fa-cloud-arrow-up mr-1.5"></i> Simpan Permanen
-                        </button>
+                      <button onclick="hapusSemuaSort()" class="bg-rose-600 hover:bg-rose-500 text-white text-xs md:text-sm font-bold py-2 px-3 md:px-4 rounded-lg mr-2 transition-colors border border-rose-500 shadow-md">
+    <i class="fa-solid fa-trash-can md:mr-2"></i> <span class="hidden md:inline">Hapus Semua</span>
+</button>
                     </div>
                     <div class="flex-1 overflow-y-auto pr-2 custom-scrollbar">
                         ${daftarSoalHtml || '<div class="text-center bg-slate-800/50 rounded-2xl py-12 border border-dashed border-slate-700"><i class="fa-solid fa-box-open text-4xl text-slate-600 mb-3"></i><p class="text-slate-400 text-xs font-bold">Belum ada soal sort.</p></div>'}
@@ -1242,6 +1243,7 @@ function tambahSoalSort() {
     
     // Munculkan ulang daftarnya
     renderEditorSortDnd(document.getElementById('main-content'));
+    if (typeof saveDatabase === 'function') saveDatabase();
 }
 
 function hapusSoalSort(id) {
@@ -1254,7 +1256,7 @@ function hapusSoalSort(id) {
     
     // 3. Render Ulang Layar
     renderEditorSortDnd(document.getElementById('main-content'));
-
+if (typeof saveDatabase === 'function') saveDatabase();
     // 4. Kembalikan posisi scroll
     window.scrollTo(0, posisiLayar);
 
@@ -1418,9 +1420,9 @@ function renderEditorBuildDnd(container) {
                 <div class="lg:col-span-2 bg-slate-900 p-5 sm:p-6 rounded-3xl border border-slate-700 shadow-inner flex flex-col lg:h-[80vh]">
                     <div class="flex justify-between items-center mb-4 border-b border-slate-800 pb-3 shrink-0">
                         <h3 class="font-black text-white text-sm sm:text-base flex items-center"><i class="fa-solid fa-list mr-2 text-slate-400"></i>Daftar Kalimat Build (<span class="text-violet-400 ml-1">${AppState.db.dnd.build.length}</span>)</h3>
-                        <button onclick="simpanKeDatabaseBuild()" class="bg-indigo-600 hover:bg-indigo-500 text-white text-[10px] sm:text-xs font-bold px-3 sm:px-4 py-2 rounded-xl shadow-md transition-transform hover:scale-105 flex items-center">
-                            <i class="fa-solid fa-cloud-arrow-up mr-1.5"></i> Simpan Permanen
-                        </button>
+                       <button onclick="hapusSemuaBuild()" class="bg-rose-600 hover:bg-rose-500 text-white text-xs md:text-sm font-bold py-2 px-3 md:px-4 rounded-lg mr-2 transition-colors border border-rose-500 shadow-md">
+    <i class="fa-solid fa-trash-can md:mr-2"></i> <span class="hidden md:inline">Hapus Semua</span>
+</button>
                     </div>
                     <div class="flex-1 overflow-y-auto pr-2 custom-scrollbar">
                         ${daftarSoalHtml || '<div class="text-center bg-slate-800/50 rounded-2xl py-12 border border-dashed border-slate-700"><i class="fa-solid fa-box-open text-4xl text-slate-600 mb-3"></i><p class="text-slate-400 text-xs font-bold">Belum ada kalimat build.</p></div>'}
@@ -1439,6 +1441,7 @@ function tambahSoalBuild() {
     let idUnik = 'b_' + Date.now();
     AppState.db.dnd.build.push({ id: idUnik, arti: arti, susunan: arrKata });
     renderEditorBuildDnd(document.getElementById('main-content'));
+    if (typeof saveDatabase === 'function') saveDatabase();
 }
 
 function hapusSoalBuild(id) {
@@ -1450,7 +1453,7 @@ function hapusSoalBuild(id) {
     
     // 3. Render Ulang Layar
     renderEditorBuildDnd(document.getElementById('main-content'));
-
+if (typeof saveDatabase === 'function') saveDatabase();
     // 4. KEMBALIKAN POSISI LAYAR SEKETIKA
     window.scrollTo(0, posisiLayar);
 }
@@ -1573,4 +1576,36 @@ function editSoalSort(id) {
 
     // Melompat mulus ke atas
     window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ==========================================
+// MESIN HAPUS MASSAL (SAPU JAGAT)
+// ==========================================
+
+function hapusSemuaMatch() {
+    if(!AppState.db.dnd.match || AppState.db.dnd.match.length === 0) return alert('Daftar Match sudah kosong!');
+    
+    // Munculkan jendela konfirmasi peringatan
+    if(confirm('⚠️ YAKIN INGIN MENGHAPUS SEMUA SOAL MATCH?\n\nSemua daftar di bawah ini akan bersih seketika.')) {
+        AppState.db.dnd.match = []; // Kosongkan data
+        renderEditorMatchDnd(document.getElementById('main-content')); // Render ulang layar
+    }
+}
+
+function hapusSemuaSort() {
+    if(!AppState.db.dnd.sort || AppState.db.dnd.sort.length === 0) return alert('Daftar Sort sudah kosong!');
+    
+    if(confirm('⚠️ YAKIN INGIN MENGHAPUS SEMUA SOAL SORT?\n\nSemua daftar di bawah ini akan bersih seketika.')) {
+        AppState.db.dnd.sort = [];
+        renderEditorSortDnd(document.getElementById('main-content'));
+    }
+}
+
+function hapusSemuaBuild() {
+    if(!AppState.db.dnd.build || AppState.db.dnd.build.length === 0) return alert('Daftar Build sudah kosong!');
+    
+    if(confirm('⚠️ YAKIN INGIN MENGHAPUS SEMUA SOAL BUILD?\n\nSemua daftar di bawah ini akan bersih seketika.')) {
+        AppState.db.dnd.build = [];
+        renderEditorBuildDnd(document.getElementById('main-content'));
+    }
 }
