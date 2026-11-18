@@ -1063,6 +1063,8 @@ function bacaExcelMatch(e) {
         // Kosongkan kotak file agar bisa upload file yang sama berkali-kali
         document.getElementById('file-excel-match').value = '';
         renderEditorMatchDnd(document.getElementById('main-content'));
+        if (typeof saveDatabase === 'function') saveDatabase();
+    alert(`${jumlahBerhasil} item soal match berhasil diimport!`);
     };
     reader.readAsArrayBuffer(file);
 }
@@ -1330,6 +1332,8 @@ function bacaExcelSort(e) {
         
         // Segarkan layar Sort
         renderEditorSortDnd(document.getElementById('main-content'));
+        if (typeof saveDatabase === 'function') saveDatabase();
+    alert(`${jumlahBerhasil} item soal match berhasil diimport!`);
     };
     reader.readAsArrayBuffer(file);
 }
@@ -1501,6 +1505,7 @@ function bacaExcelBuild(event) {
             }
             if (jumlahBerhasil > 0) {
                 renderEditorBuildDnd(document.getElementById('main-content'));
+                if (typeof saveDatabase === 'function') saveDatabase();
                 alert(`${jumlahBerhasil} soal kalimat berhasil diimport!`);
             }
         } catch (err) {
@@ -1589,6 +1594,7 @@ function hapusSemuaMatch() {
     if(confirm('⚠️ YAKIN INGIN MENGHAPUS SEMUA SOAL MATCH?\n\nSemua daftar di bawah ini akan bersih seketika.')) {
         AppState.db.dnd.match = []; // Kosongkan data
         renderEditorMatchDnd(document.getElementById('main-content')); // Render ulang layar
+        
     }
 }
 
