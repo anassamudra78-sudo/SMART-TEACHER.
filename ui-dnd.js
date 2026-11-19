@@ -572,7 +572,7 @@ function masukKeArenaGameDnd() {
         sampai: sampaiEl && sampaiEl.value ? parseInt(sampaiEl.value) : 999
     };
     if (typeof playDndBgm === 'function') playDndBgm();
-    
+    else if (typeof startAutoBGM === 'function') startAutoBGM();
     // Baru jalankan mesin game yang akan menimpa layar lobi
     if (gameDndTerpilih === 'match' && typeof mulaiGameMatch === 'function') mulaiGameMatch();
     else if (gameDndTerpilih === 'sort' && typeof mulaiGameSort === 'function') mulaiGameSort();
@@ -1626,9 +1626,9 @@ function hapusSemuaBuild() {
 // LAYAR HASIL AKHIR DRAG & DROP (SERAGAM DENGAN ARENA KUIS)
 // =========================================================================
 function tampilkanHasilAkhirDnd(skorBenar, totalItem, fungsiUlangi = null) {
-    if (typeof stopDndBGM === 'function') stopDndBGM();
-else if (typeof stopBGM === 'function') stopBGM();
-
+  if (typeof stopDndBgm === 'function') stopDndBgm();
+    else if (typeof stopBGM === 'function') stopBGM();
+    
     const container = document.getElementById('dnd-game-container');
     if (!container) return;
 
@@ -1741,7 +1741,8 @@ else if (typeof playDndSfx === 'function') playDndSfx('selesai');
 }
 
 function ulangiGameDndLangsung() {
-    if (typeof startDndBGM === 'function') startDndBGM();
+    if (typeof playDndBgm === 'function') playDndBgm();
+    else if (typeof startAutoBGM === 'function') startAutoBGM();
     if (typeof window._dndUlangiTerakhir === 'function') {
         window._dndUlangiTerakhir();
     } else if (gameDndTerpilih === 'match' && typeof mulaiGameMatch === 'function') {
