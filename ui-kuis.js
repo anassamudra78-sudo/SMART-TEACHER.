@@ -616,7 +616,9 @@ function bukaArenaKuis(soalArray, isNewSession = true) {
     
     let kelasOpts = AppState.db.kelas.map(k => `<option value="${k.id}" ${AppState.kuis.kelasAktif === k.id ? 'selected' : ''}>${k.kode}</option>`).join('');
     let mapelOpts = AppState.db.mapel.map(m => `<option value="${m.id}" ${AppState.kuis.mapelAktif === m.id ? 'selected' : ''}>${m.nama}</option>`).join('');
-
+let totalSoalLobi = (AppState.kuis.masterQuizSession && AppState.kuis.masterQuizSession.length > 0) 
+        ? AppState.kuis.masterQuizSession.length 
+        : AppState.kuis.bankSoalManual.length;
     arenaBody.innerHTML = `
         <div class="bg-slate-900/95 p-8 rounded-[2rem] border-2 border-amber-500/30 max-w-xl mx-auto w-full shadow-2xl text-center fade-in relative z-20">
             <i class="fa-solid fa-user-graduate text-5xl text-amber-400 mb-4 animate-bounce"></i>
@@ -630,6 +632,22 @@ function bukaArenaKuis(soalArray, isNewSession = true) {
                 <button type="button" id="tab-mode-duel" onclick="setModeKuisLobby('duel')" class="py-2.5 text-xs font-extrabold rounded-xl transition-all ${AppState.kuis.modeKuis === 'duel' ? 'bg-gradient-to-r from-amber-500 to-orange-600 text-white shadow-md' : 'text-slate-400 hover:text-white'}">
                     <i class="fa-solid fa-bolt text-amber-400 mr-1.5"></i> Mode Duel (2 Siswa)
                 </button>
+            </div>
+            <!-- RENTANG NOMOR SOAL -->
+            <div class="bg-slate-950/70 border border-indigo-500/30 p-3.5 rounded-2xl mb-4">
+                <p class="text-[11px] font-black text-indigo-400 uppercase tracking-wider mb-2">
+                    <i class="fa-solid fa-list-ol mr-1.5"></i>Rentang Soal (Tersedia: ${totalSoalLobi} Soal)
+                </p>
+                <div class="grid grid-cols-2 gap-3 text-left">
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-400 mb-1 uppercase">Mulai Dari Soal</label>
+                        <input type="number" id="lobby-soal-dari" value="1" min="1" max="${totalSoalLobi}" class="w-full bg-slate-900 border border-slate-700 focus:border-indigo-500 text-white rounded-xl px-3 py-2 text-center font-black text-sm outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-400 mb-1 uppercase">Sampai Soal</label>
+                        <input type="number" id="lobby-soal-sampai" value="${totalSoalLobi}" min="1" max="${totalSoalLobi}" class="w-full bg-slate-900 border border-slate-700 focus:border-indigo-500 text-white rounded-xl px-3 py-2 text-center font-black text-sm outline-none">
+                    </div>
+                </div>
             </div>
                 <div>
                     <label class="text-xs font-bold text-slate-300 block mb-1">⏱️ Durasi Waktu Per Soal</label>
@@ -839,7 +857,20 @@ function mulaiKuisSebenarnya() {
     AppState.kuis.streak = 0;
     AppState.kuis.rekapSalahSesi = {};
 
-    let dataProses = JSON.parse(JSON.stringify(AppState.kuis.masterQuizSession || AppState.kuis.bankSoalManual));
+   let sumberSoal = JSON.parse(JSON.stringify(AppState.kuis.masterQuizSession || AppState.kuis.bankSoalManual));
+    
+    const dariEl = document.getElementById('lobby-soal-dari');
+    const sampaiEl = document.getElementById('lobby-soal-sampai');
+    let dariNo = dariEl ? (parseInt(dariEl.value) || 1) : 1;
+    let sampaiNo = sampaiEl ? (parseInt(sampaiEl.value) || sumberSoal.length) : sumberSoal.length;
+
+    if (dariNo < 1) dariNo = 1;
+    if (sampaiNo > sumberSoal.length) sampaiNo = sumberSoal.length;
+    if (dariNo > sampaiNo) {
+        return showAlert("Peringatan", 'Nomor "Mulai Dari Soal" tidak boleh lebih besar dari "Sampai Soal"!', "error");
+    }
+
+    let dataProses = sumberSoal.slice(dariNo - 1, sampaiNo);
 
     const isAcak = document.getElementById('acak-soal-checkbox');
     if (isAcak && isAcak.checked) {
