@@ -550,7 +550,13 @@ function masukKeArenaGameDnd() {
     const kelasId = document.getElementById('lobby-dnd-kelas').value;
     const siswaId = document.getElementById('lobby-dnd-siswa').value;
     const manualName = document.getElementById('lobby-dnd-manual').value.trim();
-
+// Simpan nama pemain aktif untuk ditampilkan di layar hasil akhir
+    let namaSiswaTerpilih = manualName;
+    if (!namaSiswaTerpilih && siswaId && AppState.db && AppState.db.siswa) {
+        const sObj = AppState.db.siswa.find(s => s.id === siswaId);
+        namaSiswaTerpilih = sObj ? sObj.nama : "Pemain";
+    }
+    window.dndPemainAktif = namaSiswaTerpilih || "Pemain";
     if (!manualName && (!kelasId || !siswaId)) {
         return showAlert("Peringatan", "Harap Pilih Kelas, Mapel, dan Siswa ATAU Ketik nama manual!", "error");
     }
@@ -1613,5 +1619,135 @@ function hapusSemuaBuild() {
     if(confirm('⚠️ YAKIN INGIN MENGHAPUS SEMUA SOAL BUILD?\n\nSemua daftar di bawah ini akan bersih seketika.')) {
         AppState.db.dnd.build = [];
         renderEditorBuildDnd(document.getElementById('main-content'));
+    }
+}
+
+// =========================================================================
+// LAYAR HASIL AKHIR DRAG & DROP (SERAGAM DENGAN ARENA KUIS)
+// =========================================================================
+function tampilkanHasilAkhirDnd(skorBenar, totalItem, fungsiUlangi = null) {
+    stopDndBGM();
+
+    const container = document.getElementById('dnd-game-container');
+    if (!container) return;
+
+    const subtitleEl = document.getElementById('dnd-topbar-subtitle');
+    if (subtitleEl) subtitleEl.innerText = "Evaluasi Selesai";
+
+    // Hitung nilai skala 0 - 100
+    let nilaiAkhir = totalItem > 0 ? Math.round((skorBenar / totalItem) * 100) : 100;
+    if (nilaiAkhir > 100) nilaiAkhir = 100;
+    if (nilaiAkhir < 0) nilaiAkhir = 0;
+
+    // Ambil predikat dari mesin Kuis (atau gunakan cadangan jika belum termuat)
+    const kinerja = (typeof dapatkanPredikatKinerja === 'function')
+        ? dapatkanPredikatKinerja(nilaiAkhir)
+        : { predikat: "🏆 HEBAT!", status: "Permainan Drag & Drop Selesai!", color: "from-emerald-500 to-teal-600", icon: "fa-trophy" };
+
+    let scoreCircleStyle = "border-emerald-500/80 shadow-[0_0_30px_rgba(16,185,129,0.2)]";
+    let scoreTextStyle = "text-white";
+    let scoreSubtextStyle = "text-emerald-400";
+    let kkmBadgeHtml = "";
+
+    if (nilaiAkhir < 60) {
+        scoreCircleStyle = "border-rose-500/80 shadow-[0_0_30px_rgba(244,63,94,0.4)] bg-rose-950/50";
+        scoreTextStyle = "text-rose-400";
+        scoreSubtextStyle = "text-rose-400";
+        kkmBadgeHtml = `<div class="inline-flex items-center px-3 py-1 rounded-full bg-rose-500/20 text-rose-300 border border-rose-500/40 text-xs font-black mb-3"><i class="fa-solid fa-circle-exclamation mr-1.5 text-rose-400"></i>🔴 Skor di Bawah KKM (Perlu Latihan Lagi)</div>`;
+    }
+
+    // Simpan fungsi ulangi agar bisa dipanggil tombol
+    window._dndUlangiTerakhir = fungsiUlangi;
+
+    container.innerHTML = `
+        <div class="max-w-2xl mx-auto p-4 mt-4 sm:mt-8 w-full fade-in">
+            <div class="bg-gradient-to-br from-slate-900 via-slate-900 to-slate-950 border border-slate-700/80 rounded-[2.5rem] p-8 lg:p-10 text-center shadow-2xl relative overflow-hidden">
+                <p class="text-xs font-black uppercase tracking-widest text-emerald-400 mb-1">Hasil Evaluasi Drag & Drop</p>
+                <h3 class="text-2xl lg:text-3xl font-black mb-1 text-white">${window.dndPemainAktif || 'Pemain'}</h3>
+                <p class="mb-4 font-medium text-slate-300 text-xs sm:text-sm">Menyelesaikan <b class="text-emerald-400 font-black">${skorBenar}</b> dari <b class="text-emerald-400 font-black">${totalItem}</b> target dengan tepat.</p>
+
+                ${kkmBadgeHtml}
+
+                <div class="w-40 h-40 sm:w-44 sm:h-44 mx-auto bg-slate-950/80 backdrop-blur-md rounded-full flex flex-col items-center justify-center border-4 ${scoreCircleStyle} mb-6">
+                    <span id="dnd-final-score-display" class="text-5xl sm:text-6xl font-black tracking-tighter ${scoreTextStyle}">0</span>
+                    <span class="text-[10px] ${scoreSubtextStyle} font-bold uppercase tracking-widest mt-1">Skor Akhir</span>
+                </div>
+
+                <div id="dnd-badge-rank-container" class="opacity-0 transition-all duration-500 mb-6">
+                    <div class="inline-flex items-center space-x-3 px-6 py-3 rounded-2xl bg-gradient-to-r ${kinerja.color} text-white shadow-xl ring-2 ring-white/10">
+                        <i class="fa-solid ${kinerja.icon} text-2xl"></i>
+                        <div class="text-left">
+                            <p class="text-[9px] uppercase tracking-widest text-white/80 font-bold">Gelar Kebanggaan</p>
+                            <h4 class="text-sm sm:text-base font-black tracking-wide">${kinerja.predikat}</h4>
+                        </div>
+                    </div>
+                    <p class="text-xs text-slate-400 mt-2 italic">${kinerja.status}</p>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-4 opacity-0 transition-opacity duration-500" id="dnd-final-buttons-container">
+                    <button onclick="ulangiGameDndLangsung()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-black py-3.5 px-4 rounded-2xl shadow-xl transition-all text-xs flex items-center justify-center">
+                        <i class="fa-solid fa-rotate-right mr-2 text-sm"></i> Main Lagi
+                    </button>
+                    <button onclick="bukaLobiDragDrop(gameDndTerpilih)" class="bg-indigo-600 hover:bg-indigo-500 text-white font-black py-3.5 px-4 rounded-2xl shadow-xl transition-all text-xs flex items-center justify-center">
+                        <i class="fa-solid fa-users mr-2 text-sm"></i> Ganti Pemain
+                    </button>
+                    <button onclick="keluarFullscreenDnd()" class="bg-white/10 hover:bg-rose-600 text-white font-black py-3.5 px-4 rounded-2xl border border-white/20 transition-all text-xs flex items-center justify-center">
+                        <i class="fa-solid fa-circle-xmark mr-2 text-sm"></i> Selesai & Keluar
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+
+    // Animasi angka berjalan dari 0 ke nilaiAkhir
+    let currentScoreAnim = 0;
+    const duration = 1000;
+    const intervalTime = 30;
+    const steps = duration / intervalTime;
+    const increment = nilaiAkhir / steps;
+    const scoreDisplay = document.getElementById('dnd-final-score-display');
+
+    const animInterval = setInterval(() => {
+        currentScoreAnim += increment;
+        if (currentScoreAnim >= nilaiAkhir) {
+            currentScoreAnim = nilaiAkhir;
+            clearInterval(animInterval);
+            if (scoreDisplay) scoreDisplay.innerText = Math.round(currentScoreAnim);
+
+            const badgeContainer = document.getElementById('dnd-badge-rank-container');
+            const btnContainer = document.getElementById('dnd-final-buttons-container');
+
+            if (badgeContainer) {
+                badgeContainer.classList.remove('opacity-0');
+                badgeContainer.classList.add('badge-pop');
+            }
+            if (btnContainer) btnContainer.classList.remove('opacity-0');
+
+            // Putar audio selebrasi & konfeti
+            if (typeof playCelebrationAudio === 'function') {
+                playCelebrationAudio(nilaiAkhir);
+            } else {
+                playDndSound('selesai');
+                if (typeof confetti === 'function' && nilaiAkhir >= 60) {
+                    confetti({ particleCount: 150, spread: 100, origin: { y: 0.6 } });
+                }
+            }
+        } else {
+            if (scoreDisplay) scoreDisplay.innerText = Math.round(currentScoreAnim);
+            if (typeof playTick === 'function') playTick(700);
+        }
+    }, intervalTime);
+}
+
+function ulangiGameDndLangsung() {
+    startDndBGM();
+    if (typeof window._dndUlangiTerakhir === 'function') {
+        window._dndUlangiTerakhir();
+    } else if (gameDndTerpilih === 'match' && typeof mulaiGameMatch === 'function') {
+        mulaiGameMatch();
+    } else if (gameDndTerpilih === 'sort' && typeof mulaiGameSort === 'function') {
+        mulaiGameSort();
+    } else if (gameDndTerpilih === 'build' && typeof mulaiGameBuild === 'function') {
+        mulaiGameBuild();
     }
 }
