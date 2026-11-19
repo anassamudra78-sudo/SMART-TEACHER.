@@ -306,26 +306,8 @@ function selebrasiKemenanganBuild() {
     if (buildState.timerInterval) clearInterval(buildState.timerInterval);
     
     let nilaiAkhir = Math.round(buildState.skor);
-    if (typeof playCelebrationAudio === 'function') playCelebrationAudio(nilaiAkhir);
     
-    const subtitleEl = document.getElementById('dnd-topbar-subtitle');
-    if (subtitleEl) subtitleEl.innerText = "Permainan Selesai";
-
-    const container = document.getElementById('dnd-game-container');
-    container.innerHTML = `
-        <div class="max-w-2xl mx-auto mt-10 p-8 bg-slate-900 rounded-[2.5rem] text-center border border-slate-700 shadow-[0_0_40px_rgba(139,92,246,0.2)] fade-in">
-            <i class="fa-solid fa-medal text-6xl text-amber-400 mb-6 animate-bounce drop-shadow-[0_0_15px_rgba(251,191,36,0.5)]"></i>
-            <h1 class="text-3xl md:text-4xl font-black text-white mb-2">KALIMAT SEMPURNA!</h1>
-            
-            <div class="bg-slate-800 p-6 rounded-3xl mb-8 mt-6 border border-slate-700">
-                <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Nilai Akhir</p>
-                <p class="text-7xl font-black text-violet-400 drop-shadow-[0_0_15px_rgba(139,92,246,0.4)]">${nilaiAkhir}</p>
-            </div>
-            
-            <div class="flex justify-center gap-4">
-                <button onclick="keluarFullscreenDnd()" class="bg-slate-700 hover:bg-slate-600 text-white font-bold py-3 px-6 rounded-2xl border border-slate-600 transition-colors">Menu Game</button>
-                <button onclick="mulaiGameBuild()" class="bg-violet-600 hover:bg-violet-500 text-white font-black py-3 px-8 rounded-2xl shadow-[0_0_15px_rgba(139,92,246,0.4)] transition-transform">MAIN LAGI</button>
-            </div>
-        </div>
-    `;
+    if (typeof tampilkanHasilAkhirDnd === 'function') {
+        tampilkanHasilAkhirDnd(nilaiAkhir, 100, () => mulaiGameBuild());
+    }
 }
