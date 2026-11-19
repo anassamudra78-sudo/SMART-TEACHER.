@@ -8,7 +8,22 @@ const DND_AUDIO = {
     selesai: new Audio("https://anassamudra78-sudo.github.io/audio-smart-teacher/Sound%20effect%20kuis%20Benar%20.mp3")
 };
 DND_AUDIO.bgm.loop = true;
-
+// Unlock audio D&D pada klik pertama agar tidak diblokir Autoplay Chrome
+document.addEventListener('click', function unlockDndAudio() {
+    Object.values(DND_AUDIO).forEach(audio => {
+        if (audio) {
+            audio.muted = true;
+            audio.play().then(() => {
+                audio.pause();
+                audio.currentTime = 0;
+                audio.muted = false;
+            }).catch(() => {
+                audio.muted = false;
+            });
+        }
+    });
+    document.removeEventListener('click', unlockDndAudio);
+}, { once: true });
 function playDndBgm() { 
     DND_AUDIO.bgm.volume = 0.7; 
     DND_AUDIO.bgm.play().catch(e => console.log(e)); 
