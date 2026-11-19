@@ -634,19 +634,14 @@ let totalSoalLobi = (AppState.kuis.masterQuizSession && AppState.kuis.masterQuiz
                 </button>
             </div>
             <!-- RENTANG NOMOR SOAL -->
-            <div class="bg-slate-950/70 border border-indigo-500/30 p-3.5 rounded-2xl mb-4">
-                <p class="text-[11px] font-black text-indigo-400 uppercase tracking-wider mb-2">
-                    <i class="fa-solid fa-list-ol mr-1.5"></i>Rentang Soal (Tersedia: ${totalSoalLobi} Soal)
-                </p>
-                <div class="grid grid-cols-2 gap-3 text-left">
-                    <div>
-                        <label class="block text-[10px] font-bold text-slate-400 mb-1 uppercase">Mulai Dari Soal</label>
-                        <input type="number" id="lobby-soal-dari" value="1" min="1" max="${totalSoalLobi}" class="w-full bg-slate-900 border border-slate-700 focus:border-indigo-500 text-white rounded-xl px-3 py-2 text-center font-black text-sm outline-none">
-                    </div>
-                    <div>
-                        <label class="block text-[10px] font-bold text-slate-400 mb-1 uppercase">Sampai Soal</label>
-                        <input type="number" id="lobby-soal-sampai" value="${totalSoalLobi}" min="1" max="${totalSoalLobi}" class="w-full bg-slate-900 border border-slate-700 focus:border-indigo-500 text-white rounded-xl px-3 py-2 text-center font-black text-sm outline-none">
-                    </div>
+            <div class="bg-slate-950/70 border border-indigo-500/30 px-3 py-2 rounded-xl mb-3 flex items-center justify-between gap-2">
+                <span class="text-[11px] font-black text-indigo-400 uppercase tracking-wider shrink-0">
+                    <i class="fa-solid fa-list-ol mr-1"></i>Soal (1–${totalSoalLobi})
+                </span>
+                <div class="flex items-center gap-2">
+                    <input type="number" id="lobby-soal-dari" value="1" min="1" max="${totalSoalLobi}" class="w-16 bg-slate-900 border border-slate-700 focus:border-indigo-500 text-white rounded-lg px-2 py-1 text-center font-black text-xs outline-none">
+                    <span class="text-xs font-bold text-slate-400">s/d</span>
+                    <input type="number" id="lobby-soal-sampai" value="${totalSoalLobi}" min="1" max="${totalSoalLobi}" class="w-16 bg-slate-900 border border-slate-700 focus:border-indigo-500 text-white rounded-lg px-2 py-1 text-center font-black text-xs outline-none">
                 </div>
             </div>
                 <div>
