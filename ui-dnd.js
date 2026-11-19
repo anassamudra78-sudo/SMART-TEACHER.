@@ -1665,8 +1665,7 @@ else if (typeof stopBGM === 'function') stopBGM();
             <div class="bg-gradient-to-br from-slate-900 via-slate-900 to-slate-950 border border-slate-700/80 rounded-[2.5rem] p-8 lg:p-10 text-center shadow-2xl relative overflow-hidden">
                 <p class="text-xs font-black uppercase tracking-widest text-emerald-400 mb-1">Hasil Evaluasi Drag & Drop</p>
                 <h3 class="text-2xl lg:text-3xl font-black mb-1 text-white">${window.dndPemainAktif || 'Pemain'}</h3>
-                <p class="mb-4 font-medium text-slate-300 text-xs sm:text-sm">Menyelesaikan <b class="text-emerald-400 font-black">${skorBenar}</b> dari <b class="text-emerald-400 font-black">${totalItem}</b> target dengan tepat.</p>
-
+               <p class="mb-4 font-medium text-slate-300 text-xs sm:text-sm">Tingkat akurasi penyelesaian tantangan: <b class="text-emerald-400 font-black">${nilaiAkhir}%</b>.</p>
                 ${kkmBadgeHtml}
 
                 <div class="w-40 h-40 sm:w-44 sm:h-44 mx-auto bg-slate-950/80 backdrop-blur-md rounded-full flex flex-col items-center justify-center border-4 ${scoreCircleStyle} mb-6">
