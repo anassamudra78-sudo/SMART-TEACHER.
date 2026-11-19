@@ -200,9 +200,11 @@ async function loadDatabase() {
     if (typeof updateUI === "function") updateUI();
 }
 
-async function saveDatabase() {
+async function saveDatabase(silent = false) {
     localStorage.setItem(AppState.config.storageKey, JSON.stringify(AppState.db));
-    if (typeof updateUI === "function") updateUI();
+    
+    // Hanya refresh layar jika BUKAN mode senyap
+    if (!silent && typeof updateUI === "function") updateUI();
 
     if (AppState.config.gasUrl && AppState.config.gasUrl.startsWith("http")) {
         try {
@@ -213,11 +215,11 @@ async function saveDatabase() {
             });
 
             const result = await response.json();
-            if (result.status !== "success") {
+            if (result.status !== "success" && !silent) {
                 if(typeof showAlert === "function") showAlert("Gagal Sinkron Cloud", "Ada masalah di kode Google Sheets: " + result.message, "error");
             }
         } catch (err) { 
-            if(typeof showAlert === "function") showAlert("Koneksi Terputus", "Data tersimpan aman di HP, tapi gagal dikirim ke Google Sheets. Pastikan internet lancar.", "error");
+            if (!silent && typeof showAlert === "function") showAlert("Koneksi Terputus", "Data tersimpan aman di HP, tapi gagal dikirim ke Google Sheets. Pastikan internet lancar.", "error");
         }
     }
 }
