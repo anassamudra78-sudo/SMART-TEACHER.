@@ -358,6 +358,26 @@ function bukaLobiDragDrop(jenisGame) {
             }
         }, 50);
     }
+    // Pulihkan Mode (Single / Duel) dan pilihan Kelas & Mapel terakhir
+    if (window.dndDuelState && typeof setModeDnd === 'function') {
+        setModeDnd(window.dndDuelState.mode || 'single');
+    }
+    if (window.dndLastLobby) {
+        setTimeout(() => {
+            const elKelas = document.getElementById('lobby-dnd-kelas');
+            const elMapel = document.getElementById('lobby-dnd-mapel');
+            const elKat = document.getElementById('lobby-dnd-kategori');
+            const elDur = document.getElementById('lobby-dnd-durasi');
+
+            if (elKelas && window.dndLastLobby.kelas) {
+                elKelas.value = window.dndLastLobby.kelas;
+                if (typeof updateLobbySiswaDnd === 'function') updateLobbySiswaDnd();
+            }
+            if (elMapel && window.dndLastLobby.mapel) elMapel.value = window.dndLastLobby.mapel;
+            if (elKat && window.dndLastLobby.kategori) elKat.value = window.dndLastLobby.kategori;
+            if (elDur && window.dndLastLobby.durasi) elDur.value = window.dndLastLobby.durasi;
+        }, 60);
+    }
 }
 // -------------------------------------------------------------
 // TIMER HITUNG MUNDUR (DENGAN KECERDASAN PELACAK LOBI DND)
