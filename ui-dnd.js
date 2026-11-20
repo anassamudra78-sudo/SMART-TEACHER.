@@ -349,26 +349,21 @@ function bukaLobiDragDrop(jenisGame) {
         </div>
     `;
 
-    if (AppState.kuis && AppState.kuis.kelasAktif) {
-        setTimeout(() => {
-            const selKelas = document.getElementById('lobby-dnd-kelas');
-            if (selKelas) {
-                selKelas.value = AppState.kuis.kelasAktif;
-                updateLobbySiswaDnd();
-            }
-        }, 50);
-    }
-    // Pulihkan Mode (Single / Duel) dan pilihan Kelas & Mapel terakhir
+ // Pulihkan Mode (Single / Duel) dan SEMUA pengaturan lobi terakhir
     if (window.dndDuelState && typeof setModeDnd === 'function') {
         setModeDnd(window.dndDuelState.mode || 'single');
     }
-    if (window.dndLastLobby) {
-        setTimeout(() => {
-            const elKelas = document.getElementById('lobby-dnd-kelas');
-            const elMapel = document.getElementById('lobby-dnd-mapel');
-            const elKat = document.getElementById('lobby-dnd-kategori');
-            const elDur = document.getElementById('lobby-dnd-durasi');
 
+    setTimeout(() => {
+        const elKelas = document.getElementById('lobby-dnd-kelas');
+        const elMapel = document.getElementById('lobby-dnd-mapel');
+        const elKat = document.getElementById('lobby-dnd-kategori');
+        const elDur = document.getElementById('lobby-dnd-durasi');
+        const elDari = document.getElementById('dnd-soal-dari');
+        const elSampai = document.getElementById('dnd-soal-sampai');
+        const elAcak = document.getElementById('dnd-acak-soal');
+
+        if (window.dndLastLobby) {
             if (elKelas && window.dndLastLobby.kelas) {
                 elKelas.value = window.dndLastLobby.kelas;
                 if (typeof updateLobbySiswaDnd === 'function') updateLobbySiswaDnd();
@@ -376,8 +371,14 @@ function bukaLobiDragDrop(jenisGame) {
             if (elMapel && window.dndLastLobby.mapel) elMapel.value = window.dndLastLobby.mapel;
             if (elKat && window.dndLastLobby.kategori) elKat.value = window.dndLastLobby.kategori;
             if (elDur && window.dndLastLobby.durasi) elDur.value = window.dndLastLobby.durasi;
-        }, 60);
-    }
+            if (elDari && window.dndLastLobby.dari !== '') elDari.value = window.dndLastLobby.dari;
+            if (elSampai && window.dndLastLobby.sampai !== '') elSampai.value = window.dndLastLobby.sampai;
+            if (elAcak) elAcak.checked = window.dndLastLobby.acak;
+        } else if (AppState.kuis && AppState.kuis.kelasAktif && elKelas) {
+            elKelas.value = AppState.kuis.kelasAktif;
+            if (typeof updateLobbySiswaDnd === 'function') updateLobbySiswaDnd();
+        }
+    }, 80);
 }
 // -------------------------------------------------------------
 // TIMER HITUNG MUNDUR (DENGAN KECERDASAN PELACAK LOBI DND)
@@ -747,12 +748,15 @@ function aksiUndianSelesaiDnd(aksi) {
 function masukKeArenaGameDnd() {
     const kelasId = document.getElementById('lobby-dnd-kelas').value;
     const isDuel = window.dndDuelState && window.dndDuelState.mode === 'duel';
-// Simpan pilihan lobi terakhir agar tidak reset saat Ganti Pemain/Lawan
+// Simpan SEMUA pengaturan lobi terakhir agar tidak reset saat Ganti Pemain/Lawan
     window.dndLastLobby = {
         kelas: document.getElementById('lobby-dnd-kelas')?.value || '',
         mapel: document.getElementById('lobby-dnd-mapel')?.value || '',
         kategori: document.getElementById('lobby-dnd-kategori')?.value || '',
-        durasi: document.getElementById('lobby-dnd-durasi')?.value || '15'
+        durasi: document.getElementById('lobby-dnd-durasi')?.value || '15',
+        dari: document.getElementById('dnd-soal-dari')?.value || '',
+        sampai: document.getElementById('dnd-soal-sampai')?.value || '',
+        acak: document.getElementById('dnd-acak-soal') ? document.getElementById('dnd-acak-soal').checked : true
     };
     if (isDuel) {
         const p1Id = document.getElementById('lobby-dnd-duel-p1')?.value;
