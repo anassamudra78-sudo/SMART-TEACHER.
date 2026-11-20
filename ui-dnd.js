@@ -1300,7 +1300,7 @@ function bacaExcelMatch(e) {
         document.getElementById('file-excel-match').value = '';
         renderEditorMatchDnd(document.getElementById('main-content'));
         if (typeof saveDatabase === 'function') saveDatabase();
-    alert(`${jumlahBerhasil} item soal match berhasil diimport!`);
+    alert('Item soal Match berhasil diimport!');
     };
     reader.readAsArrayBuffer(file);
 }
