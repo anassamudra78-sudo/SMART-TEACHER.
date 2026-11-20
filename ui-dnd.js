@@ -1764,13 +1764,21 @@ if (typeof updateSkorDnd === 'function') updateSkorDnd(nilaiAkhir);
                 playDndSfx('selesai');
             }
 
-            // Selalu jalankan efek konfeti di lapisan paling atas (jika nilai >= 60)
+            // Selalu jalankan efek konfeti di dalam modal D&D agar tidak tertutup fullscreen
             if (typeof confetti === 'function' && nilaiAkhir >= 60) {
-                confetti({
+                const modalDnd = document.getElementById('dnd-arena-modal') || document.body;
+                let cvs = document.getElementById('dnd-confetti-canvas');
+                if (!cvs) {
+                    cvs = document.createElement('canvas');
+                    cvs.id = 'dnd-confetti-canvas';
+                    cvs.style.cssText = 'position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:9999999;';
+                    modalDnd.appendChild(cvs);
+                }
+                const tembakKonfeti = confetti.create(cvs, { resize: true, useWorker: false });
+                tembakKonfeti({
                     particleCount: 150,
                     spread: 100,
-                    origin: { y: 0.6 },
-                    zIndex: 99999
+                    origin: { y: 0.6 }
                 });
             }
         } else {
