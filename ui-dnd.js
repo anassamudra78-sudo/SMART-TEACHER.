@@ -236,11 +236,11 @@ function bukaLobiDragDrop(jenisGame) {
                 <h3 class="text-2xl font-black text-white mb-1">Identitas Pemain & Mode Game</h3>
                 <p class="text-xs text-slate-400 mb-5">Pilih mode game dan pemain untuk memulai permainan!</p>
 
-                <div class="grid grid-cols-2 gap-2 p-1.5 bg-slate-800 rounded-2xl mb-5 border border-slate-700">
-                    <button class="py-2.5 text-xs font-extrabold rounded-xl transition-all bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-md flex items-center justify-center">
+               <div class="grid grid-cols-2 gap-2 p-1.5 bg-slate-800 rounded-2xl mb-5 border border-slate-700">
+                    <button id="btn-mode-dnd-single" onclick="setModeDnd('single')" class="py-2.5 text-xs font-extrabold rounded-xl transition-all bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-md flex items-center justify-center">
                         <i class="fa-solid fa-user mr-1.5"></i> Single Player
                     </button>
-                    <button class="py-2.5 text-xs font-extrabold rounded-xl transition-all text-slate-400 hover:text-white flex items-center justify-center">
+                    <button id="btn-mode-dnd-duel" onclick="setModeDnd('duel')" class="py-2.5 text-xs font-extrabold rounded-xl transition-all text-slate-400 hover:text-white flex items-center justify-center">
                         <i class="fa-solid fa-bolt text-amber-400 mr-1.5"></i> Mode Duel (2 Siswa)
                     </button>
                 </div>
@@ -279,7 +279,7 @@ function bukaLobiDragDrop(jenisGame) {
                         </select>
                     </div>
 
-                    <div>
+                    <div id="box-dnd-single">
                         <label class="text-xs font-bold text-slate-300 block mb-1">3. Nama Siswa</label>
                         <div class="flex space-x-2 mb-2">
                             <select id="lobby-dnd-siswa" class="flex-1 p-2.5 rounded-xl bg-slate-800 text-white border border-slate-700 outline-none focus:border-amber-500 text-xs transition-colors">
@@ -291,7 +291,31 @@ function bukaLobiDragDrop(jenisGame) {
                         </div>
                         <input type="text" id="lobby-dnd-manual" placeholder="Atau ketik nama manual..." class="w-full p-2.5 rounded-xl bg-slate-800 text-white border border-slate-700 outline-none focus:border-amber-500 text-xs transition-colors">
                     </div>
-
+<!-- KOTAK HEAD-TO-HEAD DUEL (SERAGAM KUIS) -->
+                 <div id="box-dnd-duel" class="hidden p-4 bg-slate-800/60 border border-slate-700 rounded-2xl space-y-3">
+                     <div class="flex items-center justify-between gap-2">
+                         <span class="text-xs font-black text-amber-400 uppercase tracking-wider flex items-center">
+                             <i class="fa-solid fa-shield-halved mr-1.5"></i> ARENA HEAD-TO-HEAD 2 SISWA
+                         </span>
+                         <button onclick="undiDuaLawanDnd()" class="bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-400 hover:to-blue-500 text-white font-black px-3 py-1.5 rounded-full shadow-md transition-all flex items-center text-[11px] shrink-0">
+                             <i class="fa-solid fa-dice mr-1.5"></i> Undi 2 Lawan
+                         </button>
+                     </div>
+                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                         <div>
+                             <label class="text-[11px] font-bold text-sky-400 block mb-1">Pemain 1 (Giliran 1 - Biru)</label>
+                             <select id="lobby-dnd-duel-p1" class="w-full p-2.5 rounded-xl bg-slate-900 text-white border border-slate-700 outline-none focus:border-sky-500 text-xs">
+                                 <option value="">-- Pilih Pemain 1 (Biru) --</option>
+                             </select>
+                         </div>
+                         <div>
+                             <label class="text-[11px] font-bold text-rose-400 block mb-1">Pemain 2 (Giliran 2 - Merah)</label>
+                             <select id="lobby-dnd-duel-p2" class="w-full p-2.5 rounded-xl bg-slate-900 text-white border border-slate-700 outline-none focus:border-rose-500 text-xs">
+                                 <option value="">-- Pilih Pemain 2 (Merah) --</option>
+                             </select>
+                         </div>
+                     </div>
+                 </div>
                     <div>
                         <label class="text-xs font-bold text-slate-300 block mb-1">4. Simpan Nilai ke Kategori (Opsional)</label>
                         <select id="lobby-dnd-kategori" class="w-full p-2.5 rounded-xl bg-slate-800 text-white border border-slate-700 outline-none focus:border-amber-500 text-xs transition-colors">
@@ -456,16 +480,64 @@ function keluarFullscreenDnd() {
     }
 }
 
+window.dndDuelState = {
+    mode: 'single',
+    giliran: 1,
+    p1: { nama: 'Pemain 1', skor: 0, waktu: 0 },
+    p2: { nama: 'Pemain 2', skor: 0, waktu: 0 },
+    waktuMulai: 0
+};
+
+function setModeDnd(mode) {
+    window.dndDuelState.mode = mode;
+    const btnSingle = document.getElementById('btn-mode-dnd-single');
+    const btnDuel = document.getElementById('btn-mode-dnd-duel');
+    const boxSingle = document.getElementById('box-dnd-single');
+    const boxDuel = document.getElementById('box-dnd-duel');
+
+    if (mode === 'duel') {
+        if (btnDuel) btnDuel.className = "py-2.5 text-xs font-extrabold rounded-xl transition-all bg-gradient-to-r from-amber-500 to-orange-500 text-slate-900 shadow-md flex items-center justify-center";
+        if (btnSingle) btnSingle.className = "py-2.5 text-xs font-extrabold rounded-xl transition-all text-slate-400 hover:text-white flex items-center justify-center";
+        if (boxSingle) boxSingle.classList.add('hidden');
+        if (boxDuel) boxDuel.classList.remove('hidden');
+    } else {
+        if (btnSingle) btnSingle.className = "py-2.5 text-xs font-extrabold rounded-xl transition-all bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-md flex items-center justify-center";
+        if (btnDuel) btnDuel.className = "py-2.5 text-xs font-extrabold rounded-xl transition-all text-slate-400 hover:text-white flex items-center justify-center";
+        if (boxDuel) boxDuel.classList.add('hidden');
+        if (boxSingle) boxSingle.classList.remove('hidden');
+    }
+}
+
+function undiDuaLawanDnd() {
+    const klsId = document.getElementById('lobby-dnd-kelas').value;
+    if (!klsId) return showAlert('Peringatan', 'Pilih kelas terlebih dahulu!');
+    const listSiswa = AppState.db.siswa.filter(s => s.kelasId === klsId);
+    if (listSiswa.length < 2) return showAlert('Peringatan', 'Minimal harus ada 2 siswa di kelas ini untuk Mode Duel!');
+
+    const acak = [...listSiswa].sort(() => Math.random() - 0.5);
+    const p1 = document.getElementById('lobby-dnd-duel-p1');
+    const p2 = document.getElementById('lobby-dnd-duel-p2');
+    if (p1) p1.value = acak[0].id;
+    if (p2) p2.value = acak[1].id;
+}
+
 function updateLobbySiswaDnd() {
     const kelasId = document.getElementById('lobby-dnd-kelas').value;
     const selectSiswa = document.getElementById('lobby-dnd-siswa');
+    const selectP1 = document.getElementById('lobby-dnd-duel-p1');
+    const selectP2 = document.getElementById('lobby-dnd-duel-p2');
+
     if (!kelasId) {
         if (selectSiswa) selectSiswa.innerHTML = '<option value="">-- Pilih Kelas Terlebih Dahulu --</option>';
+        if (selectP1) selectP1.innerHTML = '<option value="">-- Pilih Pemain 1 (Biru) --</option>';
+        if (selectP2) selectP2.innerHTML = '<option value="">-- Pilih Pemain 2 (Merah) --</option>';
         return;
     }
     let siswaKelas = AppState.db.siswa.filter(s => s.kelasId === kelasId);
     let opts = siswaKelas.map(s => `<option value="${s.id}">${s.nama}</option>`).join('');
     if (selectSiswa) selectSiswa.innerHTML = `<option value="">-- Pilih Siswa yang Mengerjakan --</option>${opts}`;
+    if (selectP1) selectP1.innerHTML = `<option value="">-- Pilih Pemain 1 (Biru) --</option>${opts}`;
+    if (selectP2) selectP2.innerHTML = `<option value="">-- Pilih Pemain 2 (Merah) --</option>${opts}`;
 }
 
 // =====================================================================
