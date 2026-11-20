@@ -24,14 +24,33 @@ document.addEventListener('click', function unlockDndAudio() {
     });
     document.removeEventListener('click', unlockDndAudio);
 }, { once: true });
-function playDndBgm() { 
-    DND_AUDIO.bgm.volume = 0.7; 
-    DND_AUDIO.bgm.play().catch(e => console.log(e)); 
+
+function playDndBgm() {
+    isDndMusicPlaying = true;
+    if (AppState.audio && AppState.audio.elements && AppState.audio.elements.bgm) {
+        AppState.audio.elements.bgm.volume = 0.7;
+        AppState.audio.elements.bgm.play().catch(e => console.log("BGM DND:", e));
+    }
+    const btnMusic = document.getElementById('dnd-topbar-music');
+    if (btnMusic) {
+        btnMusic.innerHTML = '<i class="fa-solid fa-volume-high mr-1.5"></i> Musik Nyala';
+        btnMusic.className = "bg-emerald-500 hover:bg-emerald-400 text-slate-900 px-3 py-1.5 rounded-xl text-xs font-black flex items-center transition-colors";
+    }
 }
-function stopDndBgm() { 
-    DND_AUDIO.bgm.pause(); 
-    DND_AUDIO.bgm.currentTime = 0; 
+
+function stopDndBgm() {
+    isDndMusicPlaying = false;
+    if (AppState.audio && AppState.audio.elements && AppState.audio.elements.bgm) {
+        AppState.audio.elements.bgm.pause();
+        AppState.audio.elements.bgm.currentTime = 0;
+    }
+    const btnMusic = document.getElementById('dnd-topbar-music');
+    if (btnMusic) {
+        btnMusic.innerHTML = '<i class="fa-solid fa-volume-xmark mr-1.5"></i> Musik Mati';
+        btnMusic.className = "bg-rose-600 hover:bg-rose-500 text-white px-3 py-1.5 rounded-xl text-xs font-black flex items-center transition-colors";
+    }
 }
+
 function playDndSfx(jenis) { 
     if (DND_AUDIO[jenis]) {
         DND_AUDIO[jenis].currentTime = 0; 
