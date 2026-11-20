@@ -515,10 +515,82 @@ function undiDuaLawanDnd() {
     if (listSiswa.length < 2) return showAlert('Peringatan', 'Minimal harus ada 2 siswa di kelas ini untuk Mode Duel!');
 
     const acak = [...listSiswa].sort(() => Math.random() - 0.5);
-    const p1 = document.getElementById('lobby-dnd-duel-p1');
-    const p2 = document.getElementById('lobby-dnd-duel-p2');
-    if (p1) p1.value = acak[0].id;
-    if (p2) p2.value = acak[1].id;
+    const pemenang1 = acak[0];
+    const pemenang2 = acak[1];
+
+    const p1El = document.getElementById('lobby-dnd-duel-p1');
+    const p2El = document.getElementById('lobby-dnd-duel-p2');
+    if (p1El) p1El.value = pemenang1.id;
+    if (p2El) p2El.value = pemenang2.id;
+
+    // Buat layar undian VS
+    const layarLama = document.getElementById('layar-undian-dnd');
+    if (layarLama) layarLama.remove();
+
+    const overlay = document.createElement('div');
+    overlay.id = 'layar-undian-dnd';
+    overlay.className = 'fixed inset-0 z-[99999] bg-slate-950/95 flex flex-col items-center justify-center backdrop-blur-md p-4';
+    overlay.innerHTML = `
+        <h2 class="text-amber-400 font-black text-lg lg:text-2xl mb-6 tracking-widest uppercase animate-pulse text-center">Mencari 2 Lawan Duel Drag & Drop...</h2>
+        <div class="grid grid-cols-1 md:grid-cols-11 gap-4 items-center w-full max-w-5xl">
+            <div class="md:col-span-5 bg-gradient-to-br from-sky-600 to-blue-900 border-4 border-sky-400 p-6 rounded-3xl shadow-[0_0_40px_rgba(56,189,248,0.4)] text-center min-h-[130px] flex flex-col justify-center">
+                <p class="text-[11px] font-black uppercase tracking-widest text-sky-200 mb-2">Pemain 1 (Giliran 1)</p>
+                <div id="slot-duel-p1" class="text-2xl lg:text-3xl font-black text-white uppercase break-words">???</div>
+            </div>
+            <div class="md:col-span-1 text-center text-4xl font-black text-amber-400 italic drop-shadow-lg">VS</div>
+            <div class="md:col-span-5 bg-gradient-to-br from-rose-600 to-red-900 border-4 border-rose-400 p-6 rounded-3xl shadow-[0_0_40px_rgba(244,63,94,0.4)] text-center min-h-[130px] flex flex-col justify-center">
+                <p class="text-[11px] font-black uppercase tracking-widest text-rose-200 mb-2">Pemain 2 (Giliran 2)</p>
+                <div id="slot-duel-p2" class="text-2xl lg:text-3xl font-black text-white uppercase break-words">???</div>
+            </div>
+        </div>
+        <div id="btn-undian-duel-box" class="hidden mt-8 flex flex-col sm:flex-row gap-4 fade-in">
+            <button onclick="undiDuaLawanDnd()" class="bg-slate-900/80 hover:bg-rose-600 text-rose-400 hover:text-white border border-rose-500/50 font-black py-3.5 px-8 rounded-2xl shadow-xl transition-all hover:scale-105 flex items-center justify-center">
+                <i class="fa-solid fa-rotate-right mr-2"></i> Undi Ulang
+            </button>
+            <button onclick="document.getElementById('layar-undian-dnd').remove(); mulaiHitungMundurDnd(3);" class="bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-white font-black py-3.5 px-10 rounded-2xl shadow-[0_0_30px_rgba(16,185,129,0.5)] border border-emerald-400/50 transition-all hover:scale-105 flex items-center justify-center">
+                <i class="fa-solid fa-bolt mr-2"></i> Mulai Duel Sekarang!
+            </button>
+        </div>
+    `;
+    document.body.appendChild(overlay);
+
+    const elP1 = document.getElementById('slot-duel-p1');
+    const elP2 = document.getElementById('slot-duel-p2');
+    const ctx = typeof getAudioCtx === 'function' ? getAudioCtx() : null;
+    const daftarNama = listSiswa.map(s => s.nama);
+
+    let waktu = 0;
+    const interval = 60;
+    const timer = setInterval(() => {
+        waktu += interval;
+        if (ctx && ctx.state === 'running') {
+            try {
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.type = 'square';
+                osc.frequency.setValueAtTime(450, ctx.currentTime);
+                gain.gain.setValueAtTime(0.03, ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.05);
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.start();
+                osc.stop(ctx.currentTime + 0.05);
+            } catch (e) {}
+        }
+
+        if (elP1) elP1.innerText = daftarNama[Math.floor(Math.random() * daftarNama.length)];
+        if (elP2) elP2.innerText = daftarNama[Math.floor(Math.random() * daftarNama.length)];
+
+        if (waktu >= 3000) {
+            clearInterval(timer);
+            if (elP1) { elP1.innerText = pemenang1.nama; elP1.style.color = '#fde047'; }
+            if (elP2) { elP2.innerText = pemenang2.nama; elP2.style.color = '#fde047'; }
+            if (typeof playSoundEffect === 'function') playSoundEffect('terpilih');
+            if (typeof confetti === 'function') confetti({ particleCount: 150, spread: 90, origin: { y: 0.5 }, zIndex: 999999 });
+            const btnBox = document.getElementById('btn-undian-duel-box');
+            if (btnBox) btnBox.classList.remove('hidden');
+        }
+    }, interval);
 }
 
 function updateLobbySiswaDnd() {
