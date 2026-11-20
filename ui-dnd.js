@@ -726,36 +726,58 @@ function aksiUndianSelesaiDnd(aksi) {
 
 function masukKeArenaGameDnd() {
     const kelasId = document.getElementById('lobby-dnd-kelas').value;
-    const siswaId = document.getElementById('lobby-dnd-siswa').value;
-    const manualName = document.getElementById('lobby-dnd-manual').value.trim();
-// Simpan nama pemain aktif untuk ditampilkan di layar hasil akhir
-    let namaSiswaTerpilih = manualName;
-    if (!namaSiswaTerpilih && siswaId && AppState.db && AppState.db.siswa) {
-        const sObj = AppState.db.siswa.find(s => s.id === siswaId);
-        namaSiswaTerpilih = sObj ? sObj.nama : "Pemain";
-    }
-    window.dndPemainAktif = namaSiswaTerpilih || "Pemain";
-    if (!manualName && (!kelasId || !siswaId)) {
-        return showAlert("Peringatan", "Harap Pilih Kelas, Mapel, dan Siswa ATAU Ketik nama manual!", "error");
+    const isDuel = window.dndDuelState && window.dndDuelState.mode === 'duel';
+
+    if (isDuel) {
+        const p1Id = document.getElementById('lobby-dnd-duel-p1')?.value;
+        const p2Id = document.getElementById('lobby-dnd-duel-p2')?.value;
+        if (!p1Id || !p2Id) {
+            return showAlert("Peringatan", "Harap pilih Pemain 1 dan Pemain 2 untuk Mode Duel!", "error");
+        }
+        if (p1Id === p2Id) {
+            return showAlert("Peringatan", "Pemain 1 dan Pemain 2 tidak boleh orang yang sama!", "error");
+        }
+        const s1 = AppState.db.siswa.find(s => s.id === p1Id);
+        const s2 = AppState.db.siswa.find(s => s.id === p2Id);
+
+        window.dndDuelState.giliran = 1;
+        window.dndDuelState.p1 = { nama: s1 ? s1.nama : "Pemain 1", skor: 0, waktu: 0 };
+        window.dndDuelState.p2 = { nama: s2 ? s2.nama : "Pemain 2", skor: 0, waktu: 0 };
+        window.dndDuelState.waktuMulai = Date.now();
+        window.dndPemainAktif = window.dndDuelState.p1.nama;
+    } else {
+        const siswaId = document.getElementById('lobby-dnd-siswa').value;
+        const manualName = document.getElementById('lobby-dnd-manual').value.trim();
+        let namaSiswaTerpilih = manualName;
+        if (!namaSiswaTerpilih && siswaId && AppState.db && AppState.db.siswa) {
+            const sObj = AppState.db.siswa.find(s => s.id === siswaId);
+            namaSiswaTerpilih = sObj ? sObj.nama : "Pemain";
+        }
+        window.dndPemainAktif = namaSiswaTerpilih || "Pemain";
+        if (!manualName && (!kelasId || !siswaId)) {
+            return showAlert("Peringatan", "Harap Pilih Kelas, Mapel, dan Siswa ATAU Ketik nama manual!", "error");
+        }
     }
 
-    // --- TAMBAHAN KUNCI: Simpan durasi ke memori global SEBELUM Lobi dihapus ---
     const durasiEl = document.getElementById('lobby-dnd-durasi');
     window.dndDurasiPilihan = durasiEl ? parseInt(durasiEl.value) : 15;
-// --- TAMBAHAN BARU: Simpan rentang soal dan nyalakan musik ---
+
     const dariEl = document.getElementById('dnd-soal-dari');
     const sampaiEl = document.getElementById('dnd-soal-sampai');
     window.dndRentang = {
         dari: dariEl && dariEl.value ? parseInt(dariEl.value) : 1,
         sampai: sampaiEl && sampaiEl.value ? parseInt(sampaiEl.value) : 999
     };
+
     if (typeof playDndBgm === 'function') playDndBgm();
     else if (typeof startAutoBGM === 'function') startAutoBGM();
-    // Baru jalankan mesin game yang akan menimpa layar lobi
+
     if (gameDndTerpilih === 'match' && typeof mulaiGameMatch === 'function') mulaiGameMatch();
     else if (gameDndTerpilih === 'sort' && typeof mulaiGameSort === 'function') mulaiGameSort();
     else if (gameDndTerpilih === 'build' && typeof mulaiGameBuild === 'function') mulaiGameBuild();
-}// Fungsi untuk membuka halaman Drag & Drop Arena dari tombol menu
+}
+
+// Fungsi untuk membuka halaman Drag & Drop Arena dari tombol menu
 function bukaDragAndDropArena() {
     const container = document.getElementById('main-content');
     
@@ -1818,6 +1840,22 @@ function tampilkanHasilAkhirDnd(skorBenar, totalItem, fungsiUlangi = null) {
     if (nilaiAkhir > 100) nilaiAkhir = 100;
     if (nilaiAkhir < 0) nilaiAkhir = 0;
 if (typeof updateSkorDnd === 'function') updateSkorDnd(nilaiAkhir);
+    
+    // --- CEK MODE DUEL ESTAFET ---
+    if (window.dndDuelState && window.dndDuelState.mode === 'duel') {
+        const durasiDetik = parseFloat(((Date.now() - window.dndDuelState.waktuMulai) / 1000).toFixed(1));
+        if (window.dndDuelState.giliran === 1) {
+            window.dndDuelState.p1.skor = nilaiAkhir;
+            window.dndDuelState.p1.waktu = durasiDetik;
+            tampilkanJedaGiliranDuel();
+            return;
+        } else {
+            window.dndDuelState.p2.skor = nilaiAkhir;
+            window.dndDuelState.p2.waktu = durasiDetik;
+            tampilkanHasilDuelDnd();
+            return;
+        }
+    }
     // Ambil predikat dari mesin Kuis (atau gunakan cadangan jika belum termuat)
     const kinerja = (typeof dapatkanPredikatKinerja === 'function')
         ? dapatkanPredikatKinerja(nilaiAkhir)
@@ -1944,4 +1982,153 @@ function ulangiGameDndLangsung() {
     } else if (gameDndTerpilih === 'build' && typeof mulaiGameBuild === 'function') {
         mulaiGameBuild();
     }
+}
+
+// =========================================================================
+// LAYAR JEDA ESTAFET (GILIRAN 1 SELESAI -> GILIRAN 2)
+// =========================================================================
+function tampilkanJedaGiliranDuel() {
+    const container = document.getElementById('dnd-game-container');
+    if (!container) return;
+    const p1 = window.dndDuelState.p1;
+    const p2 = window.dndDuelState.p2;
+
+    const subtitleEl = document.getElementById('dnd-topbar-subtitle');
+    if (subtitleEl) subtitleEl.innerText = "Jeda Estafet Duel";
+
+    container.innerHTML = `
+        <div class="w-full min-h-[calc(100vh-90px)] flex items-center justify-center p-4 fade-in">
+            <div class="max-w-xl w-full bg-slate-900 border-2 border-sky-500/40 rounded-[2.5rem] p-8 text-center shadow-2xl">
+                <span class="inline-block px-4 py-1 rounded-full bg-sky-500/20 text-sky-400 text-xs font-black uppercase tracking-widest mb-3">Giliran 1 Selesai!</span>
+                <h3 class="text-2xl sm:text-3xl font-black text-white mb-2">${p1.nama}</h3>
+                <div class="flex justify-center gap-6 my-5">
+                    <div class="bg-slate-800/80 px-6 py-3 rounded-2xl border border-slate-700">
+                        <p class="text-[10px] text-slate-400 font-bold uppercase">Skor</p>
+                        <p class="text-3xl font-black text-sky-400">${p1.skor}</p>
+                    </div>
+                    <div class="bg-slate-800/80 px-6 py-3 rounded-2xl border border-slate-700">
+                        <p class="text-[10px] text-slate-400 font-bold uppercase">Waktu</p>
+                        <p class="text-3xl font-black text-amber-400">${p1.waktu}s</p>
+                    </div>
+                </div>
+                <div class="my-6 p-4 rounded-2xl bg-rose-500/10 border border-rose-500/30">
+                    <p class="text-xs text-rose-300 font-bold uppercase tracking-wider mb-1">Bersiap Giliran Berikutnya (Merah):</p>
+                    <p class="text-xl sm:text-2xl font-black text-white">${p2.nama}</p>
+                </div>
+                <button onclick="mulaiGiliran2DuelDnd()" class="w-full bg-gradient-to-r from-rose-500 to-orange-500 hover:from-rose-400 hover:to-orange-400 text-white font-black py-4 rounded-2xl shadow-xl transition-all text-base flex items-center justify-center">
+                    <i class="fa-solid fa-bolt mr-2"></i> MULAI GILIRAN PEMAIN 2
+                </button>
+            </div>
+        </div>
+    `;
+}
+
+function mulaiGiliran2DuelDnd() {
+    window.dndDuelState.giliran = 2;
+    window.dndDuelState.waktuMulai = Date.now();
+    window.dndPemainAktif = window.dndDuelState.p2.nama;
+
+    if (typeof playDndBgm === 'function') playDndBgm();
+    else if (typeof startAutoBGM === 'function') startAutoBGM();
+
+    if (gameDndTerpilih === 'match' && typeof mulaiGameMatch === 'function') mulaiGameMatch();
+    else if (gameDndTerpilih === 'sort' && typeof mulaiGameSort === 'function') mulaiGameSort();
+    else if (gameDndTerpilih === 'build' && typeof mulaiGameBuild === 'function') mulaiGameBuild();
+}
+
+// =========================================================================
+// LAYAR PEMENANG HEAD-TO-HEAD DUEL
+// =========================================================================
+function tampilkanHasilDuelDnd() {
+    const container = document.getElementById('dnd-game-container');
+    if (!container) return;
+
+    const p1 = window.dndDuelState.p1;
+    const p2 = window.dndDuelState.p2;
+
+    const subtitleEl = document.getElementById('dnd-topbar-subtitle');
+    if (subtitleEl) subtitleEl.innerText = "Hasil Akhir Duel";
+
+    let pemenang = 'seri';
+    let alasan = 'Skor & Waktu Sama Kuat!';
+    if (p1.skor > p2.skor) { pemenang = 'p1'; alasan = 'Unggul Skor Tertinggi'; }
+    else if (p2.skor > p1.skor) { pemenang = 'p2'; alasan = 'Unggul Skor Tertinggi'; }
+    else if (p1.waktu < p2.waktu) { pemenang = 'p1'; alasan = 'Skor Seri — Menang Lebih Cepat!'; }
+    else if (p2.waktu < p1.waktu) { pemenang = 'p2'; alasan = 'Skor Seri — Menang Lebih Cepat!'; }
+
+    const judulMenang = pemenang === 'seri'
+        ? '🤝 PERTANDINGAN SERI!'
+        : `👑 PEMENANG: ${pemenang === 'p1' ? p1.nama : p2.nama}`;
+
+    container.innerHTML = `
+        <div class="w-full min-h-[calc(100vh-90px)] flex items-center justify-center p-4 fade-in">
+            <div class="max-w-3xl w-full bg-gradient-to-br from-slate-900 via-slate-900 to-slate-950 border border-amber-500/40 rounded-[2.5rem] p-6 sm:p-8 text-center shadow-2xl">
+                <p class="text-xs font-black uppercase tracking-widest text-amber-400 mb-1">Hasil Akhir Duel Estafet</p>
+                <h3 class="text-2xl sm:text-3xl font-black text-white mb-1">${judulMenang}</h3>
+                <p class="text-xs text-slate-400 mb-6">${alasan}</p>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+                    <!-- KARTU PEMAIN 1 -->
+                    <div class="p-5 rounded-3xl border-2 ${pemenang === 'p1' ? 'bg-sky-950/60 border-amber-400 shadow-[0_0_30px_rgba(251,191,36,0.25)]' : 'bg-slate-800/50 border-sky-500/30'}">
+                        <p class="text-[10px] font-black uppercase tracking-widest text-sky-400 mb-1">Pemain 1 (Biru) ${pemenang === 'p1' ? '👑' : ''}</p>
+                        <h4 class="text-lg font-black text-white mb-3 truncate">${p1.nama}</h4>
+                        <div class="text-5xl font-black text-sky-400 mb-1">${p1.skor}</div>
+                        <p class="text-xs font-bold text-slate-400"><i class="fa-solid fa-stopwatch mr-1 text-amber-400"></i> ${p1.waktu} detik</p>
+                    </div>
+                    <!-- KARTU PEMAIN 2 -->
+                    <div class="p-5 rounded-3xl border-2 ${pemenang === 'p2' ? 'bg-rose-950/60 border-amber-400 shadow-[0_0_30px_rgba(251,191,36,0.25)]' : 'bg-slate-800/50 border-rose-500/30'}">
+                        <p class="text-[10px] font-black uppercase tracking-widest text-rose-400 mb-1">Pemain 2 (Merah) ${pemenang === 'p2' ? '👑' : ''}</p>
+                        <h4 class="text-lg font-black text-white mb-3 truncate">${p2.nama}</h4>
+                        <div class="text-5xl font-black text-rose-400 mb-1">${p2.skor}</div>
+                        <p class="text-xs font-bold text-slate-400"><i class="fa-solid fa-stopwatch mr-1 text-amber-400"></i> ${p2.waktu} detik</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <button onclick="ulangiDuelDnd()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-black py-3.5 px-4 rounded-2xl shadow-xl transition-all text-xs flex items-center justify-center">
+                        <i class="fa-solid fa-rotate-right mr-2"></i> Duel Lagi
+                    </button>
+                    <button onclick="bukaLobiDragDrop(gameDndTerpilih)" class="bg-indigo-600 hover:bg-indigo-500 text-white font-black py-3.5 px-4 rounded-2xl shadow-xl transition-all text-xs flex items-center justify-center">
+                        <i class="fa-solid fa-users mr-2"></i> Ganti Lawan
+                    </button>
+                    <button onclick="keluarFullscreenDnd()" class="bg-white/10 hover:bg-rose-600 text-white font-black py-3.5 px-4 rounded-2xl border border-white/20 transition-all text-xs flex items-center justify-center">
+                        <i class="fa-solid fa-circle-xmark mr-2"></i> Selesai & Keluar
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+
+    if (typeof playCelebrationAudio === 'function') playCelebrationAudio(100);
+    else if (typeof playDndSfx === 'function') playDndSfx('selesai');
+
+    if (typeof confetti === 'function') {
+        const modalDnd = document.getElementById('dnd-arena-modal') || document.body;
+        let cvs = document.getElementById('dnd-confetti-canvas');
+        if (!cvs) {
+            cvs = document.createElement('canvas');
+            cvs.id = 'dnd-confetti-canvas';
+            cvs.style.cssText = 'position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:9999999;';
+            modalDnd.appendChild(cvs);
+        }
+        const tembakKonfeti = confetti.create(cvs, { resize: true, useWorker: false });
+        tembakKonfeti({ particleCount: 180, spread: 110, origin: { y: 0.6 } });
+    }
+}
+
+function ulangiDuelDnd() {
+    window.dndDuelState.giliran = 1;
+    window.dndDuelState.p1.skor = 0;
+    window.dndDuelState.p1.waktu = 0;
+    window.dndDuelState.p2.skor = 0;
+    window.dndDuelState.p2.waktu = 0;
+    window.dndDuelState.waktuMulai = Date.now();
+    window.dndPemainAktif = window.dndDuelState.p1.nama;
+
+    if (typeof playDndBgm === 'function') playDndBgm();
+    else if (typeof startAutoBGM === 'function') startAutoBGM();
+
+    if (gameDndTerpilih === 'match' && typeof mulaiGameMatch === 'function') mulaiGameMatch();
+    else if (gameDndTerpilih === 'sort' && typeof mulaiGameSort === 'function') mulaiGameSort();
+    else if (gameDndTerpilih === 'build' && typeof mulaiGameBuild === 'function') mulaiGameBuild();
 }
