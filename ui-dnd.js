@@ -1695,8 +1695,8 @@ if (typeof updateSkorDnd === 'function') updateSkorDnd(nilaiAkhir);
     window._dndUlangiTerakhir = fungsiUlangi;
 
     container.innerHTML = `
-        <div class="max-w-2xl mx-auto p-4 mt-4 sm:mt-8 w-full fade-in">
-            <div class="bg-gradient-to-br from-slate-900 via-slate-900 to-slate-950 border border-slate-700/80 rounded-[2.5rem] p-8 lg:p-10 text-center shadow-2xl relative overflow-hidden">
+        <div class="w-full min-h-[calc(100vh-90px)] flex items-center justify-center p-4 fade-in">
+            <div class="max-w-2xl w-full bg-gradient-to-br from-slate-900 via-slate-900 to-slate-950 border border-slate-700/80 rounded-[2.5rem] p-8 lg:p-10 text-center shadow-2xl relative overflow-hidden">
                 <p class="text-xs font-black uppercase tracking-widest text-emerald-400 mb-1">Hasil Evaluasi Drag & Drop</p>
                 <h3 class="text-2xl lg:text-3xl font-black mb-1 text-white">${window.dndPemainAktif || 'Pemain'}</h3>
                <p class="mb-4 font-medium text-slate-300 text-xs sm:text-sm">Tingkat akurasi penyelesaian tantangan: <b class="text-emerald-400 font-black">${nilaiAkhir}%</b>.</p>
@@ -1757,15 +1757,21 @@ if (typeof updateSkorDnd === 'function') updateSkorDnd(nilaiAkhir);
             }
             if (btnContainer) btnContainer.classList.remove('opacity-0');
 
-            // Putar audio selebrasi & konfeti
+           // Putar audio selebrasi
             if (typeof playCelebrationAudio === 'function') {
                 playCelebrationAudio(nilaiAkhir);
-            } else {
-                if (typeof playDndSound === 'function') playDndSound('selesai');
-else if (typeof playDndSfx === 'function') playDndSfx('selesai');
-                if (typeof confetti === 'function' && nilaiAkhir >= 60) {
-                    confetti({ particleCount: 150, spread: 100, origin: { y: 0.6 } });
-                }
+            } else if (typeof playDndSfx === 'function') {
+                playDndSfx('selesai');
+            }
+
+            // Selalu jalankan efek konfeti di lapisan paling atas (jika nilai >= 60)
+            if (typeof confetti === 'function' && nilaiAkhir >= 60) {
+                confetti({
+                    particleCount: 150,
+                    spread: 100,
+                    origin: { y: 0.6 },
+                    zIndex: 99999
+                });
             }
         } else {
             if (scoreDisplay) scoreDisplay.innerText = Math.round(currentScoreAnim);
