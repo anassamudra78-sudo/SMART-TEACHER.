@@ -1673,7 +1673,7 @@ function tampilkanHasilAkhirDnd(skorBenar, totalItem, fungsiUlangi = null) {
     let nilaiAkhir = totalItem > 0 ? Math.round((skorBenar / totalItem) * 100) : 100;
     if (nilaiAkhir > 100) nilaiAkhir = 100;
     if (nilaiAkhir < 0) nilaiAkhir = 0;
-
+if (typeof updateSkorDnd === 'function') updateSkorDnd(nilaiAkhir);
     // Ambil predikat dari mesin Kuis (atau gunakan cadangan jika belum termuat)
     const kinerja = (typeof dapatkanPredikatKinerja === 'function')
         ? dapatkanPredikatKinerja(nilaiAkhir)
