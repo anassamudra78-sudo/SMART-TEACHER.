@@ -399,7 +399,7 @@ elemenMasuk.innerHTML = `
                     sortState.skor += nilaiDidapat;
 
                     // REMOTE CONTROL TOP BAR
-                    if (typeof updateSkorDnd === 'function') updateSkorDnd(Math.round(sortState.skor));
+                    if (typeof updateSkorDnd === 'function') updateSkorDnd(Math.round(sortState.skor / (sortPaketRonde.length || 1)));
 
                    sortState.itemTerjawab++;
                     if (typeof playDndSfx === 'function') playDndSfx('benar'); // <-- Audio Benar
