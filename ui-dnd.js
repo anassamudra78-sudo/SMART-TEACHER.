@@ -747,7 +747,13 @@ function aksiUndianSelesaiDnd(aksi) {
 function masukKeArenaGameDnd() {
     const kelasId = document.getElementById('lobby-dnd-kelas').value;
     const isDuel = window.dndDuelState && window.dndDuelState.mode === 'duel';
-
+// Simpan pilihan lobi terakhir agar tidak reset saat Ganti Pemain/Lawan
+    window.dndLastLobby = {
+        kelas: document.getElementById('lobby-dnd-kelas')?.value || '',
+        mapel: document.getElementById('lobby-dnd-mapel')?.value || '',
+        kategori: document.getElementById('lobby-dnd-kategori')?.value || '',
+        durasi: document.getElementById('lobby-dnd-durasi')?.value || '15'
+    };
     if (isDuel) {
         const p1Id = document.getElementById('lobby-dnd-duel-p1')?.value;
         const p2Id = document.getElementById('lobby-dnd-duel-p2')?.value;
