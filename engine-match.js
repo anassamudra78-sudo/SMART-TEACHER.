@@ -271,7 +271,7 @@ function pasangSensorSederhana() {
                     matchState.skor += nilaiDidapat;
                     
                     // UPDATE SKOR DI TOP BAR!
-                    if (typeof updateSkorDnd === 'function') updateSkorDnd(Math.round(matchState.skor));
+                    if (typeof updateSkorDnd === 'function') updateSkorDnd(Math.round(matchState.skor / (matchPaketRonde.length || 1)));
 
                   matchState.pasanganTerjawab++;
                     if (typeof playDndSfx === 'function') playDndSfx('benar'); // <-- Audio Benar DND
