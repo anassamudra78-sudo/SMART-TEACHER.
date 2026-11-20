@@ -1569,7 +1569,7 @@ function bacaExcelSort(e) {
         // Segarkan layar Sort
         renderEditorSortDnd(document.getElementById('main-content'));
         if (typeof saveDatabase === 'function') saveDatabase();
-    alert(`${jumlahBerhasil} item soal match berhasil diimport!`);
+   alert('Item soal Sort berhasil diimport!');
     };
     reader.readAsArrayBuffer(file);
 }
