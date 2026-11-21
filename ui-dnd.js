@@ -1085,6 +1085,7 @@ if (AppState.db.dnd.match && AppState.db.dnd.match.length > 0) {
             daftarSoalHtml += `
                 <div class="bg-slate-800 p-3 rounded-xl border border-slate-700 flex justify-between items-center">
                     <div class="flex items-center gap-3 md:gap-4">
+                    <input type="checkbox" value="${item.id}" onchange="updateBtnHapusTerpilihDnd()" class="cb-dnd-item w-4 h-4 accent-rose-500 cursor-pointer shrink-0">
                         <span class="bg-emerald-900/50 text-emerald-400 font-black w-8 h-8 flex items-center justify-center rounded-lg">${item.indexAsli + 1}</span>
                         <div>
                             <p class="${tipeTampilan} text-white" dir="rtl">${item.soal}</p>
@@ -1176,9 +1177,6 @@ if (AppState.db.dnd.match && AppState.db.dnd.match.length > 0) {
                             </label>
                             <button id="btn-hapus-terpilih-dnd" onclick="hapusTerpilihDnd('match')" class="hidden bg-amber-500 hover:bg-amber-400 text-slate-900 text-xs font-black py-2 px-3 rounded-lg transition-colors shadow-md">
                                 Hapus Terpilih (0)
-                            </button>
-                            <button onclick="hapusSemuaMatch()" class="bg-rose-600 hover:bg-rose-500 text-white text-xs md:text-sm font-bold py-2 px-3 md:px-4 rounded-lg transition-colors border border-rose-500 shadow-md">
-                                <i class="fa-solid fa-trash-can md:mr-2"></i> <span class="hidden md:inline">Hapus Semua</span>
                             </button>
                         </div>
                     </div>
@@ -1348,6 +1346,7 @@ function renderEditorSortDnd(container) {
                 daftarSoalHtml += `
                     <div class="bg-slate-800 p-3 rounded-xl border border-slate-700 flex justify-between items-center">
                         <div class="flex items-center gap-3 md:gap-4">
+                        <input type="checkbox" value="${item.id}" onchange="updateBtnHapusTerpilihDnd()" class="cb-dnd-item w-4 h-4 accent-rose-500 cursor-pointer shrink-0">
                             <span class="bg-orange-900/50 text-orange-400 font-black w-8 h-8 flex items-center justify-center rounded-lg">${item.indexAsli + 1}</span>
                             <div>
                                 <p class="${tipeTampilan} text-white" dir="rtl">${item.soal}</p>
@@ -1442,9 +1441,6 @@ function renderEditorSortDnd(container) {
                             </label>
                             <button id="btn-hapus-terpilih-dnd" onclick="hapusTerpilihDnd('sort')" class="hidden bg-amber-500 hover:bg-amber-400 text-slate-900 text-xs font-black py-2 px-3 rounded-lg transition-colors shadow-md">
                                 Hapus Terpilih (0)
-                            </button>
-                            <button onclick="hapusSemuaSort()" class="bg-rose-600 hover:bg-rose-500 text-white text-xs md:text-sm font-bold py-2 px-3 md:px-4 rounded-lg transition-colors border border-rose-500 shadow-md">
-                                <i class="fa-solid fa-trash-can md:mr-2"></i> <span class="hidden md:inline">Hapus Semua</span>
                             </button>
                         </div>
                     </div>
@@ -1622,6 +1618,7 @@ function renderEditorBuildDnd(container) {
             <div class="bg-slate-800 p-4 rounded-xl border border-slate-700 flex justify-between items-center mb-3 hover:border-violet-500/50 transition-colors">
                 <div class="space-y-1">
                     <div class="flex items-center gap-2">
+                    <input type="checkbox" value="${item.id}" onchange="updateBtnHapusTerpilihDnd()" class="cb-dnd-item w-4 h-4 accent-rose-500 cursor-pointer shrink-0">
                         <span class="bg-violet-900/50 text-violet-400 font-black px-2.5 py-1 rounded text-xs border border-violet-500/30">Soal ${index + 1}</span>
                         <p class="text-xs font-bold text-slate-300">Arti: <span class="text-violet-300">"${item.arti}"</span></p>
                     </div>
@@ -1690,9 +1687,6 @@ function renderEditorBuildDnd(container) {
                             </label>
                             <button id="btn-hapus-terpilih-dnd" onclick="hapusTerpilihDnd('build')" class="hidden bg-amber-500 hover:bg-amber-400 text-slate-900 text-xs font-black py-2 px-3 rounded-lg transition-colors shadow-md">
                                 Hapus Terpilih (0)
-                            </button>
-                            <button onclick="hapusSemuaBuild()" class="bg-rose-600 hover:bg-rose-500 text-white text-xs md:text-sm font-bold py-2 px-3 md:px-4 rounded-lg transition-colors border border-rose-500 shadow-md">
-                                <i class="fa-solid fa-trash-can md:mr-2"></i> <span class="hidden md:inline">Hapus Semua</span>
                             </button>
                         </div>
                     </div>
