@@ -225,6 +225,10 @@ function bukaLobiDragDrop(jenisGame) {
     if (!container) return;
 
     let kelasOpts = AppState.db.kelas.map(k => `<option value="${k.id}">${k.kode}</option>`).join('');
+    let listDnd = (AppState.db.dnd && AppState.db.dnd[jenisGame]) ? AppState.db.dnd[jenisGame] : [];
+    let totalSoalDnd = jenisGame === 'build'
+        ? listDnd.length
+        : new Set(listDnd.map(item => parseInt(item.noSoal) || 1)).size;
     let mapelOpts = AppState.db.mapel.map(m => `<option value="${m.id}">${m.nama}</option>`).join('');
 
     // 4. Masukkan HANYA form lobi ke dalam wadah (Top bar lama dihapus)
@@ -246,18 +250,20 @@ function bukaLobiDragDrop(jenisGame) {
                 </div>
 
                 <div class="space-y-4 text-left mt-3">
-               <!-- RENTANG SOAL -->
-                    <div class="flex items-center justify-between bg-slate-800/50 px-3.5 py-2.5 rounded-xl border border-slate-700/70">
-                        <label class="text-xs font-bold text-slate-200 flex items-center">
-                            <i class="fa-solid fa-list-ol text-amber-400 mr-2"></i> Rentang Soal
+              <!-- RENTANG SOAL (RAMPING + JUMLAH SOAL) -->
+                    <div class="flex items-center justify-between bg-slate-800/50 px-3 py-1.5 rounded-xl border border-slate-700/70 mb-3 gap-2">
+                        <label class="text-xs font-bold text-slate-200 flex items-center shrink-0">
+                            <i class="fa-solid fa-list-ol text-amber-400 mr-2"></i> Rentang Soal (1–${totalSoalDnd})
                         </label>
-                        <div class="flex items-center gap-2">
-                            <input type="number" id="dnd-soal-dari" placeholder="1" min="1" class="w-14 py-1.5 px-2 rounded-lg bg-slate-900/90 text-white font-bold border border-slate-700 text-center text-xs outline-none focus:border-amber-500 transition-colors">
+                        <div class="flex items-center gap-1.5">
+                            <input type="number" id="dnd-soal-dari" placeholder="1" min="1" max="${totalSoalDnd}" class="w-12 py-1 px-1.5 rounded-lg bg-slate-900/90 text-white font-bold border border-slate-700 text-center text-xs outline-none focus:border-amber-500 transition-colors">
                             <span class="text-xs text-slate-400 font-bold">s/d</span>
-                            <input type="number" id="dnd-soal-sampai" placeholder="Akhir" min="1" class="w-14 py-1.5 px-2 rounded-lg bg-slate-900/90 text-white font-bold border border-slate-700 text-center text-xs outline-none focus:border-amber-500 transition-colors">
+                            <input type="number" id="dnd-soal-sampai" placeholder="${totalSoalDnd || 'Akhir'}" min="1" max="${totalSoalDnd}" class="w-12 py-1 px-1.5 rounded-lg bg-slate-900/90 text-white font-bold border border-slate-700 text-center text-xs outline-none focus:border-amber-500 transition-colors">
                         </div>
                     </div>
-                        <label class="text-xs font-bold text-slate-300 block mb-1">⏱️ Durasi Waktu Per Soal</label>
+
+                    <div>
+                        <label class="text-xs font-bold text-slate-300 block mb-1 text-center">⏱️ Durasi Waktu Per Soal</label>
                         <select id="lobby-dnd-durasi" class="w-full p-2.5 rounded-xl bg-slate-800 text-white border border-slate-700 outline-none focus:border-amber-500 text-xs">
                             <option value="10">10 Detik</option>
                             <option value="15" selected>15 Detik (Default)</option>
