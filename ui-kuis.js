@@ -634,14 +634,14 @@ let totalSoalLobi = (AppState.kuis.masterQuizSession && AppState.kuis.masterQuiz
                 </button>
             </div>
            <!-- RENTANG NOMOR SOAL -->
-            <div class="flex items-center justify-between bg-slate-800/50 px-3.5 py-2.5 rounded-xl border border-slate-700/70 mb-3 gap-2">
+            <div class="flex items-center justify-between bg-slate-800/50 px-3 py-1.5 rounded-xl border border-slate-700/70 mb-3 gap-2">
                 <span class="text-xs font-bold text-slate-200 flex items-center shrink-0">
                     <i class="fa-solid fa-list-ol text-amber-400 mr-2"></i> Rentang Soal (1–${totalSoalLobi})
                 </span>
-                <div class="flex items-center gap-2">
-                    <input type="number" id="lobby-soal-dari" value="1" min="1" max="${totalSoalLobi}" class="w-14 py-1.5 px-2 rounded-lg bg-slate-900/90 text-white font-bold border border-slate-700 text-center text-xs outline-none focus:border-amber-500 transition-colors">
+                <div class="flex items-center gap-1.5">
+                    <input type="number" id="lobby-soal-dari" placeholder="1" min="1" max="${totalSoalLobi}" class="w-12 py-1 px-1.5 rounded-lg bg-slate-900/90 text-white font-bold border border-slate-700 text-center text-xs outline-none focus:border-amber-500 transition-colors">
                     <span class="text-xs font-bold text-slate-400">s/d</span>
-                    <input type="number" id="lobby-soal-sampai" value="${totalSoalLobi}" min="1" max="${totalSoalLobi}" class="w-14 py-1.5 px-2 rounded-lg bg-slate-900/90 text-white font-bold border border-slate-700 text-center text-xs outline-none focus:border-amber-500 transition-colors">
+                    <input type="number" id="lobby-soal-sampai" placeholder="${totalSoalLobi}" min="1" max="${totalSoalLobi}" class="w-12 py-1 px-1.5 rounded-lg bg-slate-900/90 text-white font-bold border border-slate-700 text-center text-xs outline-none focus:border-amber-500 transition-colors">
                 </div>
             </div>
                 <div>
