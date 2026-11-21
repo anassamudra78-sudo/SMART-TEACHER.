@@ -633,7 +633,7 @@ let totalSoalLobi = (AppState.kuis.masterQuizSession && AppState.kuis.masterQuiz
                     <i class="fa-solid fa-bolt text-amber-400 mr-1.5"></i> Mode Duel (2 Siswa)
                 </button>
             </div>
-           <!-- RENTANG NOMOR SOAL -->
+          <!-- RENTANG NOMOR SOAL -->
             <div class="flex items-center justify-between bg-slate-800/50 px-3 py-1.5 rounded-xl border border-slate-700/70 mb-3 gap-2">
                 <span class="text-xs font-bold text-slate-200 flex items-center shrink-0">
                     <i class="fa-solid fa-list-ol text-amber-400 mr-2"></i> Rentang Soal (1–${totalSoalLobi})
