@@ -1223,7 +1223,7 @@ function tambahSoalMatch() {
     if (inputArti) inputArti.value = '';
     
     renderEditorMatchDnd(document.getElementById('main-content'));
-    if (typeof saveDatabase === 'function') saveDatabase();
+    if (typeof saveDatabase === 'function') saveDatabase(true);
 }
 
 function hapusSoalMatch(id) {
@@ -1232,7 +1232,7 @@ function hapusSoalMatch(id) {
     const scrollDalam = boxList ? boxList.scrollTop : 0;
 
     AppState.db.dnd.match = AppState.db.dnd.match.filter(item => item.id !== id);
-    if (typeof saveDatabase === 'function') saveDatabase();
+    if (typeof saveDatabase === 'function') saveDatabase(true);
     setTimeout(() => {
         renderEditorMatchDnd(document.getElementById('main-content'));
         window.scrollTo(0, scrollLuar);
@@ -1241,7 +1241,7 @@ function hapusSoalMatch(id) {
     }, 50);
 }
 function simpanKeDatabaseMatch() {
-    if (typeof saveDatabase === 'function') saveDatabase();
+    if (typeof saveDatabase === 'function') saveDatabase(true);
     alert('Bank Soal Match & Drop tersimpan permanen!');
 }
 
@@ -1300,7 +1300,7 @@ function bacaExcelMatch(e) {
         // Kosongkan kotak file agar bisa upload file yang sama berkali-kali
         document.getElementById('file-excel-match').value = '';
         renderEditorMatchDnd(document.getElementById('main-content'));
-        if (typeof saveDatabase === 'function') saveDatabase();
+        if (typeof saveDatabase === 'function') saveDatabase(true);
     alert('Item soal Match berhasil diimport!');
     };
     reader.readAsArrayBuffer(file);
@@ -1484,7 +1484,7 @@ function tambahSoalSort() {
     if (inputSoal) inputSoal.value = '';
     if (inputKategori) inputKategori.value = '';
 
-    if (typeof saveDatabase === 'function') saveDatabase();
+    if (typeof saveDatabase === 'function') saveDatabase(true);
     setTimeout(() => {
         renderEditorSortDnd(document.getElementById('main-content'));
     }, 50);
@@ -1514,7 +1514,7 @@ function hapusSoalSort(id) {
     const scrollDalam = boxList ? boxList.scrollTop : 0;
 
     AppState.db.dnd.sort = AppState.db.dnd.sort.filter(item => item.id !== id);
-    if (typeof saveDatabase === 'function') saveDatabase();
+    if (typeof saveDatabase === 'function') saveDatabase(true);
     setTimeout(() => {
         renderEditorSortDnd(document.getElementById('main-content'));
         window.scrollTo(0, scrollLuar);
@@ -1524,7 +1524,7 @@ function hapusSoalSort(id) {
 }
 
 function simpanKeDatabaseSort() {
-    if (typeof saveDatabase === 'function') saveDatabase();
+    if (typeof saveDatabase === 'function') saveDatabase(true);
     alert('Bank Soal Sort & Drop tersimpan permanen!');
 }
 
@@ -1587,7 +1587,7 @@ function bacaExcelSort(e) {
         
         // Segarkan layar Sort
         renderEditorSortDnd(document.getElementById('main-content'));
-        if (typeof saveDatabase === 'function') saveDatabase();
+        if (typeof saveDatabase === 'function') saveDatabase(true);
    alert('Item soal Sort berhasil diimport!');
     };
     reader.readAsArrayBuffer(file);
@@ -1707,7 +1707,7 @@ function tambahSoalBuild() {
     let idUnik = 'b_' + Date.now();
     AppState.db.dnd.build.push({ id: idUnik, arti: arti, susunan: arrKata });
     renderEditorBuildDnd(document.getElementById('main-content'));
-    if (typeof saveDatabase === 'function') saveDatabase();
+    if (typeof saveDatabase === 'function') saveDatabase(true);
 }
 
 function hapusSoalBuild(id) {
@@ -1716,7 +1716,7 @@ function hapusSoalBuild(id) {
     const scrollDalam = boxList ? boxList.scrollTop : 0;
 
     AppState.db.dnd.build = AppState.db.dnd.build.filter(item => item.id !== id);
-    if (typeof saveDatabase === 'function') saveDatabase();
+    if (typeof saveDatabase === 'function') saveDatabase(true);
     setTimeout(() => {
         renderEditorBuildDnd(document.getElementById('main-content'));
         window.scrollTo(0, scrollLuar);
@@ -1726,7 +1726,7 @@ function hapusSoalBuild(id) {
 }
 
 function simpanKeDatabaseBuild() {
-    if (typeof saveDatabase === 'function') saveDatabase();
+    if (typeof saveDatabase === 'function') saveDatabase(true);
     alert('Bank Soal Build & Drop tersimpan permanen!');
 }
 
@@ -1768,7 +1768,7 @@ function bacaExcelBuild(event) {
             }
             if (jumlahBerhasil > 0) {
                 renderEditorBuildDnd(document.getElementById('main-content'));
-                if (typeof saveDatabase === 'function') saveDatabase();
+                if (typeof saveDatabase === 'function') saveDatabase(true);
                 alert(`${jumlahBerhasil} soal kalimat berhasil diimport!`);
             }
         } catch (err) {
@@ -1854,7 +1854,7 @@ function hapusSemuaMatch() {
     if (!AppState.db.dnd.match || AppState.db.dnd.match.length === 0) return alert('Daftar Match sudah kosong!');
     if (confirm('⚠️ YAKIN INGIN MENGHAPUS SEMUA SOAL MATCH?\n\nSemua daftar di bawah ini akan bersih seketika.')) {
         AppState.db.dnd.match = [];
-        if (typeof saveDatabase === 'function') saveDatabase();
+        if (typeof saveDatabase === 'function') saveDatabase(true);
         setTimeout(() => {
             renderEditorMatchDnd(document.getElementById('main-content'));
         }, 50);
@@ -1865,7 +1865,7 @@ function hapusSemuaSort() {
     if (!AppState.db.dnd.sort || AppState.db.dnd.sort.length === 0) return alert('Daftar Sort sudah kosong!');
     if (confirm('⚠️ YAKIN INGIN MENGHAPUS SEMUA SOAL SORT?\n\nSemua daftar di bawah ini akan bersih seketika.')) {
         AppState.db.dnd.sort = [];
-        if (typeof saveDatabase === 'function') saveDatabase();
+        if (typeof saveDatabase === 'function') saveDatabase(true);
         setTimeout(() => {
             renderEditorSortDnd(document.getElementById('main-content'));
         }, 50);
@@ -1876,7 +1876,7 @@ function hapusSemuaBuild() {
     if (!AppState.db.dnd.build || AppState.db.dnd.build.length === 0) return alert('Daftar Build sudah kosong!');
     if (confirm('⚠️ YAKIN INGIN MENGHAPUS SEMUA SOAL BUILD?\n\nSemua daftar di bawah ini akan bersih seketika.')) {
         AppState.db.dnd.build = [];
-        if (typeof saveDatabase === 'function') saveDatabase();
+        if (typeof saveDatabase === 'function') saveDatabase(true);
         setTimeout(() => {
             renderEditorBuildDnd(document.getElementById('main-content'));
         }, 50);
@@ -2228,7 +2228,7 @@ function hapusTerpilihDnd(jenis) {
     const scrollDalam = boxList ? boxList.scrollTop : 0;
 
     AppState.db.dnd[jenis] = AppState.db.dnd[jenis].filter(item => !ids.includes(item.id));
-    if (typeof saveDatabase === 'function') saveDatabase();
+    if (typeof saveDatabase === 'function') saveDatabase(true);
 
     setTimeout(() => {
         const mc = document.getElementById('main-content');
