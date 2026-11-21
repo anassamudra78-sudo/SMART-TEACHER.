@@ -633,15 +633,15 @@ let totalSoalLobi = (AppState.kuis.masterQuizSession && AppState.kuis.masterQuiz
                     <i class="fa-solid fa-bolt text-amber-400 mr-1.5"></i> Mode Duel (2 Siswa)
                 </button>
             </div>
-            <!-- RENTANG NOMOR SOAL -->
-            <div class="bg-slate-950/70 border border-indigo-500/30 px-3 py-2 rounded-xl mb-3 flex items-center justify-between gap-2">
-                <span class="text-[11px] font-black text-indigo-400 uppercase tracking-wider shrink-0">
-                    <i class="fa-solid fa-list-ol mr-1"></i>Soal (1–${totalSoalLobi})
+           <!-- RENTANG NOMOR SOAL -->
+            <div class="flex items-center justify-between bg-slate-800/50 px-3.5 py-2.5 rounded-xl border border-slate-700/70 mb-3 gap-2">
+                <span class="text-xs font-bold text-slate-200 flex items-center shrink-0">
+                    <i class="fa-solid fa-list-ol text-amber-400 mr-2"></i> Rentang Soal (1–${totalSoalLobi})
                 </span>
                 <div class="flex items-center gap-2">
-                    <input type="number" id="lobby-soal-dari" value="1" min="1" max="${totalSoalLobi}" class="w-16 bg-slate-900 border border-slate-700 focus:border-indigo-500 text-white rounded-lg px-2 py-1 text-center font-black text-xs outline-none">
+                    <input type="number" id="lobby-soal-dari" value="1" min="1" max="${totalSoalLobi}" class="w-14 py-1.5 px-2 rounded-lg bg-slate-900/90 text-white font-bold border border-slate-700 text-center text-xs outline-none focus:border-amber-500 transition-colors">
                     <span class="text-xs font-bold text-slate-400">s/d</span>
-                    <input type="number" id="lobby-soal-sampai" value="${totalSoalLobi}" min="1" max="${totalSoalLobi}" class="w-16 bg-slate-900 border border-slate-700 focus:border-indigo-500 text-white rounded-lg px-2 py-1 text-center font-black text-xs outline-none">
+                    <input type="number" id="lobby-soal-sampai" value="${totalSoalLobi}" min="1" max="${totalSoalLobi}" class="w-14 py-1.5 px-2 rounded-lg bg-slate-900/90 text-white font-bold border border-slate-700 text-center text-xs outline-none focus:border-amber-500 transition-colors">
                 </div>
             </div>
                 <div>
