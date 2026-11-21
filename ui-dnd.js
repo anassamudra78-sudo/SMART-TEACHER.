@@ -1439,7 +1439,7 @@ function tambahSoalSort() {
     let inputNo = document.getElementById('dnd-editor-nosoal');
     let inputTipe = document.getElementById('sort-input-tipe');
     let inputSoal = document.getElementById('sort-input-soal');
-    let inputKategori = document.getElementById('sort-input-kategori');
+    let inputKategori = document.getElementById('sort-input-kat');
 
     const noSoal = inputNo ? inputNo.value : 1;
     const tipe = inputTipe ? inputTipe.value : 'teks';
@@ -1449,39 +1449,45 @@ function tambahSoalSort() {
     if (!soal || !kategori) return alert('Soal dan Kategori tidak boleh kosong!');
 
     if (idEditSort) {
-        // JIKA SEDANG EDIT: Timpa data lama, jangan bikin baru
         let item = AppState.db.dnd.sort.find(x => x.id === idEditSort);
         if (item) {
             item.noSoal = noSoal;
             item.tipe = tipe;
             item.soal = soal;
             item.kategori = kategori;
-            item.arti = kategori; // Samakan agar aman
+            item.arti = kategori;
         }
-        idEditSort = null; // Buka kunci setelah selesai edit
+        idEditSort = null;
     } else {
-        // JIKA BIKIN BARU: Masukkan sebagai data baru
         let idUnik = 's_' + Date.now();
         AppState.db.dnd.sort.push({ id: idUnik, noSoal: noSoal, tipe: tipe, soal: soal, kategori: kategori, arti: kategori });
     }
 
-    // Bersihkan kotak isian setelah berhasil disimpan
     if (inputSoal) inputSoal.value = '';
     if (inputKategori) inputKategori.value = '';
-    
-    // Munculkan ulang daftarnya
-    renderEditorSortDnd(document.getElementById('main-content'));
-    if (typeof saveDatabase === 'function') saveDatabase();
-}
 
-function hapusSoalSort(id) {
-    let posisiLayar = window.scrollY;
-    AppState.db.dnd.sort = AppState.db.dnd.sort.filter(item => item.id !== id);
     if (typeof saveDatabase === 'function') saveDatabase();
     setTimeout(() => {
         renderEditorSortDnd(document.getElementById('main-content'));
-        window.scrollTo(0, posisiLayar);
     }, 50);
+}
+
+function editSoalSort(id) {
+    const item = AppState.db.dnd.sort.find(x => x.id === id);
+    if (!item) return;
+
+    let inputNo = document.getElementById('dnd-editor-nosoal');
+    let inputTipe = document.getElementById('sort-input-tipe');
+    let inputSoal = document.getElementById('sort-input-soal');
+    let inputKategori = document.getElementById('sort-input-kat');
+
+    if (inputNo) inputNo.value = item.noSoal || 1;
+    if (inputTipe) inputTipe.value = item.tipe || 'teks';
+    if (inputSoal) inputSoal.value = item.soal || '';
+    if (inputKategori) inputKategori.value = item.kategori || item.arti || '';
+
+    idEditSort = id;
+    window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 function simpanKeDatabaseSort() {
@@ -1800,34 +1806,37 @@ function editSoalSort(id) {
 // ==========================================
 
 function hapusSemuaMatch() {
-    if(!AppState.db.dnd.match || AppState.db.dnd.match.length === 0) return alert('Daftar Match sudah kosong!');
-    
-    // Munculkan jendela konfirmasi peringatan
-    if(confirm('⚠️ YAKIN INGIN MENGHAPUS SEMUA SOAL MATCH?\n\nSemua daftar di bawah ini akan bersih seketika.')) {
-        AppState.db.dnd.match = []; // Kosongkan data
-        renderEditorMatchDnd(document.getElementById('main-content')); // Render ulang layar
-        
+    if (!AppState.db.dnd.match || AppState.db.dnd.match.length === 0) return alert('Daftar Match sudah kosong!');
+    if (confirm('⚠️ YAKIN INGIN MENGHAPUS SEMUA SOAL MATCH?\n\nSemua daftar di bawah ini akan bersih seketika.')) {
+        AppState.db.dnd.match = [];
+        if (typeof saveDatabase === 'function') saveDatabase();
+        setTimeout(() => {
+            renderEditorMatchDnd(document.getElementById('main-content'));
+        }, 50);
     }
 }
 
 function hapusSemuaSort() {
-    if(!AppState.db.dnd.sort || AppState.db.dnd.sort.length === 0) return alert('Daftar Sort sudah kosong!');
-    
-    if(confirm('⚠️ YAKIN INGIN MENGHAPUS SEMUA SOAL SORT?\n\nSemua daftar di bawah ini akan bersih seketika.')) {
+    if (!AppState.db.dnd.sort || AppState.db.dnd.sort.length === 0) return alert('Daftar Sort sudah kosong!');
+    if (confirm('⚠️ YAKIN INGIN MENGHAPUS SEMUA SOAL SORT?\n\nSemua daftar di bawah ini akan bersih seketika.')) {
         AppState.db.dnd.sort = [];
-        renderEditorSortDnd(document.getElementById('main-content'));
+        if (typeof saveDatabase === 'function') saveDatabase();
+        setTimeout(() => {
+            renderEditorSortDnd(document.getElementById('main-content'));
+        }, 50);
     }
 }
 
 function hapusSemuaBuild() {
-    if(!AppState.db.dnd.build || AppState.db.dnd.build.length === 0) return alert('Daftar Build sudah kosong!');
-    
-    if(confirm('⚠️ YAKIN INGIN MENGHAPUS SEMUA SOAL BUILD?\n\nSemua daftar di bawah ini akan bersih seketika.')) {
+    if (!AppState.db.dnd.build || AppState.db.dnd.build.length === 0) return alert('Daftar Build sudah kosong!');
+    if (confirm('⚠️ YAKIN INGIN MENGHAPUS SEMUA SOAL BUILD?\n\nSemua daftar di bawah ini akan bersih seketika.')) {
         AppState.db.dnd.build = [];
-        renderEditorBuildDnd(document.getElementById('main-content'));
+        if (typeof saveDatabase === 'function') saveDatabase();
+        setTimeout(() => {
+            renderEditorBuildDnd(document.getElementById('main-content'));
+        }, 50);
     }
 }
-
 // =========================================================================
 // LAYAR HASIL AKHIR DRAG & DROP (SERAGAM DENGAN ARENA KUIS)
 // =========================================================================
