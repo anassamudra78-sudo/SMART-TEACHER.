@@ -327,12 +327,24 @@ function bukaLobiDragDrop(jenisGame) {
                  </div>
                     <div>
                         <label class="text-xs font-bold text-slate-300 block mb-1">4. Simpan Nilai ke Kategori (Opsional)</label>
-                        <select id="lobby-dnd-kategori" class="w-full p-2.5 rounded-xl bg-slate-800 text-white border border-slate-700 outline-none focus:border-amber-500 text-xs transition-colors">
+                      <select id="lobby-dnd-kategori" class="w-full p-2.5 rounded-xl bg-slate-800 text-white border border-slate-700 outline-none focus:border-amber-500 text-xs transition-colors">
                             <option value="">-- Tidak Disimpan (Hanya Latihan) --</option>
                             <option value="Tugas (TP/Bab 1)">Tugas (TP/Bab 1)</option>
                             <option value="Sumatif (TP/Bab 1)">Sumatif (TP/Bab 1)</option>
                             <option value="Tugas (TP/Bab 2)">Tugas (TP/Bab 2)</option>
                             <option value="Sumatif (TP/Bab 2)">Sumatif (TP/Bab 2)</option>
+                            <option value="Tugas (TP/Bab 3)">Tugas (TP/Bab 3)</option>
+                            <option value="Sumatif (TP/Bab 3)">Sumatif (TP/Bab 3)</option>
+                            <option value="Tugas (TP/Bab 4)">Tugas (TP/Bab 4)</option>
+                            <option value="Sumatif (TP/Bab 4)">Sumatif (TP/Bab 4)</option>
+                            <option value="Tugas (TP/Bab 5)">Tugas (TP/Bab 5)</option>
+                            <option value="Sumatif (TP/Bab 5)">Sumatif (TP/Bab 5)</option>
+                            <option value="Tugas (TP/Bab 6)">Tugas (TP/Bab 6)</option>
+                            <option value="Sumatif (TP/Bab 6)">Sumatif (TP/Bab 6)</option>
+                            <option value="Tugas (TP/Bab 7)">Tugas (TP/Bab 7)</option>
+                            <option value="Sumatif (TP/Bab 7)">Sumatif (TP/Bab 7)</option>
+                            <option value="STS">STS</option>
+                            <option value="SAS">SAS</option>
                         </select>
                     </div>
 
