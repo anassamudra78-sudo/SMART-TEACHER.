@@ -1169,11 +1169,20 @@ if (AppState.db.dnd.match && AppState.db.dnd.match.length > 0) {
                 <div class="lg:col-span-2 bg-slate-900 p-5 sm:p-6 rounded-3xl border border-slate-700 shadow-inner flex flex-col lg:h-[80vh]">
                     <div class="flex justify-between items-center mb-4 border-b border-slate-800 pb-3 shrink-0">
                         <h3 class="font-black text-white text-sm sm:text-base flex items-center"><i class="fa-solid fa-list mr-2 text-slate-400"></i>Daftar Pasangan (<span class="text-emerald-400 ml-1">${AppState.db.dnd.match.length}</span>)</h3>
-                        <button onclick="hapusSemuaMatch()" class="bg-rose-600 hover:bg-rose-500 text-white text-xs md:text-sm font-bold py-2 px-3 md:px-4 rounded-lg mr-2 transition-colors border border-rose-500 shadow-md">
-    <i class="fa-solid fa-trash-can md:mr-2"></i> <span class="hidden md:inline">Hapus Semua</span>
-</button>
+                        <div class="flex items-center gap-2">
+                            <label class="flex items-center gap-1.5 text-xs text-slate-300 font-bold cursor-pointer bg-slate-800 px-2.5 py-2 rounded-lg border border-slate-700">
+                                <input type="checkbox" onchange="togglePilihSemuaDnd(this)" class="w-4 h-4 accent-rose-500 cursor-pointer">
+                                <span class="hidden sm:inline">Pilih Semua</span>
+                            </label>
+                            <button id="btn-hapus-terpilih-dnd" onclick="hapusTerpilihDnd('match')" class="hidden bg-amber-500 hover:bg-amber-400 text-slate-900 text-xs font-black py-2 px-3 rounded-lg transition-colors shadow-md">
+                                Hapus Terpilih (0)
+                            </button>
+                            <button onclick="hapusSemuaMatch()" class="bg-rose-600 hover:bg-rose-500 text-white text-xs md:text-sm font-bold py-2 px-3 md:px-4 rounded-lg transition-colors border border-rose-500 shadow-md">
+                                <i class="fa-solid fa-trash-can md:mr-2"></i> <span class="hidden md:inline">Hapus Semua</span>
+                            </button>
+                        </div>
                     </div>
-                    <div class="flex-1 overflow-y-auto pr-2 custom-scrollbar">
+                    <div id="dnd-list-scroll" class="flex-1 overflow-y-auto pr-2 custom-scrollbar">
                         ${daftarSoalHtml || '<div class="text-center bg-slate-800/50 rounded-2xl py-12 border border-dashed border-slate-700"><i class="fa-solid fa-box-open text-4xl text-slate-600 mb-3"></i><p class="text-slate-400 text-xs font-bold">Belum ada pasangan soal.</p></div>'}
                     </div>
                 </div>
@@ -1220,15 +1229,19 @@ function tambahSoalMatch() {
 }
 
 function hapusSoalMatch(id) {
-    let posisiLayar = window.scrollY;
+    const scrollLuar = window.scrollY;
+    const boxList = document.getElementById('dnd-list-scroll');
+    const scrollDalam = boxList ? boxList.scrollTop : 0;
+
     AppState.db.dnd.match = AppState.db.dnd.match.filter(item => item.id !== id);
     if (typeof saveDatabase === 'function') saveDatabase();
     setTimeout(() => {
         renderEditorMatchDnd(document.getElementById('main-content'));
-        window.scrollTo(0, posisiLayar);
+        window.scrollTo(0, scrollLuar);
+        const boxBaru = document.getElementById('dnd-list-scroll');
+        if (boxBaru) boxBaru.scrollTop = scrollDalam;
     }, 50);
 }
-
 function simpanKeDatabaseMatch() {
     if (typeof saveDatabase === 'function') saveDatabase();
     alert('Bank Soal Match & Drop tersimpan permanen!');
@@ -1422,11 +1435,20 @@ function renderEditorSortDnd(container) {
                 <div class="lg:col-span-2 bg-slate-900 p-5 sm:p-6 rounded-3xl border border-slate-700 shadow-inner flex flex-col lg:h-[80vh]">
                     <div class="flex justify-between items-center mb-4 border-b border-slate-800 pb-3 shrink-0">
                         <h3 class="font-black text-white text-sm sm:text-base flex items-center"><i class="fa-solid fa-list mr-2 text-slate-400"></i>Daftar Soal Sort (<span class="text-amber-400 ml-1">${AppState.db.dnd.sort.length}</span>)</h3>
-                      <button onclick="hapusSemuaSort()" class="bg-rose-600 hover:bg-rose-500 text-white text-xs md:text-sm font-bold py-2 px-3 md:px-4 rounded-lg mr-2 transition-colors border border-rose-500 shadow-md">
-    <i class="fa-solid fa-trash-can md:mr-2"></i> <span class="hidden md:inline">Hapus Semua</span>
-</button>
+                     <div class="flex items-center gap-2">
+                            <label class="flex items-center gap-1.5 text-xs text-slate-300 font-bold cursor-pointer bg-slate-800 px-2.5 py-2 rounded-lg border border-slate-700">
+                                <input type="checkbox" onchange="togglePilihSemuaDnd(this)" class="w-4 h-4 accent-rose-500 cursor-pointer">
+                                <span class="hidden sm:inline">Pilih Semua</span>
+                            </label>
+                            <button id="btn-hapus-terpilih-dnd" onclick="hapusTerpilihDnd('sort')" class="hidden bg-amber-500 hover:bg-amber-400 text-slate-900 text-xs font-black py-2 px-3 rounded-lg transition-colors shadow-md">
+                                Hapus Terpilih (0)
+                            </button>
+                            <button onclick="hapusSemuaSort()" class="bg-rose-600 hover:bg-rose-500 text-white text-xs md:text-sm font-bold py-2 px-3 md:px-4 rounded-lg transition-colors border border-rose-500 shadow-md">
+                                <i class="fa-solid fa-trash-can md:mr-2"></i> <span class="hidden md:inline">Hapus Semua</span>
+                            </button>
+                        </div>
                     </div>
-                    <div class="flex-1 overflow-y-auto pr-2 custom-scrollbar">
+                    <div id="dnd-list-scroll" class="flex-1 overflow-y-auto pr-2 custom-scrollbar">
                         ${daftarSoalHtml || '<div class="text-center bg-slate-800/50 rounded-2xl py-12 border border-dashed border-slate-700"><i class="fa-solid fa-box-open text-4xl text-slate-600 mb-3"></i><p class="text-slate-400 text-xs font-bold">Belum ada soal sort.</p></div>'}
                     </div>
                 </div>
@@ -1488,6 +1510,21 @@ function editSoalSort(id) {
 
     idEditSort = id;
     window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function hapusSoalSort(id) {
+    const scrollLuar = window.scrollY;
+    const boxList = document.getElementById('dnd-list-scroll');
+    const scrollDalam = boxList ? boxList.scrollTop : 0;
+
+    AppState.db.dnd.sort = AppState.db.dnd.sort.filter(item => item.id !== id);
+    if (typeof saveDatabase === 'function') saveDatabase();
+    setTimeout(() => {
+        renderEditorSortDnd(document.getElementById('main-content'));
+        window.scrollTo(0, scrollLuar);
+        const boxBaru = document.getElementById('dnd-list-scroll');
+        if (boxBaru) boxBaru.scrollTop = scrollDalam;
+    }, 50);
 }
 
 function simpanKeDatabaseSort() {
@@ -1646,11 +1683,20 @@ function renderEditorBuildDnd(container) {
                 <div class="lg:col-span-2 bg-slate-900 p-5 sm:p-6 rounded-3xl border border-slate-700 shadow-inner flex flex-col lg:h-[80vh]">
                     <div class="flex justify-between items-center mb-4 border-b border-slate-800 pb-3 shrink-0">
                         <h3 class="font-black text-white text-sm sm:text-base flex items-center"><i class="fa-solid fa-list mr-2 text-slate-400"></i>Daftar Kalimat Build (<span class="text-violet-400 ml-1">${AppState.db.dnd.build.length}</span>)</h3>
-                       <button onclick="hapusSemuaBuild()" class="bg-rose-600 hover:bg-rose-500 text-white text-xs md:text-sm font-bold py-2 px-3 md:px-4 rounded-lg mr-2 transition-colors border border-rose-500 shadow-md">
-    <i class="fa-solid fa-trash-can md:mr-2"></i> <span class="hidden md:inline">Hapus Semua</span>
-</button>
+                    <div class="flex items-center gap-2">
+                            <label class="flex items-center gap-1.5 text-xs text-slate-300 font-bold cursor-pointer bg-slate-800 px-2.5 py-2 rounded-lg border border-slate-700">
+                                <input type="checkbox" onchange="togglePilihSemuaDnd(this)" class="w-4 h-4 accent-rose-500 cursor-pointer">
+                                <span class="hidden sm:inline">Pilih Semua</span>
+                            </label>
+                            <button id="btn-hapus-terpilih-dnd" onclick="hapusTerpilihDnd('build')" class="hidden bg-amber-500 hover:bg-amber-400 text-slate-900 text-xs font-black py-2 px-3 rounded-lg transition-colors shadow-md">
+                                Hapus Terpilih (0)
+                            </button>
+                            <button onclick="hapusSemuaBuild()" class="bg-rose-600 hover:bg-rose-500 text-white text-xs md:text-sm font-bold py-2 px-3 md:px-4 rounded-lg transition-colors border border-rose-500 shadow-md">
+                                <i class="fa-solid fa-trash-can md:mr-2"></i> <span class="hidden md:inline">Hapus Semua</span>
+                            </button>
+                        </div>
                     </div>
-                    <div class="flex-1 overflow-y-auto pr-2 custom-scrollbar">
+                    <div id="dnd-list-scroll" class="flex-1 overflow-y-auto pr-2 custom-scrollbar">
                         ${daftarSoalHtml || '<div class="text-center bg-slate-800/50 rounded-2xl py-12 border border-dashed border-slate-700"><i class="fa-solid fa-box-open text-4xl text-slate-600 mb-3"></i><p class="text-slate-400 text-xs font-bold">Belum ada kalimat build.</p></div>'}
                     </div>
                 </div>
@@ -1671,12 +1717,17 @@ function tambahSoalBuild() {
 }
 
 function hapusSoalBuild(id) {
-    let posisiLayar = window.scrollY;
+    const scrollLuar = window.scrollY;
+    const boxList = document.getElementById('dnd-list-scroll');
+    const scrollDalam = boxList ? boxList.scrollTop : 0;
+
     AppState.db.dnd.build = AppState.db.dnd.build.filter(item => item.id !== id);
     if (typeof saveDatabase === 'function') saveDatabase();
     setTimeout(() => {
         renderEditorBuildDnd(document.getElementById('main-content'));
-        window.scrollTo(0, posisiLayar);
+        window.scrollTo(0, scrollLuar);
+        const boxBaru = document.getElementById('dnd-list-scroll');
+        if (boxBaru) boxBaru.scrollTop = scrollDalam;
     }, 50);
 }
 
@@ -2146,4 +2197,53 @@ function ulangiDuelDnd() {
     if (gameDndTerpilih === 'match' && typeof mulaiGameMatch === 'function') mulaiGameMatch();
     else if (gameDndTerpilih === 'sort' && typeof mulaiGameSort === 'function') mulaiGameSort();
     else if (gameDndTerpilih === 'build' && typeof mulaiGameBuild === 'function') mulaiGameBuild();
+}
+
+// =========================================================================
+// MESIN MULTI-SELECT (CENTANG & HAPUS TERPILIH) + KUNCI SCROLL DAFTAR
+// =========================================================================
+function updateBtnHapusTerpilihDnd() {
+    const terpilih = document.querySelectorAll('.cb-dnd-item:checked').length;
+    const btn = document.getElementById('btn-hapus-terpilih-dnd');
+    if (btn) {
+        if (terpilih > 0) {
+            btn.classList.remove('hidden');
+            btn.innerHTML = `<i class="fa-solid fa-trash-can mr-1.5"></i> Hapus Terpilih (${terpilih})`;
+        } else {
+            btn.classList.add('hidden');
+        }
+    }
+}
+
+function togglePilihSemuaDnd(checkboxUtama) {
+    document.querySelectorAll('.cb-dnd-item').forEach(cb => {
+        cb.checked = checkboxUtama.checked;
+    });
+    updateBtnHapusTerpilihDnd();
+}
+
+function hapusTerpilihDnd(jenis) {
+    const ids = Array.from(document.querySelectorAll('.cb-dnd-item:checked')).map(cb => cb.value);
+    if (ids.length === 0) return;
+
+    if (!confirm(`⚠️ Yakin ingin menghapus ${ids.length} soal yang dicentang?`)) return;
+
+    // Kunci posisi scroll layar luar DAN scroll kotak daftar
+    const scrollLuar = window.scrollY;
+    const boxList = document.getElementById('dnd-list-scroll');
+    const scrollDalam = boxList ? boxList.scrollTop : 0;
+
+    AppState.db.dnd[jenis] = AppState.db.dnd[jenis].filter(item => !ids.includes(item.id));
+    if (typeof saveDatabase === 'function') saveDatabase();
+
+    setTimeout(() => {
+        const mc = document.getElementById('main-content');
+        if (jenis === 'match') renderEditorMatchDnd(mc);
+        else if (jenis === 'sort') renderEditorSortDnd(mc);
+        else if (jenis === 'build') renderEditorBuildDnd(mc);
+
+        window.scrollTo(0, scrollLuar);
+        const boxBaru = document.getElementById('dnd-list-scroll');
+        if (boxBaru) boxBaru.scrollTop = scrollDalam;
+    }, 50);
 }
