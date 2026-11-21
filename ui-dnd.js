@@ -246,14 +246,17 @@ function bukaLobiDragDrop(jenisGame) {
                 </div>
 
                 <div class="space-y-4 text-left mt-3">
-                <!-- RENTANG SOAL (MINI) -->
-                    <div class="flex items-center gap-2 mb-2 bg-slate-800/50 p-2 rounded-xl border border-slate-700">
-                        <label class="text-[11px] font-bold text-slate-300 whitespace-nowrap"><i class="fa-solid fa-list-ol mr-1"></i> Rentang Soal :</label>
-                        <input type="number" id="dnd-soal-dari" placeholder="1" min="1" class="w-12 p-1 rounded-lg bg-slate-900 text-white border border-slate-600 text-center text-[11px] outline-none focus:border-amber-500">
-                        <span class="text-[11px] text-slate-400 font-bold">sampai</span>
-                        <input type="number" id="dnd-soal-sampai" placeholder="Akhir" class="w-12 p-1 rounded-lg bg-slate-900 text-white border border-slate-600 text-center text-[11px] outline-none focus:border-amber-500">
+               <!-- RENTANG SOAL -->
+                    <div class="flex items-center justify-between bg-slate-800/50 px-3.5 py-2.5 rounded-xl border border-slate-700/70">
+                        <label class="text-xs font-bold text-slate-200 flex items-center">
+                            <i class="fa-solid fa-list-ol text-amber-400 mr-2"></i> Rentang Soal
+                        </label>
+                        <div class="flex items-center gap-2">
+                            <input type="number" id="dnd-soal-dari" placeholder="1" min="1" class="w-14 py-1.5 px-2 rounded-lg bg-slate-900/90 text-white font-bold border border-slate-700 text-center text-xs outline-none focus:border-amber-500 transition-colors">
+                            <span class="text-xs text-slate-400 font-bold">s/d</span>
+                            <input type="number" id="dnd-soal-sampai" placeholder="Akhir" min="1" class="w-14 py-1.5 px-2 rounded-lg bg-slate-900/90 text-white font-bold border border-slate-700 text-center text-xs outline-none focus:border-amber-500 transition-colors">
+                        </div>
                     </div>
-                    <div>
                         <label class="text-xs font-bold text-slate-300 block mb-1">⏱️ Durasi Waktu Per Soal</label>
                         <select id="lobby-dnd-durasi" class="w-full p-2.5 rounded-xl bg-slate-800 text-white border border-slate-700 outline-none focus:border-amber-500 text-xs">
                             <option value="10">10 Detik</option>
