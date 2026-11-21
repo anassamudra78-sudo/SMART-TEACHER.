@@ -1114,7 +1114,7 @@ if (AppState.db.dnd.match && AppState.db.dnd.match.length > 0) {
     });
 }
     container.innerHTML = `
-        <div class="max-w-6xl mx-auto space-y-6 fade-in pb-10 mt-4 px-2 sm:px-0">
+        <div class="max-w-6xl mx-auto space-y-6 pb-10 mt-4 px-2 sm:px-0">
             <div class="flex justify-between items-center bg-slate-900 p-4 rounded-2xl shadow-xl border border-slate-700">
                 <h2 class="text-base sm:text-xl font-black text-white flex items-center gap-2">
                     <i class="fa-solid fa-puzzle-piece text-emerald-400"></i> Editor Match & Drop
@@ -1375,7 +1375,7 @@ function renderEditorSortDnd(container) {
         });
     }
     container.innerHTML = `
-        <div class="max-w-6xl mx-auto space-y-6 fade-in pb-10 mt-4 px-2 sm:px-0">
+        <div class="max-w-6xl mx-auto space-y-6 pb-10 mt-4 px-2 sm:px-0">
             <div class="flex justify-between items-center bg-slate-900 p-4 rounded-2xl shadow-xl border border-slate-700">
                 <h2 class="text-base sm:text-xl font-black text-white flex items-center gap-2">
                     <i class="fa-solid fa-layer-group text-amber-400"></i> Editor Sort & Drop
@@ -1632,7 +1632,7 @@ function renderEditorBuildDnd(container) {
     }).join('');
 
     container.innerHTML = `
-        <div class="max-w-6xl mx-auto space-y-6 fade-in pb-10 mt-4 px-2 sm:px-0">
+        <div class="max-w-6xl mx-auto space-y-6 pb-10 mt-4 px-2 sm:px-0">
             <div class="flex justify-between items-center bg-slate-900 p-4 rounded-2xl shadow-xl border border-slate-700">
                 <h2 class="text-base sm:text-xl font-black text-white flex items-center gap-2">
                     <i class="fa-solid fa-cubes text-violet-400"></i> Editor Build & Drop
