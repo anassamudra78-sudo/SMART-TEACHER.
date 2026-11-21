@@ -1220,22 +1220,12 @@ function tambahSoalMatch() {
 }
 
 function hapusSoalMatch(id) {
-    // 1. Kunci posisi dan "Ganjal" tinggi layar agar tidak ciut
     let posisiLayar = window.scrollY;
-    document.body.style.minHeight = document.body.scrollHeight + 'px';
-
-    // 2. Eksekusi Hapus Data
     AppState.db.dnd.match = AppState.db.dnd.match.filter(item => item.id !== id);
-    
-    // 3. Render Ulang Layar
-    renderEditorMatchDnd(document.getElementById('main-content'));
-if (typeof saveDatabase === 'function') saveDatabase();
-    // 4. Kembalikan posisi scroll 
-    window.scrollTo(0, posisiLayar);
-
-    // 5. Cabut ganjalan setelah layar beres digambar (jeda waktu sangat halus)
+    if (typeof saveDatabase === 'function') saveDatabase();
     setTimeout(() => {
-        document.body.style.minHeight = 'auto';
+        renderEditorMatchDnd(document.getElementById('main-content'));
+        window.scrollTo(0, posisiLayar);
     }, 50);
 }
 
@@ -1485,22 +1475,12 @@ function tambahSoalSort() {
 }
 
 function hapusSoalSort(id) {
-    // 1. Kunci posisi dan "Ganjal" tinggi layar
     let posisiLayar = window.scrollY;
-    document.body.style.minHeight = document.body.scrollHeight + 'px';
-
-    // 2. Eksekusi Hapus Data
     AppState.db.dnd.sort = AppState.db.dnd.sort.filter(item => item.id !== id);
-    
-    // 3. Render Ulang Layar
-    renderEditorSortDnd(document.getElementById('main-content'));
-if (typeof saveDatabase === 'function') saveDatabase();
-    // 4. Kembalikan posisi scroll
-    window.scrollTo(0, posisiLayar);
-
-    // 5. Cabut ganjalan
+    if (typeof saveDatabase === 'function') saveDatabase();
     setTimeout(() => {
-        document.body.style.minHeight = 'auto';
+        renderEditorSortDnd(document.getElementById('main-content'));
+        window.scrollTo(0, posisiLayar);
     }, 50);
 }
 
@@ -1685,17 +1665,13 @@ function tambahSoalBuild() {
 }
 
 function hapusSoalBuild(id) {
-    // 1. KUNCI POSISI SCROLL
     let posisiLayar = window.scrollY;
-
-    // 2. Eksekusi Hapus Data
     AppState.db.dnd.build = AppState.db.dnd.build.filter(item => item.id !== id);
-    
-    // 3. Render Ulang Layar
-    renderEditorBuildDnd(document.getElementById('main-content'));
-if (typeof saveDatabase === 'function') saveDatabase();
-    // 4. KEMBALIKAN POSISI LAYAR SEKETIKA
-    window.scrollTo(0, posisiLayar);
+    if (typeof saveDatabase === 'function') saveDatabase();
+    setTimeout(() => {
+        renderEditorBuildDnd(document.getElementById('main-content'));
+        window.scrollTo(0, posisiLayar);
+    }, 50);
 }
 
 function simpanKeDatabaseBuild() {
