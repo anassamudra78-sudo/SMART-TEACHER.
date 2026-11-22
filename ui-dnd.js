@@ -556,16 +556,42 @@ function undiDuaLawanDnd() {
     const listSiswa = AppState.db.siswa.filter(s => s.kelasId === klsId);
     if (listSiswa.length < 2) return showAlert('Peringatan', 'Minimal harus ada 2 siswa di kelas ini untuk Mode Duel!');
 
-    const acak = [...listSiswa].sort(() => Math.random() - 0.5);
+    window.dndTelahMainDuel = window.dndTelahMainDuel || [];
+    window.dndPendingDuel = window.dndPendingDuel || [];
+
+    // 1. Saring siswa yang belum pernah duel
+    let siswaBelumMain = listSiswa.filter(s =>
+        !window.dndTelahMainDuel.includes(s.id) &&
+        !window.dndPendingDuel.includes(s.id)
+    );
+
+    // 2. Jika kurang dari 2, masukkan antrean Undi Ulang (pending)
+    if (siswaBelumMain.length < 2 && window.dndPendingDuel.length > 0) {
+        const pendingSiswa = listSiswa.filter(s => window.dndPendingDuel.includes(s.id));
+        siswaBelumMain = [...siswaBelumMain, ...pendingSiswa];
+        window.dndPendingDuel = [];
+    }
+
+    // 3. Jika masih kurang dari 2, reset tabung duel kelas ini
+    if (siswaBelumMain.length < 2) {
+        showAlert('Info Sesi', 'Semua siswa sudah mendapat giliran duel! Tabung undian duel di-reset dari awal.', 'info');
+        const idKelasIni = listSiswa.map(s => s.id);
+        window.dndTelahMainDuel = window.dndTelahMainDuel.filter(id => !idKelasIni.includes(id));
+        window.dndPendingDuel = window.dndPendingDuel.filter(id => !idKelasIni.includes(id));
+        siswaBelumMain = listSiswa;
+    }
+
+    const acak = [...siswaBelumMain].sort(() => Math.random() - 0.5);
     const pemenang1 = acak[0];
     const pemenang2 = acak[1];
+
+    window.dndTelahMainDuel.push(pemenang1.id, pemenang2.id);
 
     const p1El = document.getElementById('lobby-dnd-duel-p1');
     const p2El = document.getElementById('lobby-dnd-duel-p2');
     if (p1El) p1El.value = pemenang1.id;
     if (p2El) p2El.value = pemenang2.id;
 
-    // Buat layar undian VS
     const layarLama = document.getElementById('layar-undian-dnd');
     if (layarLama) layarLama.remove();
 
@@ -586,7 +612,7 @@ function undiDuaLawanDnd() {
             </div>
         </div>
         <div id="btn-undian-duel-box" class="hidden mt-8 flex flex-col sm:flex-row gap-4 fade-in">
-            <button onclick="undiDuaLawanDnd()" class="bg-slate-900/80 hover:bg-rose-600 text-rose-400 hover:text-white border border-rose-500/50 font-black py-3.5 px-8 rounded-2xl shadow-xl transition-all hover:scale-105 flex items-center justify-center">
+            <button onclick="undiUlangDuelDnd()" class="bg-slate-900/80 hover:bg-rose-600 text-rose-400 hover:text-white border border-rose-500/50 font-black py-3.5 px-8 rounded-2xl shadow-xl transition-all hover:scale-105 flex items-center justify-center">
                 <i class="fa-solid fa-rotate-right mr-2"></i> Undi Ulang
             </button>
             <button onclick="document.getElementById('layar-undian-dnd').remove(); mulaiHitungMundurDnd(3);" class="bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-white font-black py-3.5 px-10 rounded-2xl shadow-[0_0_30px_rgba(16,185,129,0.5)] border border-emerald-400/50 transition-all hover:scale-105 flex items-center justify-center">
@@ -599,7 +625,7 @@ function undiDuaLawanDnd() {
     const elP1 = document.getElementById('slot-duel-p1');
     const elP2 = document.getElementById('slot-duel-p2');
     const ctx = typeof getAudioCtx === 'function' ? getAudioCtx() : null;
-    const daftarNama = listSiswa.map(s => s.nama);
+    const daftarNama = siswaBelumMain.map(s => s.nama);
 
     let waktu = 0;
     const interval = 60;
@@ -633,6 +659,16 @@ function undiDuaLawanDnd() {
             if (btnBox) btnBox.classList.remove('hidden');
         }
     }, interval);
+}
+
+function undiUlangDuelDnd() {
+    if (window.dndTelahMainDuel && window.dndTelahMainDuel.length >= 2) {
+        const idB = window.dndTelahMainDuel.pop();
+        const idA = window.dndTelahMainDuel.pop();
+        window.dndPendingDuel = window.dndPendingDuel || [];
+        window.dndPendingDuel.push(idA, idB);
+    }
+    undiDuaLawanDnd();
 }
 
 function updateLobbySiswaDnd() {
