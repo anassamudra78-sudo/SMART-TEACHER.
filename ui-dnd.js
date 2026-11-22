@@ -663,12 +663,38 @@ function undiPemainDndSpin() {
     if (!klsId) return showAlert('Peringatan', 'Pilih kelas terlebih dahulu!');
     const listSiswa = AppState.db.siswa.filter(s => s.kelasId === klsId);
     if (listSiswa.length === 0) return showAlert('Peringatan', 'Belum ada siswa!');
-    
-    let pemenang = listSiswa[Math.floor(Math.random() * listSiswa.length)];
+
+    window.dndTelahMainSingle = window.dndTelahMainSingle || [];
+    window.dndPendingSingle = window.dndPendingSingle || [];
+
+    // 1. Saring siswa yang belum pernah terpilih
+    let siswaBelumMain = listSiswa.filter(s =>
+        !window.dndTelahMainSingle.includes(s.id) &&
+        !window.dndPendingSingle.includes(s.id)
+    );
+
+    // 2. Jika siswa utama habis, ambil dari antrean Undi Ulang (pending)
+    if (siswaBelumMain.length === 0 && window.dndPendingSingle.length > 0) {
+        showAlert('Info', 'Semua siswa utama sudah kebagian. Sekarang giliran siswa yang sempat di-Undi Ulang!', 'info');
+        siswaBelumMain = listSiswa.filter(s => window.dndPendingSingle.includes(s.id));
+        window.dndPendingSingle = [];
+    }
+
+    // 3. Jika semua sudah benar-benar kebagian, reset tabung undian kelas ini
+    if (siswaBelumMain.length === 0) {
+        showAlert('Info Sesi', 'Semua siswa sudah mendapat giliran! Tabung undian di-reset dari awal.', 'info');
+        const idKelasIni = listSiswa.map(s => s.id);
+        window.dndTelahMainSingle = window.dndTelahMainSingle.filter(id => !idKelasIni.includes(id));
+        window.dndPendingSingle = window.dndPendingSingle.filter(id => !idKelasIni.includes(id));
+        siswaBelumMain = listSiswa;
+    }
+
+    let pemenang = siswaBelumMain[Math.floor(Math.random() * siswaBelumMain.length)];
+    window.dndTelahMainSingle.push(pemenang.id);
     document.getElementById('lobby-dnd-siswa').value = pemenang.id;
-    
-    // Panggil mesin undian MEWAH KHUSUS DND
-    eksekusiUndianMewahDnd(pemenang.nama, listSiswa.map(s => s.nama));
+
+    // Hanya putar nama siswa yang BELUM terpilih
+    eksekusiUndianMewahDnd(pemenang.nama, siswaBelumMain.map(s => s.nama));
 }
 
 function eksekusiUndianMewahDnd(pemenang, daftarSemuaSiswa) {
@@ -758,14 +784,16 @@ function aksiUndianSelesaiDnd(aksi) {
     if (overlay) overlay.remove();
 
     if (aksi === 'lanjut') {
-        // PASTI AMAN: Langsung panggil hitung mundur milik DnD sendiri
         mulaiHitungMundurDnd(3);
     } else {
-        // Putar ulang undian DnD
-        undiPemainDndSpin(); 
+        if (window.dndTelahMainSingle && window.dndTelahMainSingle.length > 0) {
+            let idBatal = window.dndTelahMainSingle.pop();
+            window.dndPendingSingle = window.dndPendingSingle || [];
+            window.dndPendingSingle.push(idBatal);
+        }
+        undiPemainDndSpin();
     }
 }
-
 function masukKeArenaGameDnd() {
     const kelasId = document.getElementById('lobby-dnd-kelas').value;
     const isDuel = window.dndDuelState && window.dndDuelState.mode === 'duel';
