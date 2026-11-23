@@ -242,49 +242,83 @@ function simpanKeLocalStorage() {
 // ==========================================================
 
 // 1. Fungsi untuk mencetak dan menyalin Master Link
+// ==========================================================
+// MESIN PENDETEKSI MASTER LINK & FUNGSI SALIN
+// ==========================================================
+
+function encodeMasterBase64(str) {
+    const utf8Bytes = encodeURIComponent(str);
+    return btoa(utf8Bytes).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
+
+function decodeMasterBase64(base64Url) {
+    let base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    while (base64.length % 4) {
+        base64 += '=';
+    }
+    return decodeURIComponent(atob(base64));
+}
+
+// 1. Fungsi untuk mencetak dan menyalin Master Link
 function salinMasterLink() {
-    let dataWs = localStorage.getItem('ST_WORKSPACES');
-    if (!dataWs || dataWs === "[]") return alert("Belum ada ruang kerja yang bisa disalin.");
-    
-    // Membungkus data sekolah jadi satu sandi rahasia (Base64)
-    let encodedData = btoa(encodeURIComponent(dataWs)); 
-    let masterLink = window.location.href.split('?')[0] + "?master=" + encodedData;
-    
+    const dataWs = localStorage.getItem('ST_WORKSPACES');
+    if (!dataWs || dataWs === "[]") {
+        alert("Belum ada ruang kerja yang bisa disalin.");
+        return;
+    }
+
     try {
-        navigator.clipboard.writeText(masterLink).then(() => {
-            alert("MASTER LINK BERHASIL DISALIN!\n\nSimpan link ini (misal di Chat WhatsApp/Notes). Jika sewaktu-waktu cache HP terhapus, cukup klik link ini dan SEMUA ruang kerja Bapak akan kembali utuh dalam 1 detik!");
-        });
-    } catch(err) {
-        prompt("Sistem memblokir copy otomatis. Salin manual teks di bawah ini:", masterLink);
+        const encodedData = encodeMasterBase64(dataWs);
+        const baseUrl = window.location.origin + window.location.pathname;
+        const masterLink = `${baseUrl}?master=${encodedData}`;
+
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(masterLink).then(() => {
+                alert("MASTER LINK BERHASIL DISALIN!\n\nSimpan link ini (misal di Chat WhatsApp/Notes). Jika sewaktu-waktu cache HP terhapus, cukup klik link ini dan SEMUA ruang kerja Bapak akan kembali utuh.");
+            }).catch(() => {
+                prompt("Salin manual Master Link di bawah ini:", masterLink);
+            });
+        } else {
+            prompt("Salin manual Master Link di bawah ini:", masterLink);
+        }
+    } catch (err) {
+        console.error("Gagal membuat Master Link:", err);
+        alert("Gagal menyusun Master Link. Periksa data ruang kerja.");
     }
 }
 
 // 2. Mesin Pendeteksi Master Link saat aplikasi baru dibuka
-const urlParams = new URLSearchParams(window.location.search);
-const masterData = urlParams.get('master');
+(function pulihkanDariMasterLink() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const masterData = urlParams.get('master');
+    if (!masterData) return;
 
-if (masterData) {
     try {
-        // Menerjemahkan sandi Master Link menjadi data ruang kerja
-        let decodedData = decodeURIComponent(atob(masterData));
-        let parsedWs = JSON.parse(decodedData);
-        
-        if (Array.isArray(parsedWs) && parsedWs.length > 0) {
-            // Suntikkan kembali ruang kerja ke dalam HP
-            localStorage.setItem('ST_WORKSPACES', JSON.stringify(parsedWs));
-            localStorage.setItem('ST_ACTIVE_WS_ID', parsedWs[0].id);
-            localStorage.setItem('ST_GAS_URL', parsedWs[0].url || "");
-            
-            if (typeof AppState !== 'undefined') {
-                AppState.config.gasUrl = parsedWs[0].url || "";
-            }
-            
-            // Bersihkan URL bar agar tetap rapi
-            window.history.replaceState({}, document.title, window.location.pathname);
-            alert("Ajaib! " + parsedWs.length + " Ruang Kerja berhasil dipulihkan secara otomatis.");
-            window.location.reload();
+        const decodedData = decodeMasterBase64(masterData);
+        const parsedWs = JSON.parse(decodedData);
+
+        if (!Array.isArray(parsedWs) || parsedWs.length === 0) {
+            alert("Master Link tidak berisi daftar ruang kerja yang valid.");
+            return;
         }
-    } catch(e) {
-        console.error("Link master tidak valid/rusak.");
+
+        const savedActiveId = localStorage.getItem('ST_ACTIVE_WS_ID');
+        const activeWs = parsedWs.find(ws => String(ws.id) === String(savedActiveId)) || parsedWs[0];
+
+        localStorage.setItem('ST_WORKSPACES', JSON.stringify(parsedWs));
+        localStorage.setItem('ST_ACTIVE_WS_ID', activeWs.id);
+        localStorage.setItem('ST_GAS_URL', activeWs.url || "");
+
+        if (typeof AppState !== 'undefined' && AppState.config) {
+            AppState.config.gasUrl = activeWs.url || "";
+        }
+
+        window.history.replaceState({}, document.title, window.location.pathname);
+        alert(`${parsedWs.length} Ruang Kerja berhasil dipulihkan secara otomatis.`);
+        window.location.reload();
+    } catch (e) {
+        console.error("Link master tidak valid/rusak:", e);
+        window.history.replaceState({}, document.title, window.location.pathname);
+        alert("Master Link tidak valid atau terpotong saat disalin/dikirim. Silakan salin ulang Master Link baru.");
     }
-}
+})();
