@@ -699,6 +699,33 @@ function undiUlangDuelDnd() {
     }
     undiDuaLawanDnd();
 }
+function updateLobbySiswaDnd() {
+    const kelasEl = document.getElementById('lobby-dnd-kelas');
+    const selectSiswa = document.getElementById('lobby-dnd-siswa');
+    const selectP1 = document.getElementById('lobby-dnd-duel-p1');
+    const selectP2 = document.getElementById('lobby-dnd-duel-p2');
+
+    const kelasId = kelasEl ? kelasEl.value : '';
+    const daftarSiswa = (typeof AppState !== 'undefined' && AppState.db && Array.isArray(AppState.db.siswa))
+        ? AppState.db.siswa
+        : [];
+
+    if (!kelasId) {
+        if (selectSiswa) selectSiswa.innerHTML = '<option value="">-- Pilih Kelas Terlebih Dahulu --</option>';
+        if (selectP1) selectP1.innerHTML = '<option value="">-- Pilih Pemain 1 (Biru) --</option>';
+        if (selectP2) selectP2.innerHTML = '<option value="">-- Pilih Pemain 2 (Merah) --</option>';
+        return;
+    }
+
+    const siswaKelas = daftarSiswa.filter(s => String(s.kelasId) === String(kelasId));
+    const opts = siswaKelas.map(s => `<option value="${s.id}">${s.nama}</option>`).join('');
+
+    if (selectSiswa) selectSiswa.innerHTML = `<option value="">-- Pilih Siswa yang Mengerjakan --</option>${opts}`;
+    if (selectP1) selectP1.innerHTML = `<option value="">-- Pilih Pemain 1 (Biru) --</option>${opts}`;
+    if (selectP2) selectP2.innerHTML = `<option value="">-- Pilih Pemain 2 (Merah) --</option>${opts}`;
+}
+
+window.updateLobbySiswaDnd = updateLobbySiswaDnd;
 
 function undiPemainDndSpin() {
     const klsId = document.getElementById('lobby-dnd-kelas').value;
