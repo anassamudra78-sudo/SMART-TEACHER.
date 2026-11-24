@@ -355,44 +355,45 @@ html, body {
         </div>
     </div>    
     <div class="flex h-[100dvh] w-full overflow-hidden bg-slate-900">
-        <!-- SIDEBAR UTAMA -->
-        <aside id="sidebar" class="hidden md:flex flex-col w-72 h-screen sticky top-0 bg-gradient-to-b from-slate-900 via-slate-900 to-slate-950 text-slate-100 transition-all z-30 shadow-2xl border-r border-slate-800 shrink-0">
-            <div class="flex items-center space-x-3 px-6 py-5 border-b border-white/10 bg-white/5 backdrop-blur-md">
+        <!-- SIDEBAR UTAMA (DESKTOP / LANSKAP) -->
+        <aside id="sidebar" class="hidden md:flex flex-col w-72 h-[100dvh] sticky top-0 bg-gradient-to-b from-slate-900 via-slate-900 to-slate-950 text-slate-100 transition-all z-30 shadow-2xl border-r border-slate-800 shrink-0">
+            <div class="flex items-center space-x-3 px-6 py-5 border-b border-white/10 bg-white/5 backdrop-blur-md shrink-0">
                 <img src="logo-pusat.png" class="w-11 h-11 rounded-xl shadow-[0_0_15px_rgba(16,185,129,0.4)]" alt="Logo Smart Teacher">
                 <div>
                     <h1 class="font-extrabold text-lg tracking-tight text-white drop-shadow-[0_0_10px_rgba(52,211,153,0.3)]">SMART TEACHER</h1>
                     <p class="text-[10px] text-amber-300 uppercase tracking-widest font-semibold">Integrated Workspace v3.0</p>
                 </div>
             </div>
-          <div class="px-4 mb-2 mt-2 block md:hidden">
-              <button onclick="bukaModalWorkspace()" class="w-full flex items-center justify-center gap-3 bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2.5 px-4 rounded-xl shadow-lg shadow-indigo-500/30 transition-all active:scale-95">
-                  <i class="fa-solid fa-building"></i>
-                  <span class="text-sm">Alih Ruang Kerja</span>
-              </button>
-          </div>
+
             <div id="sidebar-menu" class="flex-1 overflow-y-auto px-4 py-4 space-y-1 text-sm custom-scrollbar"></div>
-            <div class="mt-auto pt-3 pb-2 border-t border-slate-700/50 text-center">
-            <div class="mb-3 px-4">
-                <button onclick="bukaModalWorkspace()" class="w-full flex items-center justify-between bg-slate-800/80 hover:bg-indigo-600 text-slate-300 hover:text-white text-xs font-bold py-3 px-4 rounded-xl transition-all border border-slate-700 hover:border-indigo-500 shadow-sm">
-                    <div class="flex items-center gap-3">
-                        <i class="fa-solid fa-building text-indigo-400"></i>
-                        <span id="label-ruang-kerja" class="truncate text-left font-black">Ruang Kerja Utama</span>
+
+            <!-- FOOTER SIDEBAR KOMPAK & ESTETIK -->
+            <div class="p-3 border-t border-slate-800/90 bg-slate-950/90 shrink-0 space-y-2.5">
+                <button onclick="bukaModalWorkspace()" class="w-full flex items-center justify-between gap-2.5 bg-slate-900 hover:bg-slate-800 text-slate-200 px-3 py-2.5 rounded-xl transition-all border border-slate-800 hover:border-emerald-500/40 shadow-sm group text-left">
+                    <div class="flex items-center gap-2.5 min-w-0">
+                        <div class="w-8 h-8 rounded-lg bg-emerald-500/15 text-emerald-400 flex items-center justify-center shrink-0">
+                            <i class="fa-solid fa-building text-xs"></i>
+                        </div>
+                        <div class="min-w-0">
+                            <p class="text-[9px] uppercase tracking-wider text-slate-400 font-semibold leading-none mb-1">Ruang Kerja Aktif</p>
+                            <p id="label-ruang-kerja" class="text-xs font-extrabold text-white truncate">Ruang Kerja Utama</p>
+                        </div>
                     </div>
-                    <i class="fa-solid fa-arrows-rotate text-[10px] opacity-70"></i>
+                    <i class="fa-solid fa-arrows-rotate text-xs text-slate-400 group-hover:text-emerald-400 transition-colors shrink-0"></i>
                 </button>
-            </div>
-                <p class="text-[9px] text-slate-400 font-medium tracking-wider uppercase leading-tight">SMART TEACHER V3.0 Integrated Workspace</p>
-                <p class="text-[10px] text-slate-300 font-semibold leading-tight mt-0.5">Dev: Muh. Nashir, S.Pd. <span class="text-purple-400 font-bold">(@anassamudra.h2a)</p>
-                <p class="text-[9px] text-cyan-400 font-medium leading-tight">Powered by Gemini AI</p>
+
+                <div class="flex items-center justify-between px-1 pt-0.5 text-[10px] text-slate-400">
+                    <div class="flex items-center space-x-1.5 min-w-0">
+                        <div class="w-1.5 h-1.5 rounded-full bg-brand-500 animate-pulse shrink-0"></div>
+                        <span id="sidebar-tahun-ajaran" class="font-semibold text-slate-400 truncate">TA: -</span>
+                    </div>
+                    <div class="flex items-center gap-2 shrink-0">
+                        <button onclick="bukaModalDev()" class="text-slate-400 hover:text-emerald-400 font-semibold transition-colors" title="Info Pengembang">v3.0 • Muh. Nashir</button>
+                        <button onclick="toggleDarkMode()" class="w-6 h-6 rounded-md bg-white/5 hover:bg-white/15 text-yellow-400 flex items-center justify-center transition-all text-[11px]" title="Ganti Tema">
+                            <i id="dark-mode-icon" class="fa-solid fa-moon"></i>
+                        </button>
+                    </div>
                 </div>
-           <div class="px-3 py-1.5 border-t border-white/10 bg-black/25 flex items-center justify-between">
-                <div class="flex items-center space-x-1.5 bg-white/5 px-2 py-0.5 rounded-md border border-white/5">
-                    <div class="w-1.5 h-1.5 rounded-full bg-brand-500 animate-pulse"></div>
-                    <span id="sidebar-tahun-ajaran" class="text-[9px] font-semibold text-slate-400">TA: -</span>
-                </div>
-                <button onclick="toggleDarkMode()" class="w-6 h-6 rounded-md bg-white/5 hover:bg-white/15 text-yellow-400 flex items-center justify-center transition-all text-[11px]">
-                    <i id="dark-mode-icon" class="fa-solid fa-moon"></i>
-                </button>
             </div>
         </aside>
 
@@ -407,29 +408,51 @@ html, body {
                 </div>
                 <div class="flex items-center space-x-3">
                     <button onclick="toggleFullScreenApp()" class="w-10 h-10 rounded-xl bg-slate-200 dark:bg-slate-800 text-indigo-500 flex items-center justify-center"><i id="fullscreen-icon" class="fa-solid fa-expand"></i></button>
-                    <button onclick="toggleDarkMode()" class="md:hidden w-10 h-10 rounded-xl bg-slate-200 text-yellow-500"><i id="dark-mode-icon-mobile" class="fa-solid fa-moon"></i></button>
+                    <button onclick="toggleDarkMode()" class="md:hidden w-10 h-10 rounded-xl bg-slate-200 dark:bg-slate-800 text-yellow-500 flex items-center justify-center"><i id="dark-mode-icon-mobile" class="fa-solid fa-moon"></i></button>
                     <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-brand-500 to-brand-700 text-white flex items-center justify-center font-bold text-sm shadow-md">ST</div>
                 </div>
             </header>
 
+            <!-- MOBILE / TABLET DRAWER (SERAGAM DENGAN SIDEBAR DESKTOP) -->
             <div id="mobile-menu-overlay" onclick="toggleMobileMenu(true)" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-40 hidden transition-opacity"></div>
-            <div id="mobile-drawer" class="fixed inset-y-0 left-0 w-72 bg-slate-900 text-slate-100 z-50 transform -translate-x-full transition-transform duration-300 flex flex-col">
-                <div class="flex items-center justify-between px-6 py-5 border-b border-white/10 bg-white/5">
+            <div id="mobile-drawer" class="fixed inset-y-0 left-0 w-72 h-[100dvh] bg-gradient-to-b from-slate-900 via-slate-900 to-slate-950 text-slate-100 z-50 transform -translate-x-full transition-transform duration-300 flex flex-col border-r border-slate-800 shadow-2xl">
+                <div class="flex items-center justify-between px-5 py-4 border-b border-white/10 bg-white/5 shrink-0">
                     <div class="flex items-center space-x-3">
-                        <img src="logo-pusat.png" class="w-8 h-8 rounded-lg" alt="Logo">
-                        <h1 class="font-extrabold text-base text-white">SMART TEACHER</h1>
+                        <img src="logo-pusat.png" class="w-9 h-9 rounded-xl shadow-[0_0_12px_rgba(16,185,129,0.35)]" alt="Logo">
+                        <div>
+                            <h1 class="font-extrabold text-base tracking-tight text-white leading-tight">SMART TEACHER</h1>
+                            <p class="text-[9px] text-amber-300 uppercase tracking-widest font-semibold">Integrated Workspace v3.0</p>
+                        </div>
                     </div>
-                    <button onclick="toggleMobileMenu(true)" class="text-slate-400 hover:text-white p-2"><i class="fa-solid fa-xmark text-xl"></i></button>
+                    <button onclick="toggleMobileMenu(true)" class="w-8 h-8 rounded-lg bg-white/5 hover:bg-rose-500/20 text-slate-400 hover:text-rose-400 flex items-center justify-center transition-colors"><i class="fa-solid fa-xmark text-base"></i></button>
                 </div>
-            <div class="px-4 pt-6 pb-2">
-                <button onclick="bukaModalWorkspace(); toggleMobileMenu(true);" class="w-full flex items-center justify-center gap-3 bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 px-4 rounded-xl shadow-lg shadow-indigo-500/30 transition-all active:scale-95">
-                    <i class="fa-solid fa-building"></i>
-                    <span class="text-sm">Alih Ruang Kerja</span>
-                </button>
-            </div>
-                <div id="mobile-menu-list" class="flex-1 overflow-y-auto px-4 py-6 space-y-1 text-sm custom-scrollbar"></div>
-            </div>
 
+                <div id="mobile-menu-list" class="flex-1 overflow-y-auto px-4 py-4 space-y-1 text-sm custom-scrollbar"></div>
+
+                <!-- FOOTER LACI HP/TABLET -->
+                <div class="p-3 border-t border-slate-800/90 bg-slate-950/90 shrink-0 space-y-2.5">
+                    <button onclick="bukaModalWorkspace(); toggleMobileMenu(true);" class="w-full flex items-center justify-between gap-2.5 bg-slate-900 hover:bg-slate-800 text-slate-200 px-3 py-2.5 rounded-xl transition-all border border-slate-800 hover:border-emerald-500/40 shadow-sm group text-left">
+                        <div class="flex items-center gap-2.5 min-w-0">
+                            <div class="w-8 h-8 rounded-lg bg-emerald-500/15 text-emerald-400 flex items-center justify-center shrink-0">
+                                <i class="fa-solid fa-building text-xs"></i>
+                            </div>
+                            <div class="min-w-0">
+                                <p class="text-[9px] uppercase tracking-wider text-slate-400 font-semibold leading-none mb-1">Ruang Kerja Aktif</p>
+                                <p id="mobile-label-ruang-kerja" class="text-xs font-extrabold text-white truncate">Ruang Kerja Utama</p>
+                            </div>
+                        </div>
+                        <i class="fa-solid fa-arrows-rotate text-xs text-slate-400 group-hover:text-emerald-400 transition-colors shrink-0"></i>
+                    </button>
+
+                    <div class="flex items-center justify-between px-1 pt-0.5 text-[10px] text-slate-400">
+                        <div class="flex items-center space-x-1.5 min-w-0">
+                            <div class="w-1.5 h-1.5 rounded-full bg-brand-500 animate-pulse shrink-0"></div>
+                            <span id="mobile-tahun-ajaran" class="font-semibold text-slate-400 truncate">TA: -</span>
+                        </div>
+                        <button onclick="bukaModalDev(); toggleMobileMenu(true);" class="text-slate-400 hover:text-emerald-400 font-semibold transition-colors shrink-0">v3.0 • Muh. Nashir</button>
+                    </div>
+                </div>
+            </div>
             <main id="main-content" class="flex-1 overflow-y-auto p-4 lg:p-7 custom-scrollbar"></main>
         </div>
     </div>
@@ -895,25 +918,52 @@ function doGet(e) {
         </div>
     </div>
 
-<!-- ========================================================= -->
-<!-- MODAL KHUSUS DRAG & DROP ARENA (CLEAN ARCHITECTURE)       -->
-<!-- ========================================================= -->
-<div id="dnd-arena-modal" class="hidden fixed inset-0 z-[9900] bg-slate-950 overflow-y-auto w-full h-full">
-    <div class="relative w-full h-full flex flex-col">
-        <!-- Tombol Keluar Bawaan Modal -->
-        <div class="absolute top-4 left-4 z-50">
-            <button onclick="keluarFullscreenDnd()" class="bg-rose-600 hover:bg-rose-700 text-white font-black py-2.5 px-5 rounded-xl shadow-lg transition-all flex items-center">
-                <i class="fa-solid fa-arrow-left mr-2"></i> Keluar
+<!-- MODAL INFO PENGEMBANG -->
+    <div id="modal-about-dev" onclick="if(event.target===this) tutupModalDev()" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-[210] hidden flex items-center justify-center p-4 no-print">
+        <div class="bg-slate-900 border border-slate-700/80 rounded-3xl p-6 max-w-sm w-full text-center text-white shadow-2xl relative fade-in">
+            <button onclick="tutupModalDev()" class="absolute top-4 right-4 w-8 h-8 rounded-xl bg-slate-800 text-slate-400 hover:text-rose-400 flex items-center justify-center transition-colors">
+                <i class="fa-solid fa-xmark"></i>
             </button>
-        </div>
-        
-        <!-- Area Konten Utama Drag & Drop -->
-        <div id="dnd-game-container" class="w-full h-full pt-20 px-4 pb-6">
-            <!-- Konten Game Render Disini -->
+            <img src="logo-pusat.png" class="w-14 h-14 mx-auto rounded-2xl shadow-lg mb-3" alt="Logo">
+            <h4 class="text-base font-black tracking-wide">SMART TEACHER V3.0</h4>
+            <p class="text-[11px] text-emerald-400 font-bold uppercase tracking-widest mb-4">Integrated Academic Workspace</p>
+            <div class="bg-slate-950/70 border border-slate-800 rounded-2xl p-3.5 text-xs space-y-1 mb-4">
+                <p class="text-slate-400 text-[10px] uppercase tracking-wider">Dikembangkan oleh</p>
+                <p class="font-extrabold text-white text-sm">Muh. Nashir, S.Pd.</p>
+                <p class="text-indigo-400 font-bold">@anassamudra.h2a</p>
+                <p class="text-[10px] text-cyan-400 pt-1">Powered by Gemini AI</p>
+            </div>
+            <button onclick="tutupModalDev()" class="w-full bg-slate-800 hover:bg-slate-700 text-white font-bold py-2.5 rounded-xl text-xs transition-all">Tutup</button>
         </div>
     </div>
-</div>
-    
+
+    <script>
+        function bukaModalDev() {
+            const m = document.getElementById('modal-about-dev');
+            if (m) m.classList.remove('hidden');
+        }
+        function tutupModalDev() {
+            const m = document.getElementById('modal-about-dev');
+            if (m) m.classList.add('hidden');
+        }
+        document.addEventListener('DOMContentLoaded', () => {
+            const sinkronDrawer = () => {
+                const wsDesktop = document.getElementById('label-ruang-kerja');
+                const wsMobile  = document.getElementById('mobile-label-ruang-kerja');
+                if (wsDesktop && wsMobile) wsMobile.textContent = wsDesktop.textContent;
+
+                const taDesktop = document.getElementById('sidebar-tahun-ajaran');
+                const taMobile  = document.getElementById('mobile-tahun-ajaran');
+                if (taDesktop && taMobile) taMobile.textContent = taDesktop.textContent;
+            };
+            sinkronDrawer();
+            const observer = new MutationObserver(sinkronDrawer);
+            ['label-ruang-kerja', 'sidebar-tahun-ajaran'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) observer.observe(el, { childList: true, characterData: true, subtree: true });
+            });
+        });
+    </script>    
 <!-- PANGGIL FILE JAVASCRIPT EXTERNAL DI SINI -->
     <script src="api.js"></script>
     <script src="ui.js"></script>
