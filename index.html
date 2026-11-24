@@ -297,12 +297,12 @@ html, body {
 </style>
     <style>
 /* =========================================================
-   LIGHT MODE HARMONIZER (WORKSPACE + ARENA KUIS & DRAG-DROP)
+   LIGHT MODE HARMONIZER LENGKAP (WORKSPACE, KUIS, DND & SIDEBAR)
    ========================================================= */
 html:not(.dark) header.glass-effect,
 html:not(.dark) #dnd-topbar,
 html:not(.dark) #quiz-arena-modal > .sticky {
-    background: rgba(255, 255, 255, 0.95) !important;
+    background: rgba(255, 255, 255, 0.96) !important;
     border-bottom: 1px solid #e2e8f0 !important;
     box-shadow: 0 2px 12px rgba(15, 23, 42, 0.05);
 }
@@ -314,10 +314,20 @@ html:not(.dark) #dnd-arena-modal {
     color: #0f172a !important;
 }
 
-/* 2. Ubah kartu gelap (slate-900 / slate-950) di Workspace & Game menjadi putih bersih */
-html:not(.dark) :is(#main-content, #quiz-arena-modal, #dnd-arena-modal, #guide-modal, #bedah-soal-modal, #bank-soal-modal, #modal-workspace, #modal-about-dev) :is(div, section, article, aside, table, thead, tr):is(
+/* 2. Perjelas Judul Gradasi ("Arena Kuis Interaktif", "Smart Drag & Drop Arena", dll.) */
+html:not(.dark) :is(#main-content, #quiz-arena-modal, #dnd-arena-modal) :is(.bg-clip-text, .text-transparent) {
+    background-image: linear-gradient(to right, #0f172a, #4338ca, #059669) !important;
+    -webkit-background-clip: text !important;
+    background-clip: text !important;
+    color: transparent !important;
+    -webkit-text-fill-color: transparent !important;
+}
+
+/* 3. Ubah kartu & container gelap (slate-900 / slate-950 / black) menjadi putih bersih */
+html:not(.dark) :is(#main-content, #quiz-arena-modal, #dnd-arena-modal, #guide-modal, #bedah-soal-modal, #bank-soal-modal, #modal-workspace, #modal-about-dev) :is(div, section, article, aside, table, thead, tr, form, ul, li):is(
     .bg-slate-900, .bg-slate-900\/80, .bg-slate-900\/90, .bg-slate-900\/95,
-    .bg-slate-950, .bg-slate-950\/50, .bg-slate-950\/60, .bg-slate-950\/70,
+    .bg-slate-950, .bg-slate-950\/50, .bg-slate-950\/60, .bg-slate-950\/70, .bg-slate-950\/80,
+    .bg-black, .bg-black\/40, .bg-black\/50, .bg-gray-900,
     .from-slate-900, .from-slate-950
 ) {
     background-color: #ffffff !important;
@@ -326,16 +336,18 @@ html:not(.dark) :is(#main-content, #quiz-arena-modal, #dnd-arena-modal, #guide-m
     box-shadow: 0 4px 20px -4px rgba(15, 23, 42, 0.07);
 }
 
-/* 3. Ubah kotak sekunder (pilihan jawaban, item drag, input, tombol Keluar) */
+/* 4. Ubah kotak sekunder, dropdown gelap ("1", "Semua"), input & tombol sekunder menjadi terang */
 html:not(.dark) :is(#main-content, #quiz-arena-modal, #dnd-arena-modal, #guide-modal, #bedah-soal-modal, #bank-soal-modal, #modal-workspace) :is(div, section, thead, tr, input, select, textarea, button):is(
+    .bg-slate-900, .bg-slate-950, .bg-black,
     .bg-slate-800, .bg-slate-800\/50, .bg-slate-800\/60, .bg-slate-800\/80, .bg-slate-800\/90,
     .bg-white\/5, .bg-white\/10
 ) {
     background-color: #f8fafc !important;
     border-color: #cbd5e1 !important;
+    color: #0f172a !important;
 }
 
-/* 4. Ubah kotak aksen gelap (950/40) di lobi & duel menjadi pastel lembut */
+/* 5. Ubah kotak aksen gelap (950/40) di lobi & duel menjadi pastel lembut */
 html:not(.dark) :is(#main-content, #quiz-arena-modal, #dnd-arena-modal) .bg-indigo-950\/40 { background-color: #eef2ff !important; border-color: #c7d2fe !important; }
 html:not(.dark) :is(#main-content, #quiz-arena-modal, #dnd-arena-modal) .bg-blue-950\/40   { background-color: #eff6ff !important; border-color: #bfdbfe !important; }
 html:not(.dark) :is(#main-content, #quiz-arena-modal, #dnd-arena-modal) .bg-rose-950\/40   { background-color: #fff1f2 !important; border-color: #fecdd3 !important; }
@@ -343,26 +355,26 @@ html:not(.dark) :is(#main-content, #quiz-arena-modal, #dnd-arena-modal) .bg-emer
 html:not(.dark) :is(#main-content, #quiz-arena-modal, #dnd-arena-modal) .bg-amber-950\/40  { background-color: #fffbeb !important; border-color: #fde68a !important; }
 html:not(.dark) :is(#main-content, #quiz-arena-modal, #dnd-arena-modal) .bg-purple-950\/40 { background-color: #faf5ff !important; border-color: #e9d5ff !important; }
 
-/* 5. Ubah teks putih di atas kartu terang menjadi gelap (kecuali di tombol/kartu berwarna) */
-html:not(.dark) :is(#main-content, #quiz-arena-modal, #dnd-arena-modal, #guide-modal, #bedah-soal-modal, #bank-soal-modal, #modal-workspace, #modal-about-dev) :not(button):not(a):not([class*="from-emerald"]):not([class*="from-brand"]):not([class*="from-indigo"]):not([class*="from-purple"]):not([class*="from-amber"]):not([class*="from-orange"]):not([class*="from-rose"]):not([class*="from-cyan"]):not([class*="from-blue"]):not([class*="bg-emerald-"]):not([class*="bg-brand-"]):not([class*="bg-indigo-"]):not([class*="bg-purple-"]):not([class*="bg-rose-"]):not([class*="bg-amber-"]):not([class*="bg-orange-"]):not([class*="bg-cyan-"]):not([class*="bg-blue-"]) > .text-white,
-html:not(.dark) :is(#main-content, #quiz-arena-modal, #dnd-arena-modal, #guide-modal, #bedah-soal-modal, #bank-soal-modal, #modal-workspace, #modal-about-dev) :is(h1, h2, h3, h4, p, span, td, th, label).text-white {
+/* 6. Ubah teks putih & putih-transparan (seperti tombol Audio Efek) menjadi gelap tajam */
+html:not(.dark) :is(#main-content, #quiz-arena-modal, #dnd-arena-modal, #guide-modal, #bedah-soal-modal, #bank-soal-modal, #modal-workspace, #modal-about-dev) :not(button):not(a):not([class*="from-emerald"]):not([class*="from-brand"]):not([class*="from-indigo"]):not([class*="from-purple"]):not([class*="from-amber"]):not([class*="from-orange"]):not([class*="from-rose"]):not([class*="from-cyan"]):not([class*="from-blue"]):not([class*="from-teal"]):not([class*="bg-emerald-"]):not([class*="bg-brand-"]):not([class*="bg-indigo-"]):not([class*="bg-purple-"]):not([class*="bg-rose-"]):not([class*="bg-amber-"]):not([class*="bg-orange-"]):not([class*="bg-cyan-"]):not([class*="bg-blue-"]) > :is(.text-white, [class*="text-white/"], .text-slate-100),
+html:not(.dark) :is(#main-content, #quiz-arena-modal, #dnd-arena-modal, #guide-modal, #bedah-soal-modal, #bank-soal-modal, #modal-workspace, #modal-about-dev) :is(h1, h2, h3, h4, p, span, td, th, label, select, input):is(.text-white, [class*="text-white/"], .text-slate-100) {
     color: #0f172a !important;
 }
 
-/* Pertahankan teks putih pada tombol & kartu berwarna cerah (Arena Kuis, Drag-Drop, Duel, AI) */
+/* Pertahankan teks putih pada tombol & kartu berwarna solid/gradasi cerah */
 html:not(.dark) :is(#main-content, #quiz-arena-modal, #dnd-arena-modal, #guide-modal, #bedah-soal-modal, #bank-soal-modal, #modal-workspace) :is(
-    button:not(.bg-slate-800):not(.bg-white\/10), a,
+    button:not(.bg-slate-800):not(.bg-slate-900):not(.bg-white\/5):not(.bg-white\/10), a,
     [class*="from-emerald"], [class*="from-brand"], [class*="from-indigo"], [class*="from-purple"],
-    [class*="from-amber"], [class*="from-orange"], [class*="from-rose"], [class*="from-cyan"], [class*="from-blue"],
+    [class*="from-amber"], [class*="from-orange"], [class*="from-rose"], [class*="from-cyan"], [class*="from-blue"], [class*="from-teal"],
     [class*="bg-emerald-5"], [class*="bg-emerald-6"], [class*="bg-brand-6"], [class*="bg-indigo-6"], [class*="bg-purple-6"],
     [class*="bg-rose-5"], [class*="bg-rose-6"], [class*="bg-amber-5"], [class*="bg-orange-5"], [class*="bg-cyan-6"], [class*="bg-blue-6"]
-) :is(h1, h2, h3, h4, p, span, div, i).text-white,
-html:not(.dark) :is(#main-content, #quiz-arena-modal, #dnd-arena-modal, #guide-modal, #bedah-soal-modal, #bank-soal-modal, #modal-workspace) :is(button:not(.bg-slate-800):not(.bg-white\/10), a).text-white {
+) :is(h1, h2, h3, h4, p, span, div, i):is(.text-white, [class*="text-white/"]),
+html:not(.dark) :is(#main-content, #quiz-arena-modal, #dnd-arena-modal, #guide-modal, #bedah-soal-modal, #bank-soal-modal, #modal-workspace) :is(button:not(.bg-slate-800):not(.bg-slate-900):not(.bg-white\/5):not(.bg-white\/10), a):is(.text-white, [class*="text-white/"]) {
     color: #ffffff !important;
 }
 
-/* 6. Pertajam teks sekunder & badge HUD game (Timer, Skor, Streak) agar jelas di layar terang */
-html:not(.dark) :is(#main-content, #quiz-arena-modal, #dnd-arena-modal, #guide-modal, #bedah-soal-modal, #bank-soal-modal, #modal-workspace) :is(p, span, td, th, label, div):is(.text-slate-200, .text-slate-300) {
+/* 7. Pertajam teks sekunder & aksen warna di Workspace, Kuis & DnD */
+html:not(.dark) :is(#main-content, #quiz-arena-modal, #dnd-arena-modal, #guide-modal, #bedah-soal-modal, #bank-soal-modal, #modal-workspace) :is(p, span, td, th, label, div, button):is(.text-slate-200, .text-slate-300) {
     color: #334155 !important;
 }
 html:not(.dark) :is(#main-content, #quiz-arena-modal, #dnd-arena-modal, #guide-modal, #bedah-soal-modal, #bank-soal-modal, #modal-workspace) :is(p, span, td, th, label, div).text-slate-400 {
@@ -379,6 +391,83 @@ html:not(.dark) :is(#main-content, #quiz-arena-modal, #dnd-arena-modal) :is(.tex
 html:not(.dark) :is(#main-content, #quiz-arena-modal, #dnd-arena-modal) :is(.text-cyan-300, .text-cyan-400) { color: #0e7490 !important; }
 html:not(.dark) :is(#main-content, #quiz-arena-modal, #dnd-arena-modal) :is(.text-indigo-300, .text-indigo-400) { color: #4338ca !important; }
 html:not(.dark) :is(#main-content, #quiz-arena-modal, #dnd-arena-modal) :is(.text-purple-300, .text-purple-400) { color: #6d28d9 !important; }
+html:not(.dark) :is(#main-content, #quiz-arena-modal, #dnd-arena-modal) :is(.text-orange-300, .text-orange-400) { color: #c2410c !important; }
+
+/* 8. Spion Kiri (Sidebar & Laci HP) + Panel Laci Kanan */
+html:not(.dark) #sidebar,
+html:not(.dark) #mobile-drawer {
+    background: #ffffff !important;
+    background-image: none !important;
+    color: #1e293b !important;
+    border-right: 1px solid #e2e8f0 !important;
+    box-shadow: 4px 0 24px -6px rgba(15, 23, 42, 0.08) !important;
+}
+html:not(.dark) :is(#sidebar, #mobile-drawer) > div:first-child {
+    background-color: #f8fafc !important;
+    border-bottom: 1px solid #e2e8f0 !important;
+}
+html:not(.dark) :is(#sidebar, #mobile-drawer) h1.text-white {
+    color: #0f172a !important;
+    filter: none !important;
+}
+html:not(.dark) :is(#sidebar, #mobile-drawer) .text-amber-300 {
+    color: #d97706 !important;
+}
+html:not(.dark) :is(#sidebar-menu, #mobile-menu-list) :is(button, a):not([class*="bg-brand"]):not([class*="bg-emerald"]):not([class*="from-brand"]):not([class*="from-emerald"]) {
+    color: #475569 !important;
+}
+html:not(.dark) :is(#sidebar-menu, #mobile-menu-list) :is(button, a):not([class*="bg-brand"]):not([class*="bg-emerald"]):not([class*="from-brand"]):not([class*="from-emerald"]):hover {
+    background-color: #f1f5f9 !important;
+    color: #0f172a !important;
+}
+html:not(.dark) :is(#sidebar-menu, #mobile-menu-list) :is(button, a):is([class*="bg-brand"], [class*="bg-emerald"], [class*="from-brand"], [class*="from-emerald"]),
+html:not(.dark) :is(#sidebar-menu, #mobile-menu-list) :is(button, a):is([class*="bg-brand"], [class*="bg-emerald"], [class*="from-brand"], [class*="from-emerald"]) * {
+    color: #ffffff !important;
+}
+html:not(.dark) :is(#sidebar-menu, #mobile-menu-list) .border-white\/10,
+html:not(.dark) :is(#sidebar-menu, #mobile-menu-list) .border-slate-800 {
+    border-color: #e2e8f0 !important;
+}
+html:not(.dark) :is(#sidebar, #mobile-drawer) > div:last-child {
+    background-color: #f8fafc !important;
+    border-top: 1px solid #e2e8f0 !important;
+}
+html:not(.dark) :is(#sidebar, #mobile-drawer) button[onclick*="bukaModalWorkspace"] {
+    background-color: #ffffff !important;
+    border-color: #cbd5e1 !important;
+    color: #0f172a !important;
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04) !important;
+}
+html:not(.dark) :is(#sidebar, #mobile-drawer) button[onclick*="bukaModalWorkspace"]:hover {
+    background-color: #ecfdf5 !important;
+    border-color: #10b981 !important;
+}
+html:not(.dark) #label-ruang-kerja,
+html:not(.dark) #mobile-label-ruang-kerja {
+    color: #0f172a !important;
+}
+html:not(.dark) :is(#sidebar, #mobile-drawer) .text-emerald-400 { color: #059669 !important; }
+html:not(.dark) :is(#sidebar, #mobile-drawer) .text-slate-400 { color: #64748b !important; }
+html:not(.dark) :is(#sidebar, #mobile-drawer) button[onclick*="toggleDarkMode"],
+html:not(.dark) #mobile-drawer button[onclick*="toggleMobileMenu"] {
+    background-color: #e2e8f0 !important;
+    color: #475569 !important;
+}
+html:not(.dark) #edge-panel > button {
+    background-color: rgba(255, 255, 255, 0.95) !important;
+    color: #334155 !important;
+    border-color: #cbd5e1 !important;
+    box-shadow: -4px 0 12px rgba(15, 23, 42, 0.08) !important;
+}
+html:not(.dark) #edge-panel > button:hover {
+    background-color: #f1f5f9 !important;
+    color: #059669 !important;
+}
+html:not(.dark) #edge-panel > div {
+    background-color: rgba(255, 255, 255, 0.96) !important;
+    border-color: #cbd5e1 !important;
+    box-shadow: -8px 0 24px rgba(15, 23, 42, 0.12) !important;
+}
 </style>
 </head>
 <body class="bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 font-sans antialiased transition-colors duration-300">
