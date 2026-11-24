@@ -924,8 +924,12 @@ async function tarikDataGateway(kelasId) {
 
         loadAbsensi();
 
-        if (hitungBerhasil > 0) {
-            saveDatabase();
+       if (hitungBerhasil > 0) {
+            localStorage.setItem(AppState.config.storageKey, JSON.stringify(AppState.db));
+            if (AppState.config.gasUrl && AppState.config.gasUrl.startsWith("http")) {
+                fetch(AppState.config.gasUrl, { method: "POST", mode: "no-cors", body: JSON.stringify(AppState.db) }).catch(()=>{});
+            }
+            loadAbsensi();
             showAlert("Sinkronisasi Sukses!", `Berhasil menarik Hadir (H) sebanyak ${hitungBerhasil} catatan kehadiran sepanjang bulan ${bulanTerpilih}!`, "success");
         } else {
             showAlert("Selesai", `Semua data kehadiran bulan ${bulanTerpilih} sudah sinkron. Tidak ada data baru.`, "info");
