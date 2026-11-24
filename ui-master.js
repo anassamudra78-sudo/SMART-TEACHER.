@@ -886,12 +886,26 @@ async function tarikDataGateway(kelasId) {
         let hitungBerhasil = 0;
         const siswaKelas = AppState.db.siswa.filter(s => s.kelasId === kelasTerpilih);
 
-        dataGateway.forEach(absenGerbang => {
-            if (absenGerbang.nis && absenGerbang.tanggal) {
-                let nisBersih = String(absenGerbang.nis);
-                if (nisBersih.includes('|')) nisBersih = nisBersih.split('|')[0];
-                if (nisBersih.includes(' ')) nisBersih = nisBersih.split(' ')[0];
-                const siswaMatch = siswaKelas.find(s => Number(s.nis) === Number(nisBersih) || String(s.id) === nisBersih);
+      dataGateway.forEach(absenGerbang => {
+            if (absenGerbang.tanggal) {
+                const rawQr = String(absenGerbang.qr || absenGerbang.nis || '').trim();
+                const parts = rawQr.split('|');
+                const idAtauNis = (parts[0] || '').trim();
+                const namaDariLog = (parts[1] || '').trim().toLowerCase();
+
+                // Cocokkan berdasarkan: (1) NIS teks persis, (2) NIS angka (abaikan nol di depan), (3) ID siswa, atau (4) Nama lengkap
+                const siswaMatch = siswaKelas.find(s => {
+                    const dbNis = String(s.nis || '').trim();
+                    const dbId = String(s.id || '').trim();
+                    const dbNama = String(s.nama || '').trim().toLowerCase();
+
+                    const cocokNisTeks = dbNis !== '' && dbNis === idAtauNis;
+                    const cocokNisAngka = dbNis !== '' && idAtauNis !== '' && !isNaN(dbNis) && !isNaN(idAtauNis) && Number(dbNis) === Number(idAtauNis);
+                    const cocokId = dbId !== '' && dbId === idAtauNis;
+                    const cocokNama = namaDariLog !== '' && dbNama === namaDariLog;
+
+                    return cocokNisTeks || cocokNisAngka || cocokId || cocokNama;
+                });
 
                 if (siswaMatch) {
                     const idx = AppState.db.absensi.findIndex(a => a.siswaId === siswaMatch.id && a.tanggal === absenGerbang.tanggal && a.kelasId === kelasTerpilih);
@@ -913,7 +927,6 @@ async function tarikDataGateway(kelasId) {
                 }
             }
         });
-
         // 4. PASTIKAN POSISI WALI KELAS, BULAN & KELAS TETAP TERKUNCI SEBELUM RENDER ULANG
         const radioWali = document.querySelector('input[name="mode-absen"][value="walikelas"]');
         if (radioWali) radioWali.checked = true;
