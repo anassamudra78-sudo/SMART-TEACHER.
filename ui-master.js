@@ -398,44 +398,72 @@ function simpanPenilaian(kelasId, mapelId, jenis) {
     forceSaveNotification();
 }
 
-function hitungNilaiProporsional(siswaId, mapelId) {
-    let pTugas = AppState.db.penilaian.find(p => p.siswaId === siswaId && p.mapelId === mapelId && p.jenis === 'Tugas');
-    let pUTS = AppState.db.penilaian.find(p => p.siswaId === siswaId && p.mapelId === mapelId && p.jenis === 'UTS');
-    let pUAS = AppState.db.penilaian.find(p => p.siswaId === siswaId && p.mapelId === mapelId && p.jenis === 'UAS');
-
-    let hasTugas = pTugas && pTugas.nilai !== "" && pTugas.nilai !== null && !isNaN(pTugas.nilai);
-    let hasUTS = pUTS && pUTS.nilai !== "" && pUTS.nilai !== null && !isNaN(pUTS.nilai);
-    let hasUAS = pUAS && pUAS.nilai !== "" && pUAS.nilai !== null && !isNaN(pUAS.nilai);
-
-    let nTugas = hasTugas ? Number(pTugas.nilai) : null;
-    let nUTS = hasUTS ? Number(pUTS.nilai) : null;
-    let nUAS = hasUAS ? Number(pUAS.nilai) : null;
-
-    if (!hasTugas && !hasUTS && !hasUAS) return { akhir: 0, predikat: '-', nTugas: '-', nUTS: '-', nUAS: '-' };
-
-    let weightedSum = ((nTugas || 0) * 0.3) + ((nUTS || 0) * 0.3) + ((nUAS || 0) * 0.4);
-    let totalWeight = (hasTugas ? 0.3 : 0) + (hasUTS ? 0.3 : 0) + (hasUAS ? 0.4 : 0);
-    
-    let akhir = Math.round(weightedSum / totalWeight);
-    let predikat = akhir >= 90 ? 'A' : (akhir >= 80 ? 'B' : (akhir >= 70 ? 'C' : 'D'));
-
-    return { akhir, predikat, nTugas: hasTugas ? nTugas : '-', nUTS: hasUTS ? nUTS : '-', nUAS: hasUAS ? nUAS : '-' };
+function ambilNilaiKategori(siswaId, mapelId, daftarAlias) {
+    const data = AppState.db.penilaian.find(p =>
+        p.siswaId === siswaId &&
+        p.mapelId === mapelId &&
+        daftarAlias.includes(p.jenis) &&
+        p.nilai !== "" && p.nilai !== null && !isNaN(p.nilai)
+    );
+    return data ? Number(data.nilai) : null;
 }
 
-function renderRekapNilai(container) {
-    let kelasOpts = AppState.db.kelas.map(k => `<option value="${k.id}">${k.kode}</option>`).join('');
-    let mapelOpts = AppState.db.mapel.map(m => `<option value="${m.id}">${m.nama}</option>`).join('');
+function hitungNilaiProporsional(siswaId, mapelId) {
+    const tpList = [];
+    const nilaiTpValid = [];
 
-    container.innerHTML = `
-        <div class="bg-white dark:bg-slate-900 p-6 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-800 mb-6 grid grid-cols-1 md:grid-cols-2 gap-5">
-            <div><label class="text-xs font-bold text-slate-500 dark:text-slate-400 block mb-1.5">Kelas</label>
-                 <select id="rekap-kelas" onchange="loadRekap()" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 outline-none dark:text-white"><option value="">-- Pilih --</option>${kelasOpts}</select></div>
-            <div><label class="text-xs font-bold text-slate-500 dark:text-slate-400 block mb-1.5">Mata Pelajaran</label>
-                 <select id="rekap-mapel" onchange="loadRekap()" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 outline-none dark:text-white"><option value="">-- Pilih --</option>${mapelOpts}</select></div>
-        </div>
-        <div id="rekap-container"></div>
-    `;
-    loadRekap();
+    for (let i = 1; i <= 7; i++) {
+        const tgs = ambilNilaiKategori(siswaId, mapelId, [`Tugas TP ${i}`, `Tugas (TP/Bab ${i})`]);
+        const sum = ambilNilaiKategori(siswaId, mapelId, [`Sumatif TP ${i}`, `Sumatif (TP/Bab ${i})`]);
+        tpList.push({
+            tugas: tgs !== null ? tgs : '-',
+            sumatif: sum !== null ? sum : '-'
+        });
+        if (tgs !== null) nilaiTpValid.push(tgs);
+        if (sum !== null) nilaiTpValid.push(sum);
+    }
+
+    const nSTS = ambilNilaiKategori(siswaId, mapelId, ['STS', 'UTS']);
+    const nSAS = ambilNilaiKategori(siswaId, mapelId, ['SAS', 'UAS']);
+
+    // Dukungan cadangan jika ada nilai format lama 'Tugas'
+    const nTugasLama = ambilNilaiKategori(siswaId, mapelId, ['Tugas']);
+    if (nilaiTpValid.length === 0 && nTugasLama !== null) {
+        nilaiTpValid.push(nTugasLama);
+    }
+
+    const rataTP = nilaiTpValid.length > 0
+        ? Math.round(nilaiTpValid.reduce((a, b) => a + b, 0) / nilaiTpValid.length)
+        : null;
+
+    // Hitung Nilai Rapor dari komponen yang sudah terisi (Rata2 TP, STS, SAS)
+    const komponenRapor = [];
+    if (rataTP !== null) komponenRapor.push(rataTP);
+    if (nSTS !== null) komponenRapor.push(nSTS);
+    if (nSAS !== null) komponenRapor.push(nSAS);
+
+    if (komponenRapor.length === 0) {
+        return {
+            tpList,
+            rataTP: '-',
+            nSTS: '-',
+            nSAS: '-',
+            akhir: 0,
+            predikat: '-'
+        };
+    }
+
+    const akhir = Math.round(komponenRapor.reduce((a, b) => a + b, 0) / komponenRapor.length);
+    const predikat = akhir >= 90 ? 'A' : (akhir >= 80 ? 'B' : (akhir >= 70 ? 'C' : 'D'));
+
+    return {
+        tpList,
+        rataTP: rataTP !== null ? rataTP : '-',
+        nSTS: nSTS !== null ? nSTS : '-',
+        nSAS: nSAS !== null ? nSAS : '-',
+        akhir,
+        predikat
+    };
 }
 
 function loadRekap() {
@@ -443,33 +471,65 @@ function loadRekap() {
     const mapelId = document.getElementById('rekap-mapel').value;
     const container = document.getElementById('rekap-container');
 
-    if(!kelasId || !mapelId) { container.innerHTML = ''; return; }
+    if (!kelasId || !mapelId) { container.innerHTML = ''; return; }
     const siswaKelas = AppState.db.siswa.filter(s => s.kelasId === kelasId);
+
+    let headerTPAtas = '';
+    let headerTPBawah = '';
+    for (let i = 1; i <= 7; i++) {
+        headerTPAtas += `<th colspan="2" class="py-2 px-2 text-center border border-slate-200 dark:border-slate-700 bg-amber-50/70 dark:bg-amber-950/30 text-amber-700 dark:text-amber-300">TP/BAB ${i}</th>`;
+        headerTPBawah += `
+            <th class="py-2 px-2 text-center border border-slate-200 dark:border-slate-700 text-[10px]">Tugas</th>
+            <th class="py-2 px-2 text-center border border-slate-200 dark:border-slate-700 text-[10px]">Sumatif</th>
+        `;
+    }
 
     let rows = siswaKelas.map((siswa, idx) => {
         const calc = hitungNilaiProporsional(siswa.id, mapelId);
+        const selTP = calc.tpList.map(tp => `
+            <td class="py-2.5 px-2 text-center border border-slate-100 dark:border-slate-800 text-xs">${tp.tugas}</td>
+            <td class="py-2.5 px-2 text-center border border-slate-100 dark:border-slate-800 text-xs">${tp.sumatif}</td>
+        `).join('');
+
         return `
             <tr class="border-b border-slate-100 dark:border-slate-800 hover:bg-slate-50/50 dark:hover:bg-slate-800/50">
-                <td class="py-3.5 px-4 text-center">${idx+1}</td>
-                <td class="py-3.5 px-4 font-bold text-slate-800 dark:text-white">${siswa.nama}</td>
-                <td class="py-3.5 px-4 text-center">${calc.nTugas}</td>
-                <td class="py-3.5 px-4 text-center">${calc.nUTS}</td>
-                <td class="py-3.5 px-4 text-center">${calc.nUAS}</td>
-                <td class="py-3.5 px-4 text-center font-black">${calc.akhir || '-'}</td>
-                <td class="py-3.5 px-4 text-center font-bold text-slate-500">${calc.predikat}</td>
+                <td class="py-2.5 px-3 text-center text-xs font-bold text-slate-500 border border-slate-100 dark:border-slate-800">${idx + 1}</td>
+                <td class="py-2.5 px-3 text-center text-xs text-slate-500 border border-slate-100 dark:border-slate-800">${siswa.nis || '-'}</td>
+                <td class="py-2.5 px-3 font-bold text-xs text-slate-800 dark:text-white whitespace-nowrap border border-slate-100 dark:border-slate-800">${siswa.nama}</td>
+                ${selTP}
+                <td class="py-2.5 px-3 text-center font-bold text-xs text-indigo-500 border border-slate-100 dark:border-slate-800">${calc.rataTP}</td>
+                <td class="py-2.5 px-3 text-center font-bold text-xs border border-slate-100 dark:border-slate-800">${calc.nSTS}</td>
+                <td class="py-2.5 px-3 text-center font-bold text-xs border border-slate-100 dark:border-slate-800">${calc.nSAS}</td>
+                <td class="py-2.5 px-3 text-center font-black text-xs text-emerald-500 border border-slate-100 dark:border-slate-800">${calc.akhir || '-'}</td>
+                <td class="py-2.5 px-3 text-center font-bold text-xs text-slate-500 border border-slate-100 dark:border-slate-800">${calc.predikat}</td>
             </tr>
         `;
     }).join('');
 
     container.innerHTML = `
-        <div class="bg-white dark:bg-slate-900 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-800 overflow-hidden fade-in">
-            <table class="w-full text-left"><thead class="bg-slate-50 dark:bg-slate-800 text-slate-500 dark:text-slate-400 text-[11px] uppercase tracking-wider font-bold">
-                <tr><th class="py-4 px-4 text-center">No</th><th class="py-4 px-4">Nama Siswa</th><th class="py-4 px-4 text-center">Tugas (30%)</th><th class="py-4 px-4 text-center">UTS (30%)</th><th class="py-4 px-4 text-center">UAS (40%)</th><th class="py-4 px-4 text-center">Akhir</th><th class="py-4 px-4 text-center">Predikat</th></tr>
-            </thead><tbody>${rows}</tbody></table>
+        <div class="bg-white dark:bg-slate-900 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-800 overflow-x-auto custom-scrollbar fade-in">
+            <table class="w-max min-w-full text-left border-collapse">
+                <thead class="bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-[10px] uppercase tracking-wider font-extrabold">
+                    <tr>
+                        <th rowspan="2" class="py-3 px-3 text-center border border-slate-200 dark:border-slate-700">No</th>
+                        <th rowspan="2" class="py-3 px-3 text-center border border-slate-200 dark:border-slate-700">NIS</th>
+                        <th rowspan="2" class="py-3 px-4 border border-slate-200 dark:border-slate-700">Nama Siswa</th>
+                        ${headerTPAtas}
+                        <th rowspan="2" class="py-3 px-3 text-center border border-slate-200 dark:border-slate-700 text-indigo-500">Rata2 TP</th>
+                        <th rowspan="2" class="py-3 px-3 text-center border border-slate-200 dark:border-slate-700">STS</th>
+                        <th rowspan="2" class="py-3 px-3 text-center border border-slate-200 dark:border-slate-700">SAS</th>
+                        <th rowspan="2" class="py-3 px-3 text-center border border-slate-200 dark:border-slate-700 text-emerald-500">Nilai Rapor</th>
+                        <th rowspan="2" class="py-3 px-3 text-center border border-slate-200 dark:border-slate-700">Predikat</th>
+                    </tr>
+                    <tr>
+                        ${headerTPBawah}
+                    </tr>
+                </thead>
+                <tbody>${rows}</tbody>
+            </table>
         </div>
     `;
 }
-
 function renderAbsensi(container) {
     let kelasOpts = AppState.db.kelas.map(k => `<option value="${k.id}">${k.kode}</option>`).join('');
     const nowLocal = new Date();
