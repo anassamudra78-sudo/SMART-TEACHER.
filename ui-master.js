@@ -684,11 +684,20 @@ function renderRekapNilai(container) {
     let mapelOpts = AppState.db.mapel.map(m => `<option value="${m.id}">${m.nama}</option>`).join('');
 
     container.innerHTML = `
-        <div class="bg-white dark:bg-slate-900 p-6 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-800 mb-6 grid grid-cols-1 md:grid-cols-2 gap-5">
-            <div><label class="text-xs font-bold text-slate-500 dark:text-slate-400 block mb-1.5">Kelas</label>
-                 <select id="rekap-kelas" onchange="loadRekap()" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 outline-none dark:text-white"><option value="">-- Pilih --</option>${kelasOpts}</select></div>
-            <div><label class="text-xs font-bold text-slate-500 dark:text-slate-400 block mb-1.5">Mata Pelajaran</label>
-                 <select id="rekap-mapel" onchange="loadRekap()" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 outline-none dark:text-white"><option value="">-- Pilih --</option>${mapelOpts}</select></div>
+        <div class="bg-white dark:bg-slate-900 p-6 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-800 mb-6 flex flex-col lg:flex-row lg:items-end gap-4">
+            <div class="flex-1">
+                <label class="text-xs font-bold text-slate-500 dark:text-slate-400 block mb-1.5">Kelas</label>
+                <select id="rekap-kelas" onchange="loadRekap()" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 outline-none dark:text-white"><option value="">-- Pilih --</option>${kelasOpts}</select>
+            </div>
+            <div class="flex-1">
+                <label class="text-xs font-bold text-slate-500 dark:text-slate-400 block mb-1.5">Mata Pelajaran</label>
+                <select id="rekap-mapel" onchange="loadRekap()" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 outline-none dark:text-white"><option value="">-- Pilih --</option>${mapelOpts}</select>
+            </div>
+            <div class="shrink-0">
+                <button onclick="exportRekapExcel()" class="w-full lg:w-auto bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 px-5 rounded-xl text-sm shadow-md shadow-emerald-500/20 transition-all flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-file-excel"></i> Download Excel
+                </button>
+            </div>
         </div>
         <div id="rekap-container"></div>
     `;
@@ -779,6 +788,249 @@ function loadRekap() {
         </div>
     `;
 }
+
+function exportRekapExcel() {
+    const kelasId = document.getElementById('rekap-kelas')?.value;
+    const mapelId = document.getElementById('rekap-mapel')?.value;
+
+    if (!kelasId || !mapelId) {
+        return showAlert("Pilih Data", "Silakan pilih Kelas dan Mata Pelajaran terlebih dahulu sebelum mengunduh Excel.", "warning");
+    }
+
+    const siswaKelas = (AppState.db.siswa || []).filter(s => s.kelasId === kelasId);
+    if (siswaKelas.length === 0) {
+        return showAlert("Info", "Belum ada data siswa pada kelas ini.", "info");
+    }
+
+    // 1. Ambil Metadata Sekolah, Kelas, Mapel & Guru dari DB
+    const sek = AppState.db.sekolah || {};
+    const namaSekolah = String(sek.nama || 'NAMA SEKOLAH').toUpperCase();
+    const infoAlamat = [
+        sek.alamat ? (/^sekretariat/i.test(sek.alamat) ? sek.alamat : 'Sekretariat ' + sek.alamat) : '',
+        sek.npsn ? 'NPSN: ' + sek.npsn : ''
+    ].filter(Boolean).join('  |  ');
+    const tahunAjaran = sek.tahunAjaran || '2026/2027';
+    const semester = sek.semester ? ` (${String(sek.semester).toUpperCase()})` : '';
+    const kepsek = sek.kepsek || '_____________________';
+    const nipKepsek = sek.nip || '-';
+
+    const kelasObj = (AppState.db.kelas || []).find(k => String(k.id) === String(kelasId));
+    const namaKelas = kelasObj ? kelasObj.kode : '-';
+    const waliKelas = kelasObj && kelasObj.wali ? kelasObj.wali : '-';
+
+    const mapelObj = (AppState.db.mapel || []).find(m => String(m.id) === String(mapelId));
+    const namaMapel = mapelObj ? mapelObj.nama : '-';
+    const kkmMapel = getKKMMapel(mapelId);
+
+    // Cari Guru Pengampu Mapel dari Jadwal -> Guru
+    let namaGuru = '-';
+    const jadwalCocok = (AppState.db.jadwal || []).find(j => String(j.kelasId) === String(kelasId) && String(j.mapelId) === String(mapelId));
+    if (jadwalCocok && jadwalCocok.guruId) {
+        const guruObj = (AppState.db.guru || []).find(g => String(g.id) === String(jadwalCocok.guruId));
+        if (guruObj && guruObj.nama) namaGuru = guruObj.nama;
+    } else if ((AppState.db.guru || []).length === 1 && AppState.db.guru[0].nama) {
+        namaGuru = AppState.db.guru[0].nama;
+    }
+
+    // 2. Susun Matriks Baris (Kolom A..AF = 32 kolom, tabel utama B..AF)
+    const TOTAL_COLS = 32;
+    const buatBarisKosong = () => new Array(TOTAL_COLS).fill('');
+    const aoa = [];
+
+    // Baris 1–6: Kop Sekolah & Judul Laporan
+    aoa.push(buatBarisKosong()); // Row 1
+    const rKopNama = buatBarisKosong(); rKopNama[1] = namaSekolah; aoa.push(rKopNama); // Row 2
+    const rKopAlamat = buatBarisKosong(); rKopAlamat[1] = infoAlamat; aoa.push(rKopAlamat); // Row 3
+    aoa.push(buatBarisKosong()); // Row 4
+    const rJudul1 = buatBarisKosong(); rJudul1[1] = 'HASIL PENILAIAN KEGIATAN KURIKULUM'; aoa.push(rJudul1); // Row 5
+    const rJudul2 = buatBarisKosong(); rJudul2[1] = `TAHUN PELAJARAN ${tahunAjaran}${semester}`; aoa.push(rJudul2); // Row 6
+    aoa.push(buatBarisKosong()); // Row 7
+
+    // Baris 8–9: Identitas Mapel, Guru, Kelas & Wali Kelas
+    const rId1 = buatBarisKosong();
+    rId1[1] = 'MATA PELAJARAN'; rId1[3] = `: ${namaMapel}`;
+    rId1[10] = 'GURU MAPEL';    rId1[13] = `: ${namaGuru}`;
+    aoa.push(rId1); // Row 8
+
+    const rId2 = buatBarisKosong();
+    rId2[1] = 'KELAS';          rId2[3] = `: ${namaKelas}`;
+    rId2[10] = 'WALI KELAS';    rId2[13] = `: ${waliKelas}`;
+    aoa.push(rId2); // Row 9
+
+    aoa.push(buatBarisKosong()); // Row 10
+
+    // Baris 11–13: Header Tabel 3 Tingkat (Persis Template Excel)
+    const h1 = buatBarisKosong();
+    const h2 = buatBarisKosong();
+    const h3 = buatBarisKosong();
+
+    h1[1] = 'NOMOR';
+    h2[1] = 'URUT';
+    h2[2] = 'INDUK';
+    h1[3] = 'NAMA SISWA';
+    h1[4] = 'KKM';
+    h1[5] = 'PENGETAHUAN';
+
+    for (let i = 1; i <= 7; i++) {
+        const cStart = 5 + (i - 1) * 3;
+        h2[cStart] = `TP/BAB ${i}`;
+        h3[cStart] = 'Sumatif';
+        h3[cStart + 1] = 'Tugas';
+        h2[cStart + 2] = `TP${i}`;
+    }
+
+    h2[26] = 'Rerata TP';
+    h2[27] = '2xRerata TP';
+    h2[28] = 'STS';
+    h2[29] = 'SAS';
+    h1[30] = 'NILAI RAPOR';
+    h1[31] = 'PREDIKAT';
+
+    aoa.push(h1, h2, h3); // Row 11, 12, 13
+
+    // Helper huruf kolom (0 -> A, 1 -> B, ...)
+    const colLetter = (idx) => {
+        let s = '', n = idx + 1;
+        while (n > 0) {
+            let m = (n - 1) % 26;
+            s = String.fromCharCode(65 + m) + s;
+            n = Math.floor((n - m) / 26);
+        }
+        return s;
+    };
+
+    // Baris 14+: Data Siswa & Rumus Otomatis
+    const startDataRow = 14;
+    siswaKelas.forEach((siswa, idx) => {
+        const rNum = startDataRow + idx;
+        const row = buatBarisKosong();
+        const calc = hitungNilaiProporsional(siswa.id, mapelId);
+
+        row[1] = idx + 1;
+        row[2] = siswa.nis ? { t: 's', v: String(siswa.nis), z: '@' } : '-';
+        row[3] = siswa.nama || '-';
+        row[4] = kkmMapel;
+
+        for (let i = 1; i <= 7; i++) {
+            const cStart = 5 + (i - 1) * 3;
+            const colSum = colLetter(cStart);
+            const colTgs = colLetter(cStart + 1);
+
+            const sumVal = ambilNilaiKategori(siswa.id, mapelId, [`Sumatif TP ${i}`, `Sumatif (TP/Bab ${i})`]);
+            const tgsVal = ambilNilaiKategori(siswa.id, mapelId, [`Tugas TP ${i}`, `Tugas (TP/Bab ${i})`]);
+            const tpItem = calc.tpList[i - 1];
+
+            row[cStart]     = sumVal !== null ? Number(sumVal) : '';
+            row[cStart + 1] = tgsVal !== null ? Number(tgsVal) : '';
+
+            const formulaTP = `IF(AND(${colSum}${rNum}="",${colTgs}${rNum}=""),"",IF(${colSum}${rNum}="",${colTgs}${rNum},IF(${colTgs}${rNum}="",${colSum}${rNum},ROUND((60%*${colSum}${rNum})+(40%*${colTgs}${rNum}),0))))`;
+            row[cStart + 2] = tpItem && tpItem.tp !== '-'
+                ? { t: 'n', f: formulaTP, v: Number(tpItem.tp) }
+                : { t: 'n', f: formulaTP };
+        }
+
+        // AA: Rerata TP
+        const formulaRerata = `IF(COUNT(H${rNum},K${rNum},N${rNum},Q${rNum},T${rNum},W${rNum},Z${rNum})=0,"",ROUND(AVERAGE(H${rNum},K${rNum},N${rNum},Q${rNum},T${rNum},W${rNum},Z${rNum}),0))`;
+        row[26] = calc.rataTP !== '-' ? { t: 'n', f: formulaRerata, v: Number(calc.rataTP) } : { t: 'n', f: formulaRerata };
+
+        // AB: 2xRerata TP
+        const formula2x = `IF(AA${rNum}="","",2*AA${rNum})`;
+        row[27] = calc.duaKaliRataTP !== '-' ? { t: 'n', f: formula2x, v: Number(calc.duaKaliRataTP) } : { t: 'n', f: formula2x };
+
+        // AC: STS & AD: SAS
+        const stsVal = ambilNilaiKategori(siswa.id, mapelId, ['STS', 'UTS']);
+        const sasVal = ambilNilaiKategori(siswa.id, mapelId, ['SAS', 'UAS']);
+        row[28] = stsVal !== null ? Number(stsVal) : '';
+        row[29] = sasVal !== null ? Number(sasVal) : '';
+
+        // AE: NILAI RAPOR
+        const formulaRapor = `IF(AND(AB${rNum}="",AC${rNum}="",AD${rNum}=""),"",ROUND((N(AB${rNum})+N(AC${rNum})+N(AD${rNum}))/(IF(AB${rNum}<>"",2,0)+IF(AC${rNum}<>"",1,0)+IF(AD${rNum}<>"",1,0)),0))`;
+        row[30] = calc.akhir > 0 ? { t: 'n', f: formulaRapor, v: Number(calc.akhir) } : { t: 'n', f: formulaRapor };
+
+        // AF: PREDIKAT
+        const formulaPred = `IF(AE${rNum}="","-",IF(AE${rNum}>=90,"A",IF(AE${rNum}>=80,"B",IF(AE${rNum}>=E${rNum},"C","D"))))`;
+        row[31] = { t: 's', f: formulaPred, v: calc.predikat || '-' };
+
+        aoa.push(row);
+    });
+
+    // Blok Tanda Tangan di Bagian Bawah
+    aoa.push(buatBarisKosong());
+    aoa.push(buatBarisKosong());
+    const rTtd1 = buatBarisKosong(); rTtd1[3] = 'Mengetahui,'; aoa.push(rTtd1);
+    const rTtd2 = buatBarisKosong(); rTtd2[3] = 'Kepala Sekolah'; rTtd2[22] = 'Guru Mata Pelajaran'; aoa.push(rTtd2);
+    aoa.push(buatBarisKosong());
+    aoa.push(buatBarisKosong());
+    aoa.push(buatBarisKosong());
+    const rTtdNama = buatBarisKosong(); rTtdNama[3] = kepsek; rTtdNama[22] = namaGuru; aoa.push(rTtdNama);
+    const rTtdNip  = buatBarisKosong(); rTtdNip[3] = `NIP. ${nipKepsek}`; aoa.push(rTtdNip);
+
+    // 3. Buat Worksheet, Merge Sel & Atur Lebar Kolom
+    const ws = XLSX.utils.aoa_to_sheet(aoa);
+
+    ws['!merges'] = [
+        // Kop & Judul
+        { s: { r: 1, c: 1 }, e: { r: 1, c: 31 } },
+        { s: { r: 2, c: 1 }, e: { r: 2, c: 31 } },
+        { s: { r: 4, c: 1 }, e: { r: 4, c: 31 } },
+        { s: { r: 5, c: 1 }, e: { r: 5, c: 31 } },
+        // Identitas
+        { s: { r: 7, c: 1 }, e: { r: 7, c: 2 } },
+        { s: { r: 7, c: 10 }, e: { r: 7, c: 12 } },
+        { s: { r: 8, c: 1 }, e: { r: 8, c: 2 } },
+        { s: { r: 8, c: 10 }, e: { r: 8, c: 12 } },
+        // Header Tabel
+        { s: { r: 10, c: 1 }, e: { r: 10, c: 2 } },   // NOMOR
+        { s: { r: 11, c: 1 }, e: { r: 12, c: 1 } },   // URUT
+        { s: { r: 11, c: 2 }, e: { r: 12, c: 2 } },   // INDUK
+        { s: { r: 10, c: 3 }, e: { r: 12, c: 3 } },   // NAMA SISWA
+        { s: { r: 10, c: 4 }, e: { r: 12, c: 4 } },   // KKM
+        { s: { r: 10, c: 5 }, e: { r: 10, c: 29 } },  // PENGETAHUAN
+        { s: { r: 11, c: 26 }, e: { r: 12, c: 26 } }, // Rerata TP
+        { s: { r: 11, c: 27 }, e: { r: 12, c: 27 } }, // 2xRerata TP
+        { s: { r: 11, c: 28 }, e: { r: 12, c: 28 } }, // STS
+        { s: { r: 11, c: 29 }, e: { r: 12, c: 29 } }, // SAS
+        { s: { r: 10, c: 30 }, e: { r: 12, c: 30 } }, // NILAI RAPOR
+        { s: { r: 10, c: 31 }, e: { r: 12, c: 31 } }  // PREDIKAT
+    ];
+
+    for (let i = 0; i < 7; i++) {
+        const cStart = 5 + i * 3;
+        ws['!merges'].push({ s: { r: 11, c: cStart }, e: { r: 11, c: cStart + 1 } });     // TP/BAB n
+        ws['!merges'].push({ s: { r: 11, c: cStart + 2 }, e: { r: 12, c: cStart + 2 } }); // TPn
+    }
+
+    ws['!cols'] = [
+        { wch: 3 },  // A
+        { wch: 6 },  // B: URUT
+        { wch: 13 }, // C: INDUK
+        { wch: 32 }, // D: NAMA SISWA
+        { wch: 6 },  // E: KKM
+        ...new Array(21).fill({ wch: 7 }), // F..Z: Nilai TP/BAB 1..7
+        { wch: 10 }, // AA: Rerata TP
+        { wch: 12 }, // AB: 2xRerata TP
+        { wch: 7 },  // AC: STS
+        { wch: 7 },  // AD: SAS
+        { wch: 12 }, // AE: NILAI RAPOR
+        { wch: 10 }  // AF: PREDIKAT
+    ];
+
+    ws['!rows'] = [];
+    ws['!rows'][1] = { hpt: 22 };
+    ws['!rows'][12] = { hpt: 28 };
+
+    const wb = XLSX.utils.book_new();
+    const sheetName = `Rapor_${namaKelas}`.replace(/[\\/?*[\]:]/g, '').substring(0, 31) || 'RAPOR';
+    XLSX.utils.book_append_sheet(wb, ws, sheetName);
+
+    const safeMapel = namaMapel.replace(/[\\/?*[\]:]/g, '_');
+    const safeKelas = namaKelas.replace(/[\\/?*[\]:]/g, '_');
+    const fileName = `Rekap_Nilai_${safeMapel}_${safeKelas}.xlsx`;
+
+    XLSX.writeFile(wb, fileName);
+    showAlert("Berhasil", `File ${fileName} berhasil diunduh!`, "success");
+}
+
 function renderAbsensi(container) {
     let kelasOpts = AppState.db.kelas.map(k => `<option value="${k.id}">${k.kode}</option>`).join('');
     const nowLocal = new Date();
