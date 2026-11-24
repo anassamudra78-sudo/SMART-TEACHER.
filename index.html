@@ -116,7 +116,7 @@
             pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
         }
     </script>
-    <style>
+   <style>
 html, body {
     max-width: 100vw !important;
     overflow-x: hidden !important;
@@ -133,7 +133,6 @@ html, body {
         overflow-x: hidden !important;
     }
 
-    /* Ringkaskan Top Bar Kuis di HP: sembunyikan timer/skor/musik saat lobi persiapan */
     #quiz-arena-modal > .sticky {
         padding: 0.65rem 0.9rem !important;
         gap: 0.5rem !important;
@@ -145,7 +144,6 @@ html, body {
         display: none !important;
     }
 
-    /* Pastikan kartu lobi & dropdown siswa muat utuh di layar HP */
     #quiz-arena-body {
         padding: 1rem 0.75rem 2rem !important;
         justify-content: flex-start !important;
@@ -153,6 +151,8 @@ html, body {
     #quiz-arena-body > div {
         padding: 1.25rem 1rem !important;
     }
+
+    /* Rapikan dropdown & tombol Undi Single Player di HP */
     #lobby-single-container > div > .flex,
     #box-dnd-single > div {
         display: flex !important;
@@ -172,26 +172,82 @@ html, body {
         padding-right: 0.75rem !important;
     }
 
-    /* Susun kartu Duel Kuis (Sudut Biru VS Sudut Merah) vertikal di HP */
-    #layar-undian-v2 #arena-clash {
+    /* Rapikan kotak Head-to-Head Duel di Lobi Kuis agar serapi DnD di HP */
+    #lobby-duel-container > .flex {
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 0.5rem !important;
+    }
+    #btn-undi-duel-spin {
+        width: 100% !important;
+        justify-content: center !important;
+        padding-top: 0.5rem !important;
+        padding-bottom: 0.5rem !important;
+    }
+    #lobby-duel-container > .grid {
+        grid-template-columns: 1fr !important;
+        gap: 0.65rem !important;
+    }
+
+    /* Buat layar Undian Duel Kuis persis serapi DnD di HP (tanpa menimpa kartu merah) */
+    #layar-undian-v2 {
+        display: flex !important;
         flex-direction: column !important;
         justify-content: center !important;
-        gap: 0.75rem !important;
-        padding: 1rem !important;
+        align-items: center !important;
+        padding: 1.25rem !important;
+        gap: 0.85rem !important;
+        overflow-y: auto !important;
+    }
+    #layar-undian-v2 #arena-clash {
+        height: auto !important;
+        flex-direction: column !important;
+        justify-content: center !important;
+        align-items: stretch !important;
+        gap: 0.65rem !important;
+        padding: 0 !important;
+        width: 100% !important;
     }
     #layar-undian-v2 #arena-clash > div {
+        flex: none !important;
         width: 100% !important;
         justify-content: center !important;
     }
     #layar-undian-v2 #kartu-kiri,
     #layar-undian-v2 #kartu-kanan {
         max-width: 100% !important;
-        min-height: 120px !important;
-        padding: 1rem !important;
+        width: 100% !important;
+        min-height: 115px !important;
+        padding: 1.1rem 1rem !important;
+        border-radius: 1.5rem !important;
+    }
+    #layar-undian-v2 #kartu-kiri h3,
+    #layar-undian-v2 #kartu-kanan h3 {
+        font-size: 0.75rem !important;
+        margin-bottom: 0.35rem !important;
+    }
+    #layar-undian-v2 #nama-kiri,
+    #layar-undian-v2 #nama-kanan {
+        font-size: 1.45rem !important;
     }
     #layar-undian-v2 #logo-vs {
-        font-size: 2.5rem !important;
+        font-size: 2.25rem !important;
         padding-right: 0 !important;
+        margin: 0.1rem 0 !important;
+    }
+    #layar-undian-v2 > div:last-child:not(#arena-clash) {
+        position: static !important;
+        transform: none !important;
+        width: 100% !important;
+        margin-top: 0.5rem !important;
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 0.6rem !important;
+    }
+    #layar-undian-v2 > div:last-child:not(#arena-clash) button {
+        width: 100% !important;
+        padding-top: 0.85rem !important;
+        padding-bottom: 0.85rem !important;
     }
 }
 </style>
