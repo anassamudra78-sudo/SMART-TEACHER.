@@ -837,54 +837,106 @@ async function tarikDataGateway(kelasId) {
     const npsn = activeWs.npsn;
     if (!npsn) return showAlert("NPSN Kosong", "Kode Sekolah / NPSN untuk ruang kerja '" + activeWs.nama + "' belum diatur. Silakan buat/edit ruang kerjanya.", "error");
 
-    const tgl = new Date();
-    const tglStr = tgl.getFullYear() + "-" + String(tgl.getMonth() + 1).padStart(2, '0') + "-" + String(tgl.getDate()).padStart(2, '0');
+    // 1. KUNCI POSISI FILTER SAAT INI AGAR TIDAK MENTAL KE AWAL
+    const bulanInput = document.getElementById('abs-bulan');
+    const bulanTerpilih = (bulanInput && bulanInput.value)
+        ? bulanInput.value
+        : (new Date().getFullYear() + "-" + String(new Date().getMonth() + 1).padStart(2, '0'));
+    const kelasTerpilih = kelasId || (document.getElementById('abs-kelas')?.value || '');
+
     const btn = document.getElementById('btn-tarik-gateway');
-    const originalText = btn.innerHTML;
-    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Sedang Menarik Data...';
-    btn.disabled = true;
+    const originalText = btn ? btn.innerHTML : '';
+    if (btn) {
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Menarik Data Bulan Ini...';
+        btn.disabled = true;
+    }
 
     try {
-        const urlTarik = `${URL_GATEWAY_PUSAT}?action=getLogs&npsn=${encodeURIComponent(npsn)}&tanggal=${encodeURIComponent(tglStr)}`;
-        const response = await fetch(urlTarik);
-        const textResponse = await response.text(); 
-        
-        let jsonResponse;
-        try { jsonResponse = JSON.parse(textResponse); } catch (err) { throw new Error("Server membalas format salah."); }
-        if (jsonResponse.status !== "sukses") throw new Error(jsonResponse.pesan || "Gagal mengambil data dari server pusat.");
+        // 2. SUSUN DAFTAR TANGGAL DARI TANGGAL 1 S/D HARI INI PADA BULAN YANG DIPILIH
+        const [tahunStr, bulanStr] = bulanTerpilih.split('-');
+        const tahunNum = parseInt(tahunStr, 10);
+        const bulanNum = parseInt(bulanStr, 10);
+        const jumlahHariBulan = new Date(tahunNum, bulanNum, 0).getDate();
 
-        const dataGateway = jsonResponse.data || []; 
+        const now = new Date();
+        const isBulanIni = (now.getFullYear() === tahunNum && (now.getMonth() + 1) === bulanNum);
+        const batasHari = isBulanIni ? Math.min(now.getDate(), jumlahHariBulan) : jumlahHariBulan;
+
+        const daftarTanggal = [];
+        for (let d = 1; d <= batasHari; d++) {
+            daftarTanggal.push(`${tahunStr}-${bulanStr}-${String(d).padStart(2, '0')}`);
+        }
+
+        // 3. TARIK DATA SECARA PARALEL UNTUK SELURUH TANGGAL PADA BULAN TERSEBUT
+        const hasilFetch = await Promise.all(
+            daftarTanggal.map(async (tglStr) => {
+                try {
+                    const urlTarik = `${URL_GATEWAY_PUSAT}?action=getLogs&npsn=${encodeURIComponent(npsn)}&tanggal=${encodeURIComponent(tglStr)}`;
+                    const res = await fetch(urlTarik);
+                    const txt = await res.text();
+                    const json = JSON.parse(txt);
+                    return (json.status === "sukses" && Array.isArray(json.data)) ? json.data : [];
+                } catch (e) {
+                    return [];
+                }
+            })
+        );
+
+        const dataGateway = hasilFetch.flat();
         let hitungBerhasil = 0;
-        const siswaKelas = AppState.db.siswa.filter(s => s.kelasId === kelasId);
-            
+        const siswaKelas = AppState.db.siswa.filter(s => s.kelasId === kelasTerpilih);
+
         dataGateway.forEach(absenGerbang => {
             if (absenGerbang.nis && absenGerbang.tanggal) {
                 let nisBersih = String(absenGerbang.nis);
-                    if (nisBersih.includes('|')) nisBersih = nisBersih.split('|')[0];
-                    if (nisBersih.includes(' ')) nisBersih = nisBersih.split(' ')[0];
-                    const siswaMatch = siswaKelas.find(s => Number(s.nis) === Number(nisBersih) || String(s.id) === nisBersih);
+                if (nisBersih.includes('|')) nisBersih = nisBersih.split('|')[0];
+                if (nisBersih.includes(' ')) nisBersih = nisBersih.split(' ')[0];
+                const siswaMatch = siswaKelas.find(s => Number(s.nis) === Number(nisBersih) || String(s.id) === nisBersih);
+
                 if (siswaMatch) {
-                    const idx = AppState.db.absensi.findIndex(a => a.siswaId === siswaMatch.id && a.tanggal === absenGerbang.tanggal && a.kelasId === kelasId);
+                    const idx = AppState.db.absensi.findIndex(a => a.siswaId === siswaMatch.id && a.tanggal === absenGerbang.tanggal && a.kelasId === kelasTerpilih);
                     if (idx >= 0) {
-                        if (AppState.db.absensi[idx].status !== 'H') { AppState.db.absensi[idx].status = 'H'; hitungBerhasil++; }
+                        if (AppState.db.absensi[idx].status !== 'H') {
+                            AppState.db.absensi[idx].status = 'H';
+                            hitungBerhasil++;
+                        }
                     } else {
-                        AppState.db.absensi.push({ id: generateId(), siswaId: siswaMatch.id, kelasId: kelasId, tanggal: absenGerbang.tanggal, status: 'H' });
+                        AppState.db.absensi.push({
+                            id: generateId(),
+                            siswaId: siswaMatch.id,
+                            kelasId: kelasTerpilih,
+                            tanggal: absenGerbang.tanggal,
+                            status: 'H'
+                        });
                         hitungBerhasil++;
                     }
                 }
             }
         });
-            
+
+        // 4. PASTIKAN POSISI WALI KELAS, BULAN & KELAS TETAP TERKUNCI SEBELUM RENDER ULANG
+        const radioWali = document.querySelector('input[name="mode-absen"][value="walikelas"]');
+        if (radioWali) radioWali.checked = true;
+        const elBulan = document.getElementById('abs-bulan');
+        if (elBulan) elBulan.value = bulanTerpilih;
+        const elKelas = document.getElementById('abs-kelas');
+        if (elKelas) elKelas.value = kelasTerpilih;
+
+        loadAbsensi();
+
         if (hitungBerhasil > 0) {
-            saveDatabase(); 
-            showAlert("Sinkronisasi Sukses!", `Berhasil menarik Hadir (H) untuk ${hitungBerhasil} siswa dari Gateway!`, "success");
+            saveDatabase();
+            showAlert("Sinkronisasi Sukses!", `Berhasil menarik Hadir (H) sebanyak ${hitungBerhasil} catatan kehadiran sepanjang bulan ${bulanTerpilih}!`, "success");
         } else {
-            showAlert("Selesai", "Semua data sudah sinkron. Tidak ada kehadiran baru.", "info");
+            showAlert("Selesai", `Semua data kehadiran bulan ${bulanTerpilih} sudah sinkron. Tidak ada data baru.`, "info");
         }
-    } catch (err) { showAlert("Koneksi Gagal", err.message, "error");
+    } catch (err) {
+        showAlert("Koneksi Gagal", err.message, "error");
     } finally {
-        btn.innerHTML = originalText;
-        btn.disabled = false;
-        loadAbsensi(); 
+        const btnBaru = document.getElementById('btn-tarik-gateway');
+        if (btnBaru) {
+            btnBaru.innerHTML = originalText;
+            btnBaru.disabled = false;
+        }
     }
 }
