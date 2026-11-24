@@ -465,7 +465,21 @@ function hitungNilaiProporsional(siswaId, mapelId) {
         predikat
     };
 }
+function renderRekapNilai(container) {
+    let kelasOpts = AppState.db.kelas.map(k => `<option value="${k.id}">${k.kode}</option>`).join('');
+    let mapelOpts = AppState.db.mapel.map(m => `<option value="${m.id}">${m.nama}</option>`).join('');
 
+    container.innerHTML = `
+        <div class="bg-white dark:bg-slate-900 p-6 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-800 mb-6 grid grid-cols-1 md:grid-cols-2 gap-5">
+            <div><label class="text-xs font-bold text-slate-500 dark:text-slate-400 block mb-1.5">Kelas</label>
+                 <select id="rekap-kelas" onchange="loadRekap()" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 outline-none dark:text-white"><option value="">-- Pilih --</option>${kelasOpts}</select></div>
+            <div><label class="text-xs font-bold text-slate-500 dark:text-slate-400 block mb-1.5">Mata Pelajaran</label>
+                 <select id="rekap-mapel" onchange="loadRekap()" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 outline-none dark:text-white"><option value="">-- Pilih --</option>${mapelOpts}</select></div>
+        </div>
+        <div id="rekap-container"></div>
+    `;
+    loadRekap();
+}
 function loadRekap() {
     const kelasId = document.getElementById('rekap-kelas').value;
     const mapelId = document.getElementById('rekap-mapel').value;
