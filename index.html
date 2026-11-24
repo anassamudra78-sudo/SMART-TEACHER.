@@ -133,17 +133,54 @@ html, body {
         overflow-x: hidden !important;
     }
 
+    /* Top Bar Kuis saat Sedang Bermain di HP: ramping & tidak mendorong tombol Keluar */
     #quiz-arena-modal > .sticky {
-        padding: 0.65rem 0.9rem !important;
+        padding: 0.6rem 0.75rem !important;
+        gap: 0.35rem !important;
+        flex-wrap: wrap !important;
+    }
+    #quiz-arena-modal > .sticky > div:first-child {
+        min-width: 0 !important;
+        flex: 1 1 auto !important;
         gap: 0.5rem !important;
     }
+    #quiz-arena-modal > .sticky > div:first-child h3 {
+        font-size: 0.85rem !important;
+        line-height: 1.15 !important;
+    }
+    #quiz-arena-modal > .sticky > div:last-child {
+        gap: 0.35rem !important;
+        flex-shrink: 0 !important;
+    }
+    #quiz-arena-modal:not(.is-lobby) #timer-box-container,
+    #quiz-arena-modal:not(.is-lobby) .bg-amber-500\/20 {
+        padding: 0.35rem 0.55rem !important;
+        border-radius: 0.75rem !important;
+    }
+    #quiz-arena-modal:not(.is-lobby) #timer-kuis,
+    #quiz-arena-modal:not(.is-lobby) #arena-score-text {
+        font-size: 0.85rem !important;
+    }
+    #quiz-arena-modal:not(.is-lobby) #btn-sound-toggle,
+    #quiz-arena-modal > .sticky button[onclick="keluarArenaKuis()"] {
+        padding: 0.45rem 0.65rem !important;
+        border-radius: 0.75rem !important;
+    }
+
+    /* Ringkaskan Top Bar Kuis di HP persis seperti DnD saat Lobi & Evaluasi Selesai */
     #quiz-arena-modal.is-lobby #timer-box-container,
     #quiz-arena-modal.is-lobby #arena-score-text,
     #quiz-arena-modal.is-lobby #btn-sound-toggle,
-    #quiz-arena-modal.is-lobby .bg-amber-500\/20 {
+    #quiz-arena-modal.is-lobby .bg-amber-500\/20,
+    #quiz-arena-modal.is-lobby #streak-badge-container {
         display: none !important;
     }
+    #quiz-arena-modal.is-lobby > .sticky button[onclick="keluarArenaKuis()"] span {
+        display: inline !important;
+        margin-left: 0.35rem !important;
+    }
 
+    /* Kartu Lobi & Kartu Evaluasi Selesai di HP */
     #quiz-arena-body {
         padding: 1rem 0.75rem 2rem !important;
         justify-content: flex-start !important;
@@ -152,7 +189,7 @@ html, body {
         padding: 1.25rem 1rem !important;
     }
 
-    /* Rapikan dropdown & tombol Undi Single Player di HP */
+    /* Dropdown & tombol Undi Single Player di HP */
     #lobby-single-container > div > .flex,
     #box-dnd-single > div {
         display: flex !important;
@@ -172,24 +209,31 @@ html, body {
         padding-right: 0.75rem !important;
     }
 
-    /* Rapikan kotak Head-to-Head Duel di Lobi Kuis agar serapi DnD di HP */
+    /* Kotak Head-to-Head Duel di Lobi Kuis persis seperti DnD di HP */
     #lobby-duel-container > .flex {
-        flex-direction: column !important;
-        align-items: stretch !important;
+        display: flex !important;
+        flex-direction: row !important;
+        align-items: center !important;
+        justify-content: space-between !important;
         gap: 0.5rem !important;
     }
+    #lobby-duel-container > .flex > p {
+        text-align: left !important;
+        line-height: 1.25 !important;
+    }
     #btn-undi-duel-spin {
-        width: 100% !important;
-        justify-content: center !important;
-        padding-top: 0.5rem !important;
-        padding-bottom: 0.5rem !important;
+        width: auto !important;
+        flex-shrink: 0 !important;
+        white-space: nowrap !important;
+        padding: 0.45rem 0.75rem !important;
+        border-radius: 9999px !important;
     }
     #lobby-duel-container > .grid {
         grid-template-columns: 1fr !important;
         gap: 0.65rem !important;
     }
 
-    /* Buat layar Undian Duel Kuis persis serapi DnD di HP (tanpa menimpa kartu merah) */
+    /* Layar Undian Duel Kuis persis seperti DnD di HP */
     #layar-undian-v2 {
         display: flex !important;
         flex-direction: column !important;
