@@ -613,6 +613,7 @@ function bukaArenaKuis(soalArray, isNewSession = true) {
     const arenaModal = document.getElementById('quiz-arena-modal');
     const arenaBody = document.getElementById('quiz-arena-body');
     arenaModal.classList.remove('hidden');
+arenaModal.classList.add('is-lobby');
     
     let kelasOpts = AppState.db.kelas.map(k => `<option value="${k.id}" ${AppState.kuis.kelasAktif === k.id ? 'selected' : ''}>${k.kode}</option>`).join('');
     let mapelOpts = AppState.db.mapel.map(m => `<option value="${m.id}" ${AppState.kuis.mapelAktif === m.id ? 'selected' : ''}>${m.nama}</option>`).join('');
@@ -879,8 +880,10 @@ function mulaiKuisSebenarnya() {
     const req = docEl.requestFullscreen || docEl.webkitRequestFullScreen || docEl.msRequestFullscreen;
     if(req && !document.fullscreenElement) req.call(docEl).catch(e => console.log(e));
 
-    startAutoBGM();
-    renderKuisPlayer(0, 0);
+    const arenaModalEl = document.getElementById('quiz-arena-modal');
+if (arenaModalEl) arenaModalEl.classList.remove('is-lobby');
+startAutoBGM();
+renderKuisPlayer(0, 0);
 }
 
 function ulangiKuisLangsung() {
