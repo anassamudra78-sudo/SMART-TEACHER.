@@ -44,7 +44,16 @@ function simpanSekolah() {
     forceSaveNotification();
 }
 
+function pastikanKolomKKMMapel() {
+    if (typeof crudConfig !== 'undefined' && crudConfig.mapel && Array.isArray(crudConfig.mapel.fields)) {
+        if (!crudConfig.mapel.fields.some(f => f.id === 'kkm')) {
+            crudConfig.mapel.fields.push({ id: 'kkm', label: 'KKM', type: 'number', placeholder: '72' });
+        }
+    }
+}
+
 function renderCRUD(container, type) {
+    pastikanKolomKKMMapel();
     const config = crudConfig[type];
     let data = AppState.db[type] || [];
     let filterDropdownHtml = '';
@@ -110,9 +119,11 @@ function renderCRUD(container, type) {
             inputHtml = `<select id="form-${f.id}" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-brand-500 dark:text-white text-sm shadow-sm"><option value="">-- Pilih --</option>${opts}</select>`;
         } else if(f.type === 'date' || f.type === 'time') {
             inputHtml = `<input type="${f.type}" id="form-${f.id}" value="${currentVal}" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-brand-500 dark:text-white text-sm shadow-sm">`;
-        } else {
-            inputHtml = `<input type="text" id="form-${f.id}" value="${currentVal}" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-brand-500 dark:text-white text-sm shadow-sm">`;
-        }
+        } else if(f.type === 'number') {
+         inputHtml = `<input type="number" id="form-${f.id}" value="${currentVal}" min="0" max="100" placeholder="${f.placeholder || ''}" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-brand-500 dark:text-white text-sm shadow-sm">`;
+     } else {
+         inputHtml = `<input type="text" id="form-${f.id}" value="${currentVal}" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-brand-500 dark:text-white text-sm shadow-sm">`;
+     }
         return `<div><label class="block text-sm font-bold text-slate-600 dark:text-slate-300 mb-2">${f.label}</label>${inputHtml}</div>`;
     }).join('');
 
@@ -171,6 +182,7 @@ function batalEdit(type) {
 }
 
 function saveCRUD(type) {
+    pastikanKolomKKMMapel();
     const config = crudConfig[type];
     if (!AppState.db[type]) AppState.db[type] = [];
 
@@ -178,9 +190,16 @@ function saveCRUD(type) {
     let hasData = false;
     
     config.fields.forEach(f => {
-        const val = document.getElementById(`form-${f.id}`).value;
-        itemData[f.id] = val;
-        if(val.trim() !== '') hasData = true;
+        const el = document.getElementById(`form-${f.id}`);
+        let val = el ? el.value : '';
+        if (f.id === 'kkm') {
+            val = String(val).trim() !== '' ? Number(val) : 72;
+            itemData[f.id] = val;
+            hasData = true;
+        } else {
+            itemData[f.id] = val;
+            if(String(val).trim() !== '') hasData = true;
+        }
     });
 
     if(!hasData) return showAlert("Gagal", "Harap isi minimal satu kolom data.", "error");
@@ -408,44 +427,236 @@ function ambilNilaiKategori(siswaId, mapelId, daftarAlias) {
     return data ? Number(data.nilai) : null;
 }
 
+function getKKMMapel(mapelId) {
+    const mapelObj = (AppState.db.mapel || []).find(m => String(m.id) === String(mapelId));
+    return mapelObj && mapelObj.kkm !== undefined && mapelObj.kkm !== '' && !isNaN(Number(mapelObj.kkm))
+        ? Number(mapelObj.kkm)
+        : 72;
+}
+
+function simpanKKMMapelLangsung(mapelId, nilaiBaru) {
+    const mapelObj = (AppState.db.mapel || []).find(m => String(m.id) === String(mapelId));
+    if (!mapelObj) return;
+
+    const kkmAngka = nilaiBaru !== '' && !isNaN(Number(nilaiBaru)) ? Number(nilaiBaru) : 72;
+    mapelObj.kkm = kkmAngka;
+
+    localStorage.setItem(AppState.config.storageKey, JSON.stringify(AppState.db));
+    if (AppState.config.gasUrl && AppState.config.gasUrl.startsWith("http")) {
+        fetch(AppState.config.gasUrl, { method: "POST", mode: "no-cors", body: JSON.stringify(AppState.db) }).catch(() => {});
+    }
+
+    // Perbarui warna merah/normal seluruh input nilai yang sedang terbuka secara langsung
+    document.querySelectorAll('#penilaian-form-container input[id^="nilai-"]').forEach(inp => {
+        cekWarnaInputKKM(inp, kkmAngka);
+    });
+
+    const statusEl = document.getElementById('status-simpan-kkm');
+    if (statusEl) {
+        statusEl.textContent = `✓ KKM ${kkmAngka} tersimpan`;
+        statusEl.classList.remove('opacity-0');
+        setTimeout(() => statusEl.classList.add('opacity-0'), 2000);
+    }
+}
+
+function cekWarnaInputKKM(inputEl, kkm) {
+    const raw = inputEl.value;
+    if (raw !== '' && !isNaN(Number(raw)) && Number(raw) < kkm) {
+        inputEl.classList.remove('border-slate-200', 'dark:border-slate-700', 'text-brand-700', 'dark:text-brand-300', 'bg-white', 'dark:bg-slate-800');
+        inputEl.classList.add('border-rose-500', 'text-rose-600', 'dark:text-rose-400', 'bg-rose-50', 'dark:bg-rose-950/40');
+    } else {
+        inputEl.classList.remove('border-rose-500', 'text-rose-600', 'dark:text-rose-400', 'bg-rose-50', 'dark:bg-rose-950/40');
+        inputEl.classList.add('border-slate-200', 'dark:border-slate-700', 'text-brand-700', 'dark:text-brand-300', 'bg-white', 'dark:bg-slate-800');
+    }
+}
+
+function renderPenilaian(container) {
+    let kelasOpts = AppState.db.kelas.map(k => `<option value="${k.id}">${k.kode}</option>`).join('');
+    let mapelOpts = AppState.db.mapel.map(m => `<option value="${m.id}">${m.nama}</option>`).join('');
+
+    container.innerHTML = `
+        <div class="bg-white dark:bg-slate-900 p-6 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-800 mb-6 grid grid-cols-1 md:grid-cols-3 gap-5">
+            <div><label class="text-xs font-bold text-slate-500 dark:text-slate-400 block mb-1.5">Pilih Kelas</label>
+                 <select id="penilaian-kelas" onchange="loadFormPenilaian()" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 outline-none focus:ring-2 dark:text-white"><option value="">-- Pilih --</option>${kelasOpts}</select></div>
+            <div><label class="text-xs font-bold text-slate-500 dark:text-slate-400 block mb-1.5">Mata Pelajaran</label>
+                 <select id="penilaian-mapel" onchange="loadFormPenilaian()" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 outline-none focus:ring-2 dark:text-white"><option value="">-- Pilih --</option>${mapelOpts}</select></div>
+            <div><label class="text-xs font-bold text-slate-500 dark:text-slate-400 block mb-1.5">Jenis Penilaian</label>
+                 <select id="penilaian-jenis" onchange="loadFormPenilaian()" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 outline-none focus:ring-2 dark:text-white">
+                     <option value="" disabled selected>-- Pilih Jenis Penilaian --</option>
+                     <option value="Tugas TP 1">Tugas (TP/Bab 1)</option>
+                     <option value="Sumatif TP 1">Sumatif (TP/Bab 1)</option>
+                     <option value="Tugas TP 2">Tugas (TP/Bab 2)</option>
+                     <option value="Sumatif TP 2">Sumatif (TP/Bab 2)</option>
+                     <option value="Tugas TP 3">Tugas (TP/Bab 3)</option>
+                     <option value="Sumatif TP 3">Sumatif (TP/Bab 3)</option>
+                     <option value="Tugas TP 4">Tugas (TP/Bab 4)</option>
+                     <option value="Sumatif TP 4">Sumatif (TP/Bab 4)</option>
+                     <option value="Tugas TP 5">Tugas (TP/Bab 5)</option>
+                     <option value="Sumatif TP 5">Sumatif (TP/Bab 5)</option>
+                     <option value="Tugas TP 6">Tugas (TP/Bab 6)</option>
+                     <option value="Sumatif TP 6">Sumatif (TP/Bab 6)</option>
+                     <option value="Tugas TP 7">Tugas (TP/Bab 7)</option>
+                     <option value="Sumatif TP 7">Sumatif (TP/Bab 7)</option>
+                     <option value="STS">STS (Sumatif Tengah Semester)</option>
+                     <option value="SAS">SAS (Sumatif Akhir Semester)</option>
+                 </select></div>
+        </div>
+        <div id="penilaian-form-container"></div>
+    `;
+    loadFormPenilaian();
+}
+
+function loadFormPenilaian() {
+    const kelasId = document.getElementById('penilaian-kelas').value;
+    const mapelId = document.getElementById('penilaian-mapel').value;
+    const jenis = document.getElementById('penilaian-jenis').value;
+    const formContainer = document.getElementById('penilaian-form-container');
+
+    if(!kelasId || !mapelId) {
+        formContainer.innerHTML = `<p class="text-slate-500 text-center py-10 bg-white dark:bg-slate-900 rounded-3xl border dark:border-slate-800">Pilih kelas dan mata pelajaran.</p>`;
+        return;
+    }
+
+    const mapelObj = (AppState.db.mapel || []).find(m => String(m.id) === String(mapelId));
+    const kkm = getKKMMapel(mapelId);
+
+    // Bilah KKM sekali atur per Mapel (otomatis tersimpan ke database Mapel)
+    const barKKM = `
+        <div class="bg-white dark:bg-slate-900 px-6 py-4 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 mb-4 flex flex-wrap items-center justify-between gap-3">
+            <div class="flex items-center gap-3">
+                <span class="text-xs font-extrabold uppercase tracking-wider text-slate-500 dark:text-slate-400">KKM ${mapelObj ? escapeHTML(mapelObj.nama) : 'Mapel'}:</span>
+                <input type="number" id="input-kkm-mapel" value="${kkm}" min="0" max="100" onchange="simpanKKMMapelLangsung('${mapelId}', this.value)" class="w-20 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-1.5 text-center font-black text-sm text-brand-600 dark:text-brand-400 outline-none focus:ring-2 focus:ring-brand-500">
+                <span id="status-simpan-kkm" class="text-xs font-bold text-emerald-500 opacity-0 transition-opacity duration-300"></span>
+            </div>
+            <p class="text-[11px] text-slate-400">Cukup atur sekali per mapel. Nilai di bawah <b>${kkm}</b> otomatis ditandai <span class="text-rose-500 font-bold">merah</span>.</p>
+        </div>
+    `;
+
+    if (!jenis) {
+        formContainer.innerHTML = barKKM + `<p class="text-slate-500 text-center py-10 bg-white dark:bg-slate-900 rounded-3xl border dark:border-slate-800">Pilih <b>Jenis Penilaian</b> di atas untuk mulai mengisi nilai.</p>`;
+        return;
+    }
+
+    const siswaKelas = AppState.db.siswa.filter(s => s.kelasId === kelasId);
+    if(siswaKelas.length === 0) {
+        formContainer.innerHTML = barKKM + `<p class="text-rose-500 text-center py-10 bg-rose-50 dark:bg-rose-950/40 rounded-3xl border border-rose-100 dark:border-rose-900">Belum ada siswa di kelas ini.</p>`;
+        return;
+    }
+
+    let rows = siswaKelas.map((siswa, idx) => {
+        let existing = AppState.db.penilaian.find(p => p.siswaId === siswa.id && p.mapelId === mapelId && p.jenis === jenis);
+        let val = existing ? existing.nilai : '';
+        const diBawahKKM = val !== '' && !isNaN(Number(val)) && Number(val) < kkm;
+        const kelasWarnaInput = diBawahKKM
+            ? 'border-rose-500 text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/40'
+            : 'border-slate-200 dark:border-slate-700 text-brand-700 dark:text-brand-300 bg-white dark:bg-slate-800';
+
+        return `
+            <tr class="border-b border-slate-100 dark:border-slate-800 hover:bg-slate-50/50 dark:hover:bg-slate-800/50">
+                <td class="py-3 px-5 text-slate-500 text-sm w-12 text-center">${idx+1}</td>
+                <td class="py-3 px-5 text-sm font-bold text-slate-800 dark:text-white">${siswa.nama}</td>
+                <td class="py-3 px-5 text-center">
+                    <input type="number" id="nilai-${siswa.id}" value="${val}" min="0" max="100"
+                        oninput="cekWarnaInputKKM(this, Number(document.getElementById('input-kkm-mapel')?.value || ${kkm}))"
+                        class="w-24 border-2 ${kelasWarnaInput} rounded-xl px-3 py-2 outline-none focus:border-brand-500 text-center font-black transition-colors">
+                </td>
+            </tr>
+        `;
+    }).join('');
+
+    formContainer.innerHTML = barKKM + `
+       <div class="bg-white dark:bg-slate-900 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-800 overflow-hidden fade-in relative max-h-[60vh] overflow-y-auto custom-scrollbar">
+            <table class="w-full text-left">
+                <thead class="bg-slate-50 dark:bg-slate-800 text-slate-500 dark:text-slate-400 text-[11px] uppercase tracking-wider font-bold sticky top-0 z-10 shadow-sm">
+                    <tr><th class="py-4 px-5 text-center">No</th><th class="py-4 px-5">Nama Lengkap Siswa</th><th class="py-4 px-5 text-center w-40">Input Nilai</th></tr>
+                </thead>
+                <tbody>${rows}</tbody>
+            </table>
+            <div class="p-5 bg-slate-50 dark:bg-slate-800/50 border-t dark:border-slate-800 flex justify-end">
+                <button onclick="simpanPenilaian('${kelasId}', '${mapelId}', '${jenis}')" class="bg-brand-600 hover:bg-brand-700 text-white font-bold py-3 px-8 rounded-xl shadow-lg">Simpan Nilai ${jenis}</button>
+            </div>
+        </div>
+    `;
+}
+
+function simpanPenilaian(kelasId, mapelId, jenis) {
+    const siswaKelas = AppState.db.siswa.filter(s => s.kelasId === kelasId);
+    siswaKelas.forEach(siswa => {
+        let input = document.getElementById(`nilai-${siswa.id}`);
+        if(input && input.value !== '') {
+            let val = parseFloat(input.value);
+            let existingIndex = AppState.db.penilaian.findIndex(p => p.siswaId === siswa.id && p.mapelId === mapelId && p.jenis === jenis);
+            if(existingIndex >= 0) AppState.db.penilaian[existingIndex].nilai = val;
+            else AppState.db.penilaian.push({ id: generateId(), siswaId: siswa.id, mapelId: mapelId, kelasId: kelasId, jenis: jenis, nilai: val });
+        }
+    });
+    forceSaveNotification();
+}
+
+function ambilNilaiKategori(siswaId, mapelId, daftarAlias) {
+    const data = AppState.db.penilaian.find(p =>
+        p.siswaId === siswaId &&
+        p.mapelId === mapelId &&
+        daftarAlias.includes(p.jenis) &&
+        p.nilai !== "" && p.nilai !== null && !isNaN(p.nilai)
+    );
+    return data ? Number(data.nilai) : null;
+}
+
 function hitungNilaiProporsional(siswaId, mapelId) {
+    const kkm = getKKMMapel(mapelId);
     const tpList = [];
     const nilaiTpValid = [];
 
     for (let i = 1; i <= 7; i++) {
-        const tgs = ambilNilaiKategori(siswaId, mapelId, [`Tugas TP ${i}`, `Tugas (TP/Bab ${i})`]);
         const sum = ambilNilaiKategori(siswaId, mapelId, [`Sumatif TP ${i}`, `Sumatif (TP/Bab ${i})`]);
+        const tgs = ambilNilaiKategori(siswaId, mapelId, [`Tugas TP ${i}`, `Tugas (TP/Bab ${i})`]);
+
+        // Rumus Excel: =(60%*Sumatif)+(40%*Tugas)
+        let tpRaw = null;
+        if (sum !== null && tgs !== null) {
+            tpRaw = (0.6 * sum) + (0.4 * tgs);
+        } else if (sum !== null) {
+            tpRaw = sum;
+        } else if (tgs !== null) {
+            tpRaw = tgs;
+        }
+
+        if (tpRaw !== null) nilaiTpValid.push(tpRaw);
+
         tpList.push({
-            tugas: tgs !== null ? tgs : '-',
-            sumatif: sum !== null ? sum : '-'
+            sumatif: sum !== null ? Math.round(sum) : '-',
+            tugas: tgs !== null ? Math.round(tgs) : '-',
+            tp: tpRaw !== null ? Math.round(tpRaw) : '-'
         });
-        if (tgs !== null) nilaiTpValid.push(tgs);
-        if (sum !== null) nilaiTpValid.push(sum);
     }
 
-    const nSTS = ambilNilaiKategori(siswaId, mapelId, ['STS', 'UTS']);
-    const nSAS = ambilNilaiKategori(siswaId, mapelId, ['SAS', 'UAS']);
-
-    // Dukungan cadangan jika ada nilai format lama 'Tugas'
     const nTugasLama = ambilNilaiKategori(siswaId, mapelId, ['Tugas']);
     if (nilaiTpValid.length === 0 && nTugasLama !== null) {
         nilaiTpValid.push(nTugasLama);
     }
 
-    const rataTP = nilaiTpValid.length > 0
-        ? Math.round(nilaiTpValid.reduce((a, b) => a + b, 0) / nilaiTpValid.length)
+    const rataTPRaw = nilaiTpValid.length > 0
+        ? nilaiTpValid.reduce((a, b) => a + b, 0) / nilaiTpValid.length
         : null;
+    const duaKaliRataTPRaw = rataTPRaw !== null ? 2 * rataTPRaw : null;
 
-    // Hitung Nilai Rapor dari komponen yang sudah terisi (Rata2 TP, STS, SAS)
-    const komponenRapor = [];
-    if (rataTP !== null) komponenRapor.push(rataTP);
-    if (nSTS !== null) komponenRapor.push(nSTS);
-    if (nSAS !== null) komponenRapor.push(nSAS);
+    const nSTSRaw = ambilNilaiKategori(siswaId, mapelId, ['STS', 'UTS']);
+    const nSASRaw = ambilNilaiKategori(siswaId, mapelId, ['SAS', 'UAS']);
 
-    if (komponenRapor.length === 0) {
+    // Rumus Excel: =(2xRerata TP + STS + SAS) / 4
+    let pembilang = 0;
+    let pembagi = 0;
+    if (duaKaliRataTPRaw !== null) { pembilang += duaKaliRataTPRaw; pembagi += 2; }
+    if (nSTSRaw !== null)          { pembilang += nSTSRaw;          pembagi += 1; }
+    if (nSASRaw !== null)          { pembilang += nSASRaw;          pembagi += 1; }
+
+    if (pembagi === 0) {
         return {
+            kkm,
             tpList,
             rataTP: '-',
+            duaKaliRataTP: '-',
             nSTS: '-',
             nSAS: '-',
             akhir: 0,
@@ -453,18 +664,21 @@ function hitungNilaiProporsional(siswaId, mapelId) {
         };
     }
 
-    const akhir = Math.round(komponenRapor.reduce((a, b) => a + b, 0) / komponenRapor.length);
-    const predikat = akhir >= 90 ? 'A' : (akhir >= 80 ? 'B' : (akhir >= 70 ? 'C' : 'D'));
+    const akhir = Math.round(pembilang / pembagi);
+    const predikat = akhir >= 90 ? 'A' : (akhir >= 80 ? 'B' : (akhir >= kkm ? 'C' : 'D'));
 
     return {
+        kkm,
         tpList,
-        rataTP: rataTP !== null ? rataTP : '-',
-        nSTS: nSTS !== null ? nSTS : '-',
-        nSAS: nSAS !== null ? nSAS : '-',
+        rataTP: rataTPRaw !== null ? Math.round(rataTPRaw) : '-',
+        duaKaliRataTP: duaKaliRataTPRaw !== null ? Math.round(duaKaliRataTPRaw) : '-',
+        nSTS: nSTSRaw !== null ? Math.round(nSTSRaw) : '-',
+        nSAS: nSASRaw !== null ? Math.round(nSASRaw) : '-',
         akhir,
         predikat
     };
 }
+
 function renderRekapNilai(container) {
     let kelasOpts = AppState.db.kelas.map(k => `<option value="${k.id}">${k.kode}</option>`).join('');
     let mapelOpts = AppState.db.mapel.map(m => `<option value="${m.id}">${m.nama}</option>`).join('');
@@ -480,6 +694,7 @@ function renderRekapNilai(container) {
     `;
     loadRekap();
 }
+
 function loadRekap() {
     const kelasId = document.getElementById('rekap-kelas').value;
     const mapelId = document.getElementById('rekap-mapel').value;
@@ -487,35 +702,53 @@ function loadRekap() {
 
     if (!kelasId || !mapelId) { container.innerHTML = ''; return; }
     const siswaKelas = AppState.db.siswa.filter(s => s.kelasId === kelasId);
+    const kkmMapel = getKKMMapel(mapelId);
 
     let headerTPAtas = '';
     let headerTPBawah = '';
     for (let i = 1; i <= 7; i++) {
-        headerTPAtas += `<th colspan="2" class="py-2 px-2 text-center border border-slate-200 dark:border-slate-700 bg-amber-50/70 dark:bg-amber-950/30 text-amber-700 dark:text-amber-300">TP/BAB ${i}</th>`;
+        headerTPAtas += `<th colspan="3" class="py-2 px-2 text-center border border-slate-200 dark:border-slate-700 bg-slate-100/80 dark:bg-slate-800 text-slate-700 dark:text-slate-200">TP/BAB ${i}</th>`;
         headerTPBawah += `
-            <th class="py-2 px-2 text-center border border-slate-200 dark:border-slate-700 text-[10px]">Tugas</th>
-            <th class="py-2 px-2 text-center border border-slate-200 dark:border-slate-700 text-[10px]">Sumatif</th>
+            <th class="py-2 px-2 text-center border border-slate-200 dark:border-slate-700 text-[10px] font-semibold">Sumatif</th>
+            <th class="py-2 px-2 text-center border border-slate-200 dark:border-slate-700 text-[10px] font-semibold">Tugas</th>
+            <th class="py-2 px-2 text-center border border-slate-200 dark:border-slate-700 text-[10px] font-black bg-amber-100/80 dark:bg-amber-500/20 text-amber-800 dark:text-amber-300">TP${i}</th>
         `;
     }
 
+    // Helper warna merah untuk setiap nilai yang di bawah KKM
+    const cekMerah = (val, batas = kkmMapel) => {
+        if (val !== '-' && val !== '' && !isNaN(Number(val)) && Number(val) < batas) {
+            return 'text-rose-600 dark:text-rose-400 font-extrabold bg-rose-500/10';
+        }
+        return '';
+    };
+
     let rows = siswaKelas.map((siswa, idx) => {
         const calc = hitungNilaiProporsional(siswa.id, mapelId);
-        const selTP = calc.tpList.map(tp => `
-            <td class="py-2.5 px-2 text-center border border-slate-100 dark:border-slate-800 text-xs">${tp.tugas}</td>
-            <td class="py-2.5 px-2 text-center border border-slate-100 dark:border-slate-800 text-xs">${tp.sumatif}</td>
-        `).join('');
+        const selTP = calc.tpList.map(item => {
+            const tpMerah = item.tp !== '-' && Number(item.tp) < kkmMapel;
+            return `
+                <td class="py-2.5 px-2 text-center border border-slate-100 dark:border-slate-800 text-xs ${cekMerah(item.sumatif)}">${item.sumatif}</td>
+                <td class="py-2.5 px-2 text-center border border-slate-100 dark:border-slate-800 text-xs ${cekMerah(item.tugas)}">${item.tugas}</td>
+                <td class="py-2.5 px-2 text-center border border-slate-100 dark:border-slate-800 text-xs font-extrabold ${tpMerah ? 'bg-rose-500/15 text-rose-600 dark:text-rose-400' : 'bg-amber-50/70 dark:bg-amber-500/10 text-amber-700 dark:text-amber-300'}">${item.tp}</td>
+            `;
+        }).join('');
+
+        const duaKaliMerah = calc.duaKaliRataTP !== '-' && Number(calc.duaKaliRataTP) < (kkmMapel * 2);
 
         return `
             <tr class="border-b border-slate-100 dark:border-slate-800 hover:bg-slate-50/50 dark:hover:bg-slate-800/50">
-                <td class="py-2.5 px-3 text-center text-xs font-bold text-slate-500 border border-slate-100 dark:border-slate-800">${idx + 1}</td>
-                <td class="py-2.5 px-3 text-center text-xs text-slate-500 border border-slate-100 dark:border-slate-800">${siswa.nis || '-'}</td>
+                <td class="py-2.5 px-3 text-center text-xs font-bold text-slate-500 border border-slate-100 dark:border-slate-800 sticky left-0 bg-white dark:bg-slate-900 z-10">${idx + 1}</td>
+                <td class="py-2.5 px-3 text-center text-xs font-mono text-slate-500 border border-slate-100 dark:border-slate-800">${siswa.nis || '-'}</td>
                 <td class="py-2.5 px-3 font-bold text-xs text-slate-800 dark:text-white whitespace-nowrap border border-slate-100 dark:border-slate-800">${siswa.nama}</td>
+                <td class="py-2.5 px-3 text-center text-xs font-bold text-slate-600 dark:text-slate-300 border border-slate-100 dark:border-slate-800">${kkmMapel}</td>
                 ${selTP}
-                <td class="py-2.5 px-3 text-center font-bold text-xs text-indigo-500 border border-slate-100 dark:border-slate-800">${calc.rataTP}</td>
-                <td class="py-2.5 px-3 text-center font-bold text-xs border border-slate-100 dark:border-slate-800">${calc.nSTS}</td>
-                <td class="py-2.5 px-3 text-center font-bold text-xs border border-slate-100 dark:border-slate-800">${calc.nSAS}</td>
-                <td class="py-2.5 px-3 text-center font-black text-xs text-emerald-500 border border-slate-100 dark:border-slate-800">${calc.akhir || '-'}</td>
-                <td class="py-2.5 px-3 text-center font-bold text-xs text-slate-500 border border-slate-100 dark:border-slate-800">${calc.predikat}</td>
+                <td class="py-2.5 px-3 text-center font-bold text-xs border border-slate-100 dark:border-slate-800 ${cekMerah(calc.rataTP) || 'text-slate-800 dark:text-white'}">${calc.rataTP}</td>
+                <td class="py-2.5 px-3 text-center font-extrabold text-xs border border-slate-100 dark:border-slate-800 ${duaKaliMerah ? 'bg-rose-500/15 text-rose-600 dark:text-rose-400' : 'bg-cyan-50/80 dark:bg-cyan-500/15 text-cyan-700 dark:text-cyan-300'}">${calc.duaKaliRataTP}</td>
+                <td class="py-2.5 px-3 text-center font-bold text-xs border border-slate-100 dark:border-slate-800 ${cekMerah(calc.nSTS)}">${calc.nSTS}</td>
+                <td class="py-2.5 px-3 text-center font-bold text-xs border border-slate-100 dark:border-slate-800 ${cekMerah(calc.nSAS)}">${calc.nSAS}</td>
+                <td class="py-2.5 px-3 text-center font-black text-xs border border-slate-100 dark:border-slate-800 ${calc.akhir > 0 && calc.akhir < kkmMapel ? 'bg-rose-500/15 text-rose-600 dark:text-rose-400' : 'text-emerald-500'}">${calc.akhir || '-'}</td>
+                <td class="py-2.5 px-3 text-center font-bold text-xs border border-slate-100 dark:border-slate-800 ${calc.predikat === 'D' ? 'bg-rose-500/15 text-rose-600 dark:text-rose-400' : 'text-slate-500'}">${calc.predikat}</td>
             </tr>
         `;
     }).join('');
@@ -525,13 +758,15 @@ function loadRekap() {
             <table class="w-max min-w-full text-left border-collapse">
                 <thead class="bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-[10px] uppercase tracking-wider font-extrabold">
                     <tr>
-                        <th rowspan="2" class="py-3 px-3 text-center border border-slate-200 dark:border-slate-700">No</th>
-                        <th rowspan="2" class="py-3 px-3 text-center border border-slate-200 dark:border-slate-700">NIS</th>
-                        <th rowspan="2" class="py-3 px-4 border border-slate-200 dark:border-slate-700">Nama Siswa</th>
+                        <th rowspan="2" class="py-3 px-3 text-center border border-slate-200 dark:border-slate-700 bg-emerald-50/70 dark:bg-emerald-950/30 sticky left-0 z-20">No</th>
+                        <th rowspan="2" class="py-3 px-3 text-center border border-slate-200 dark:border-slate-700 bg-emerald-50/70 dark:bg-emerald-950/30">NIS</th>
+                        <th rowspan="2" class="py-3 px-4 border border-slate-200 dark:border-slate-700 bg-emerald-50/70 dark:bg-emerald-950/30">Nama Siswa</th>
+                        <th rowspan="2" class="py-3 px-3 text-center border border-slate-200 dark:border-slate-700 bg-emerald-50/70 dark:bg-emerald-950/30">KKM</th>
                         ${headerTPAtas}
-                        <th rowspan="2" class="py-3 px-3 text-center border border-slate-200 dark:border-slate-700 text-indigo-500">Rata2 TP</th>
-                        <th rowspan="2" class="py-3 px-3 text-center border border-slate-200 dark:border-slate-700">STS</th>
-                        <th rowspan="2" class="py-3 px-3 text-center border border-slate-200 dark:border-slate-700">SAS</th>
+                        <th rowspan="2" class="py-3 px-3 text-center border border-slate-200 dark:border-slate-700">Rerata TP</th>
+                        <th rowspan="2" class="py-3 px-3 text-center border border-slate-200 dark:border-slate-700 bg-cyan-100/70 dark:bg-cyan-500/20 text-cyan-800 dark:text-cyan-300">2xRerata TP</th>
+                        <th rowspan="2" class="py-3 px-3 text-center border border-slate-200 dark:border-slate-700 bg-cyan-50/70 dark:bg-cyan-500/10 text-cyan-700 dark:text-cyan-200">STS</th>
+                        <th rowspan="2" class="py-3 px-3 text-center border border-slate-200 dark:border-slate-700 bg-cyan-50/70 dark:bg-cyan-500/10 text-cyan-700 dark:text-cyan-200">SAS</th>
                         <th rowspan="2" class="py-3 px-3 text-center border border-slate-200 dark:border-slate-700 text-emerald-500">Nilai Rapor</th>
                         <th rowspan="2" class="py-3 px-3 text-center border border-slate-200 dark:border-slate-700">Predikat</th>
                     </tr>
