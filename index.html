@@ -1173,6 +1173,314 @@ function doGet(e) {
     <script src="engine-match.js?v=3"></script>
     <script src="engine-sort.js?v9"></script>
     <script src="engine-build.js?v=1"></script>
-    
+
+    <script>
+(function () {
+    const PREF_KEY = 'st_schedule_alarm_pref_v1';
+    let audioCtx = null;
+    let alarmLoopTimer = null;
+    let cachedSchedules = [];
+
+    function getPref() {
+        try {
+            return Object.assign({ enabled: true, pre5: true }, JSON.parse(localStorage.getItem(PREF_KEY) || '{}'));
+        } catch (e) {
+            return { enabled: true, pre5: true };
+        }
+    }
+
+    function unlockAudio() {
+        try {
+            const Ctx = window.AudioContext || window.webkitAudioContext;
+            if (!Ctx) return;
+            if (!audioCtx) audioCtx = new Ctx();
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+        } catch (e) {}
+    }
+    ['pointerdown', 'touchstart', 'click', 'keydown'].forEach(ev => {
+        document.addEventListener(ev, unlockAudio, { passive: true });
+    });
+
+    function playSchoolChime() {
+        unlockAudio();
+        if (!audioCtx) return;
+        const now = audioCtx.currentTime;
+
+        // Compressor / Limiter agar volume terdorong maksimal (1.0) tanpa pecah
+        const compressor = audioCtx.createDynamicsCompressor();
+        compressor.threshold.setValueAtTime(-12, now);
+        compressor.knee.setValueAtTime(6, now);
+        compressor.ratio.setValueAtTime(12, now);
+        compressor.attack.setValueAtTime(0.002, now);
+        compressor.release.setValueAtTime(0.15, now);
+
+        const masterGain = audioCtx.createGain();
+        masterGain.gain.setValueAtTime(1.0, now);
+        compressor.connect(masterGain);
+        masterGain.connect(audioCtx.destination);
+
+        // Nada bel sekolah berfrekuensi tinggi (nyaring di speaker HP/Tablet)
+        const notes = [
+            { freq: 1318.51, time: 0.00, dur: 0.30 }, // E6
+            { freq: 1046.50, time: 0.26, dur: 0.30 }, // C6
+            { freq: 1174.66, time: 0.52, dur: 0.30 }, // D6
+            { freq: 880.00,  time: 0.78, dur: 0.50 }, // A5
+            { freq: 1318.51, time: 1.35, dur: 0.26 }, // E6 (ulangan cepat)
+            { freq: 1567.98, time: 1.58, dur: 0.60 }  // G6 (puncak lantang)
+        ];
+
+        notes.forEach(n => {
+            // Lapisan 1: Gelombang utama penuh
+            const oscMain = audioCtx.createOscillator();
+            oscMain.type = 'triangle';
+            oscMain.frequency.setValueAtTime(n.freq, now + n.time);
+
+            // Lapisan 2: Harmonik 1 oktaf di atas agar menembus suasana kelas
+            const oscHigh = audioCtx.createOscillator();
+            oscHigh.type = 'square';
+            oscHigh.frequency.setValueAtTime(n.freq * 2, now + n.time);
+
+            const highGain = audioCtx.createGain();
+            highGain.gain.setValueAtTime(0.28, now + n.time);
+            oscHigh.connect(highGain);
+
+            const noteGain = audioCtx.createGain();
+            noteGain.gain.setValueAtTime(0.001, now + n.time);
+            noteGain.gain.exponentialRampToValueAtTime(0.98, now + n.time + 0.015);
+            noteGain.gain.exponentialRampToValueAtTime(0.001, now + n.time + n.dur);
+
+            oscMain.connect(noteGain);
+            highGain.connect(noteGain);
+            noteGain.connect(compressor);
+
+            oscMain.start(now + n.time);
+            oscHigh.start(now + n.time);
+            oscMain.stop(now + n.time + n.dur + 0.04);
+            oscHigh.stop(now + n.time + n.dur + 0.04);
+        });
+    }
+
+    function todayKey() {
+        const d = new Date();
+        return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    }
+
+    function padTime(t) {
+        const parts = t.replace('.', ':').split(':');
+        return `${String(parseInt(parts[0], 10)).padStart(2, '0')}:${String(parseInt(parts[1], 10)).padStart(2, '0')}`;
+    }
+
+    function minus5Minutes(hhmm) {
+        const [h, m] = hhmm.split(':').map(Number);
+        let total = h * 60 + m - 5;
+        if (total < 0) total += 1440;
+        return `${String(Math.floor(total / 60)).padStart(2, '0')}:${String(total % 60).padStart(2, '0')}`;
+    }
+
+    function scanDashboardSchedule() {
+        const main = document.getElementById('main-content');
+        if (!main) return;
+
+        const headings = Array.from(main.querySelectorAll('h1, h2, h3, h4, p, span, div'));
+        const headerEl = headings.find(el => el.children.length === 0 && /JADWAL HARI INI/i.test(el.textContent));
+        if (!headerEl) return;
+
+        let card = headerEl.parentElement;
+        while (card && card !== main && !card.querySelector('.fa-bell')) {
+            card = card.parentElement;
+        }
+        if (!card || card === main) return;
+
+        const bellIcon = card.querySelector('.fa-bell');
+        const bellBox = bellIcon ? bellIcon.closest('div') : null;
+        if (bellBox && !bellBox.dataset.alarmBound) {
+            bellBox.dataset.alarmBound = '1';
+            bellBox.style.cursor = 'pointer';
+            bellBox.style.position = 'relative';
+            bellBox.title = 'Klik untuk Pengaturan & Tes Alarm Jadwal';
+            bellBox.addEventListener('click', (e) => {
+                e.stopPropagation();
+                unlockAudio();
+                bukaPengaturanAlarm();
+            });
+
+            const dot = document.createElement('span');
+            dot.id = 'st-bell-status-dot';
+            dot.className = 'w-2.5 h-2.5 rounded-full bg-emerald-500 ring-2 ring-white dark:ring-slate-900 absolute -top-0.5 -right-0.5 animate-ping';
+            const dotSolid = document.createElement('span');
+            dotSolid.id = 'st-bell-status-solid';
+            dotSolid.className = 'w-2.5 h-2.5 rounded-full bg-emerald-500 ring-2 ring-white dark:ring-slate-900 absolute -top-0.5 -right-0.5';
+            bellBox.appendChild(dot);
+            bellBox.appendChild(dotSolid);
+        }
+
+        const rawText = card.innerText || '';
+        if (/Belum ada jadwal/i.test(rawText)) {
+            cachedSchedules = [];
+            sessionStorage.setItem('st_today_sched_' + todayKey(), '[]');
+            return;
+        }
+
+        const found = [];
+        const lines = rawText.split('\n').map(s => s.trim()).filter(Boolean);
+        lines.forEach((line, idx) => {
+            const m = line.match(/(\d{1,2}[:.]\d{2})\s*[-–]\s*(\d{1,2}[:.]\d{2})\s*(.*)/);
+            if (m) {
+                const start = padTime(m[1]);
+                const end = padTime(m[2]);
+                let rest = (m[3] || '').trim();
+                let kelas = '';
+                if (lines[idx + 1] && !/\d{1,2}[:.]\d{2}/.test(lines[idx + 1]) && !/^\+/.test(lines[idx + 1]) && lines[idx + 1].length <= 20) {
+                    kelas = lines[idx + 1].trim();
+                } else {
+                    const parts = rest.split(/\s+/);
+                    if (parts.length > 1) {
+                        kelas = parts.pop();
+                        rest = parts.join(' ');
+                    }
+                }
+                found.push({
+                    id: `${start}_${rest}_${kelas}`,
+                    start,
+                    end,
+                    mapel: rest || 'Jadwal Mengajar',
+                    kelas: kelas || '-'
+                });
+            }
+        });
+
+        if (found.length > 0) {
+            cachedSchedules = found;
+            sessionStorage.setItem('st_today_sched_' + todayKey(), JSON.stringify(found));
+        }
+    }
+
+    function getActiveSchedules() {
+        if (cachedSchedules.length > 0) return cachedSchedules;
+        try {
+            return JSON.parse(sessionStorage.getItem('st_today_sched_' + todayKey()) || '[]');
+        } catch (e) {
+            return [];
+        }
+    }
+
+    window.picuPeringatanAlarm = function (item, isPre) {
+        const modal = document.getElementById('schedule-alarm-modal');
+        if (!modal) return;
+
+        document.getElementById('alarm-modal-badge').textContent = isPre ? '5 Menit Lagi Masuk Kelas' : 'Waktunya Mengajar Sekarang';
+        document.getElementById('alarm-modal-title').textContent = isPre ? 'Persiapan Mengajar!' : 'Bel Jam Pelajaran!';
+        document.getElementById('alarm-modal-time').textContent = `JAM ${item.start} - ${item.end}`;
+        document.getElementById('alarm-modal-mapel').textContent = item.mapel;
+        document.getElementById('alarm-modal-kelas').textContent = `Kelas ${item.kelas}`;
+
+        modal.classList.remove('hidden');
+
+        // Bunyikan bel keras & getarkan HP terus setiap 2,5 detik sampai dimatikan
+        clearInterval(alarmLoopTimer);
+        playSchoolChime();
+        if (navigator.vibrate) navigator.vibrate([500, 150, 500, 150, 700]);
+        alarmLoopTimer = setInterval(() => {
+            playSchoolChime();
+            if (navigator.vibrate) navigator.vibrate([500, 150, 500]);
+        }, 2500);
+
+        if ('Notification' in window && Notification.permission === 'granted') {
+            try {
+                new Notification(isPre ? `5 Menit Lagi: ${item.mapel}` : `Waktunya Mengajar: ${item.mapel}`, {
+                    body: `Kelas ${item.kelas} • Pukul ${item.start} - ${item.end}`,
+                    icon: 'logo-pusat.png'
+                });
+            } catch (e) {}
+        }
+    };
+
+    window.matikanAlarmJadwal = function () {
+        clearInterval(alarmLoopTimer);
+        alarmLoopTimer = null;
+        if (navigator.vibrate) navigator.vibrate(0);
+        const modal = document.getElementById('schedule-alarm-modal');
+        if (modal) modal.classList.add('hidden');
+    };
+
+    window.aksiAlarmKeMenu = function (tabName) {
+        matikanAlarmJadwal();
+        if (typeof switchTab === 'function') switchTab(tabName);
+    };
+
+    window.bukaPengaturanAlarm = function () {
+        scanDashboardSchedule();
+        const pref = getPref();
+        document.getElementById('toggle-alarm-aktif').checked = pref.enabled;
+        document.getElementById('toggle-alarm-pre5').checked = pref.pre5;
+        document.getElementById('alarm-count-info').textContent = `${getActiveSchedules().length} jadwal`;
+        document.getElementById('alarm-settings-modal').classList.remove('hidden');
+
+        if ('Notification' in window && Notification.permission === 'default') {
+            Notification.requestPermission().catch(() => {});
+        }
+    };
+
+    window.tutupPengaturanAlarm = function () {
+        document.getElementById('alarm-settings-modal').classList.add('hidden');
+    };
+
+    window.simpanPreferensiAlarm = function () {
+        const enabled = document.getElementById('toggle-alarm-aktif').checked;
+        const pre5 = document.getElementById('toggle-alarm-pre5').checked;
+        localStorage.setItem(PREF_KEY, JSON.stringify({ enabled, pre5 }));
+        const dot = document.getElementById('st-bell-status-dot');
+        const solid = document.getElementById('st-bell-status-solid');
+        if (dot) dot.style.display = enabled ? '' : 'none';
+        if (solid) solid.className = `w-2.5 h-2.5 rounded-full ${enabled ? 'bg-emerald-500' : 'bg-slate-400'} ring-2 ring-white dark:ring-slate-900 absolute -top-0.5 -right-0.5`;
+    };
+
+    window.tesBunyiAlarmJadwal = function () {
+        unlockAudio();
+        tutupPengaturanAlarm();
+        const list = getActiveSchedules();
+        const sample = list[0] || { start: '09:10', end: '10:40', mapel: 'Bahasa Arab', kelas: 'IX-B' };
+        picuPeringatanAlarm(sample, false);
+    };
+
+    setInterval(() => {
+        const pref = getPref();
+        if (!pref.enabled) return;
+
+        const now = new Date();
+        const currentHHMM = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+        const list = getActiveSchedules();
+        if (!list.length) return;
+
+        const firedKey = 'st_alarm_fired_' + todayKey();
+        let fired = {};
+        try { fired = JSON.parse(localStorage.getItem(firedKey) || '{}'); } catch (e) {}
+
+        list.forEach(item => {
+            const exactId = `exact_${item.id}`;
+            if (currentHHMM === item.start && !fired[exactId]) {
+                fired[exactId] = true;
+                localStorage.setItem(firedKey, JSON.stringify(fired));
+                picuPeringatanAlarm(item, false);
+            }
+
+            const preId = `pre5_${item.id}`;
+            if (pref.pre5 && currentHHMM === minus5Minutes(item.start) && !fired[preId]) {
+                fired[preId] = true;
+                localStorage.setItem(firedKey, JSON.stringify(fired));
+                picuPeringatanAlarm(item, true);
+            }
+        });
+    }, 1000);
+
+    document.addEventListener('DOMContentLoaded', () => {
+        scanDashboardSchedule();
+        const main = document.getElementById('main-content');
+        if (main) {
+            new MutationObserver(scanDashboardSchedule).observe(main, { childList: true, subtree: true });
+        }
+    });
+})();
+</script>
 </body>
 </html>
