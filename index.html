@@ -1174,12 +1174,170 @@ function doGet(e) {
     <script src="engine-sort.js?v9"></script>
     <script src="engine-build.js?v=1"></script>
 
-    <script>
+   <script>
 (function () {
     const PREF_KEY = 'st_schedule_alarm_pref_v1';
-    let audioCtx = null;
+    let alarmAudioEl = null;
     let alarmLoopTimer = null;
     let cachedSchedules = [];
+
+    // Buat suara bel WAV nyaring di memori agar Android mengizinkan bunyi saat layar mati/minimized
+    function buildLoudBellWavUrl() {
+        const sampleRate = 22050;
+        const duration = 2.4;
+        const numSamples = Math.floor(sampleRate * duration);
+        const buffer = new ArrayBuffer(44 + numSamples * 2);
+        const view = new DataView(buffer);
+
+        const writeStr = (offset, str) => {
+            for (let i = 0; i < str.length; i++) view.setUint8(offset + i, str.charCodeAt(i));
+        };
+
+        writeStr(0, 'RIFF');
+        view.setUint32(4, 36 + numSamples * 2, true);
+        writeStr(8, 'WAVE');
+        writeStr(12, 'fmt ');
+        view.setUint32(16, 16, true);
+        view.setUint16(20, 1, true);
+        view.setUint16(22, 1, true);
+        view.setUint32(24, sampleRate, true);
+        view.setUint32(28, sampleRate * 2, true);
+        view.setUint16(32, 2, true);
+        view.setUint16(34, 16, true);
+        writeStr(36, 'data');
+        view.setUint32(40, numSamples * 2, true);
+
+        const notes = [
+            { freq: 1318.51, start: 0.00, dur: 0.30 }, // E6
+            { freq: 1046.50, start: 0.26, dur: 0.30 }, // C6
+            { freq: 1174.66, start: 0.52, dur: 0.30 }, // D6
+            { freq: 880.00,  start: 0.78, dur: 0.48 }, // A5
+            { freq: 1318.51, start: 1.32, dur: 0.26 }, // E6
+            { freq: 1567.98, start: 1.56, dur: 0.65 }  // G6
+        ];
+
+        for (let i = 0; i < numSamples; i++) {
+            const t = i / sampleRate;
+            let raw = 0;
+            for (let j = 0; j < notes.length; j++) {
+                const n = notes[j];
+                if (t >= n.start && t <= n.start + n.dur) {
+                    const localT = t - n.start;
+                    const env = Math.min(1, localT / 0.015) * Math.exp(-3.2 * (localT / n.dur));
+                    const fundamental = Math.sin(2 * Math.PI * n.freq * localT);
+                    const overtone = 0.45 * Math.sin(2 * Math.PI * (n.freq * 2) * localT);
+                    raw += (fundamental + overtone) * env;
+                }
+            }
+            // Maximizer agar suara tembus keras di speaker HP tanpa pecah
+            const boosted = Math.tanh(raw * 2.4);
+            view.setInt16(44 + i * 2, Math.max(-32767, Math.min(32767, boosted * 32767)), true);
+        }
+
+        return URL.createObjectURL(new Blob([buffer], { type: 'audio/wav' }));
+    }
+
+    function ensureAlarmElements() {
+        if (!document.body) return;
+
+        if (!alarmAudioEl) {
+            alarmAudioEl = document.createElement('audio');
+            alarmAudioEl.id = 'st-alarm-audio';
+            alarmAudioEl.loop = true;
+            alarmAudioEl.preload = 'auto';
+            alarmAudioEl.src = buildLoudBellWavUrl();
+            document.body.appendChild(alarmAudioEl);
+        }
+
+        if (!document.getElementById('schedule-alarm-modal')) {
+            document.body.insertAdjacentHTML('beforeend', `
+                <div id="schedule-alarm-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-[9998] hidden flex items-center justify-center p-4 no-print">
+                    <div class="bg-white dark:bg-slate-900 border-2 border-amber-400 dark:border-amber-500 rounded-3xl shadow-2xl max-w-md w-full overflow-hidden text-center animate-bounce" style="animation-iteration-count: 2;">
+                        <div class="bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500 p-6 text-white relative">
+                            <div class="w-16 h-16 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center mx-auto mb-3 text-3xl shadow-lg">
+                                <i class="fa-solid fa-bell fa-shake"></i>
+                            </div>
+                            <span id="alarm-modal-badge" class="inline-block bg-black/25 text-white text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full mb-1">Waktunya Mengajar</span>
+                            <h3 id="alarm-modal-title" class="text-2xl font-black tracking-tight">Bel Jam Pelajaran!</h3>
+                        </div>
+
+                        <div class="p-6 space-y-4">
+                            <div class="bg-amber-50 dark:bg-slate-800 border border-amber-200 dark:border-slate-700 rounded-2xl p-4">
+                                <p id="alarm-modal-time" class="text-xs font-extrabold text-amber-600 dark:text-amber-400 uppercase tracking-wider mb-1">09:10 - 10:40</p>
+                                <p id="alarm-modal-mapel" class="text-xl font-black text-slate-800 dark:text-white">Bahasa Arab</p>
+                                <span id="alarm-modal-kelas" class="inline-block mt-1.5 bg-slate-800 dark:bg-brand-600 text-white text-xs font-bold px-3 py-0.5 rounded-lg">Kelas IX-B</span>
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-2.5 pt-1">
+                                <button onclick="aksiAlarmKeMenu('absensi')" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 px-3 rounded-xl text-xs shadow-md transition-all flex items-center justify-center gap-1.5">
+                                    <i class="fa-solid fa-clipboard-user"></i> Daftar Hadir
+                                </button>
+                                <button onclick="aksiAlarmKeMenu('jurnal')" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 px-3 rounded-xl text-xs shadow-md transition-all flex items-center justify-center gap-1.5">
+                                    <i class="fa-solid fa-book-open"></i> Jurnal Mengajar
+                                </button>
+                            </div>
+
+                            <button onclick="matikanAlarmJadwal()" class="w-full bg-rose-600 hover:bg-rose-500 text-white font-black py-3.5 px-4 rounded-xl text-sm shadow-lg shadow-rose-600/30 transition-all flex items-center justify-center gap-2">
+                                <i class="fa-solid fa-bell-slash"></i> MATIKAN ALARM
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `);
+        }
+
+        if (!document.getElementById('alarm-settings-modal')) {
+            document.body.insertAdjacentHTML('beforeend', `
+                <div id="alarm-settings-modal" onclick="if(event.target===this) tutupPengaturanAlarm()" class="fixed inset-0 bg-slate-950/75 backdrop-blur-sm z-[9997] hidden flex items-center justify-center p-4 no-print">
+                    <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-3xl p-6 max-w-sm w-full shadow-2xl text-slate-800 dark:text-white">
+                        <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3 mb-4">
+                            <div class="flex items-center gap-2.5">
+                                <div class="w-9 h-9 rounded-xl bg-sky-500/15 text-sky-600 dark:text-sky-400 flex items-center justify-center">
+                                    <i class="fa-solid fa-bell"></i>
+                                </div>
+                                <div>
+                                    <h4 class="text-sm font-black">Alarm Jadwal Mengajar</h4>
+                                    <p class="text-[11px] text-slate-500 dark:text-slate-400">Suara latar belakang & notifikasi HP</p>
+                                </div>
+                            </div>
+                            <button onclick="tutupPengaturanAlarm()" class="text-slate-400 hover:text-rose-500 p-1"><i class="fa-solid fa-xmark text-lg"></i></button>
+                        </div>
+
+                        <div class="space-y-3 text-xs">
+                            <label class="flex items-center justify-between p-3 rounded-2xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 cursor-pointer">
+                                <div>
+                                    <p class="font-bold">Aktifkan Suara Alarm</p>
+                                    <p class="text-[11px] text-slate-500 dark:text-slate-400">Bunyi nyaring + notifikasi HP</p>
+                                </div>
+                                <input type="checkbox" id="toggle-alarm-aktif" onchange="simpanPreferensiAlarm()" class="w-5 h-5 accent-emerald-600 rounded">
+                            </label>
+
+                            <label class="flex items-center justify-between p-3 rounded-2xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 cursor-pointer">
+                                <div>
+                                    <p class="font-bold">Peringatan Awal (5 Menit)</p>
+                                    <p class="text-[11px] text-slate-500 dark:text-slate-400">Ingatkan 5 menit sebelum masuk</p>
+                                </div>
+                                <input type="checkbox" id="toggle-alarm-pre5" onchange="simpanPreferensiAlarm()" class="w-5 h-5 accent-amber-500 rounded">
+                            </label>
+
+                            <div class="p-3 rounded-2xl bg-sky-50 dark:bg-sky-950/40 border border-sky-200 dark:border-sky-800 text-[11px] text-sky-800 dark:text-sky-300 space-y-1">
+                                <p><i class="fa-solid fa-circle-info mr-1"></i> Jadwal terpantau: <b id="alarm-count-info">0 jadwal</b></p>
+                                <p class="text-[10px] opacity-85">Biarkan aplikasi terbuka di latar belakang (jangan di-swipe tutup) agar alarm berbunyi otomatis saat layar mati.</p>
+                            </div>
+
+                            <button onclick="tesBunyiAlarmJadwal()" class="w-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-black py-3 rounded-xl text-xs shadow-md transition-all flex items-center justify-center gap-2">
+                                <i class="fa-solid fa-volume-high"></i> Tes Bunyi & Notifikasi HP
+                            </button>
+
+                            <button onclick="eksporJadwalKeKalenderHP()" class="w-full bg-slate-800 hover:bg-slate-700 dark:bg-slate-700 dark:hover:bg-slate-600 text-white font-bold py-2.5 rounded-xl text-xs transition-all flex items-center justify-center gap-2">
+                                <i class="fa-solid fa-calendar-plus"></i> Pasang Pengingat ke Kalender HP
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `);
+        }
+    }
 
     function getPref() {
         try {
@@ -1189,76 +1347,26 @@ function doGet(e) {
         }
     }
 
+    // Buka kunci pemutar audio pada sentuhan pertama pengguna
+    let audioUnlocked = false;
     function unlockAudio() {
-        try {
-            const Ctx = window.AudioContext || window.webkitAudioContext;
-            if (!Ctx) return;
-            if (!audioCtx) audioCtx = new Ctx();
-            if (audioCtx.state === 'suspended') audioCtx.resume();
-        } catch (e) {}
+        if (audioUnlocked) return;
+        ensureAlarmElements();
+        if (!alarmAudioEl) return;
+        alarmAudioEl.volume = 0.01;
+        const p = alarmAudioEl.play();
+        if (p && typeof p.then === 'function') {
+            p.then(() => {
+                alarmAudioEl.pause();
+                alarmAudioEl.currentTime = 0;
+                alarmAudioEl.volume = 1.0;
+                audioUnlocked = true;
+            }).catch(() => {});
+        }
     }
-    ['pointerdown', 'touchstart', 'click', 'keydown'].forEach(ev => {
+    ['pointerdown', 'touchstart', 'click'].forEach(ev => {
         document.addEventListener(ev, unlockAudio, { passive: true });
     });
-
-    function playSchoolChime() {
-        unlockAudio();
-        if (!audioCtx) return;
-        const now = audioCtx.currentTime;
-
-        // Compressor / Limiter agar volume terdorong maksimal (1.0) tanpa pecah
-        const compressor = audioCtx.createDynamicsCompressor();
-        compressor.threshold.setValueAtTime(-12, now);
-        compressor.knee.setValueAtTime(6, now);
-        compressor.ratio.setValueAtTime(12, now);
-        compressor.attack.setValueAtTime(0.002, now);
-        compressor.release.setValueAtTime(0.15, now);
-
-        const masterGain = audioCtx.createGain();
-        masterGain.gain.setValueAtTime(1.0, now);
-        compressor.connect(masterGain);
-        masterGain.connect(audioCtx.destination);
-
-        // Nada bel sekolah berfrekuensi tinggi (nyaring di speaker HP/Tablet)
-        const notes = [
-            { freq: 1318.51, time: 0.00, dur: 0.30 }, // E6
-            { freq: 1046.50, time: 0.26, dur: 0.30 }, // C6
-            { freq: 1174.66, time: 0.52, dur: 0.30 }, // D6
-            { freq: 880.00,  time: 0.78, dur: 0.50 }, // A5
-            { freq: 1318.51, time: 1.35, dur: 0.26 }, // E6 (ulangan cepat)
-            { freq: 1567.98, time: 1.58, dur: 0.60 }  // G6 (puncak lantang)
-        ];
-
-        notes.forEach(n => {
-            // Lapisan 1: Gelombang utama penuh
-            const oscMain = audioCtx.createOscillator();
-            oscMain.type = 'triangle';
-            oscMain.frequency.setValueAtTime(n.freq, now + n.time);
-
-            // Lapisan 2: Harmonik 1 oktaf di atas agar menembus suasana kelas
-            const oscHigh = audioCtx.createOscillator();
-            oscHigh.type = 'square';
-            oscHigh.frequency.setValueAtTime(n.freq * 2, now + n.time);
-
-            const highGain = audioCtx.createGain();
-            highGain.gain.setValueAtTime(0.28, now + n.time);
-            oscHigh.connect(highGain);
-
-            const noteGain = audioCtx.createGain();
-            noteGain.gain.setValueAtTime(0.001, now + n.time);
-            noteGain.gain.exponentialRampToValueAtTime(0.98, now + n.time + 0.015);
-            noteGain.gain.exponentialRampToValueAtTime(0.001, now + n.time + n.dur);
-
-            oscMain.connect(noteGain);
-            highGain.connect(noteGain);
-            noteGain.connect(compressor);
-
-            oscMain.start(now + n.time);
-            oscHigh.start(now + n.time);
-            oscMain.stop(now + n.time + n.dur + 0.04);
-            oscHigh.stop(now + n.time + n.dur + 0.04);
-        });
-    }
 
     function todayKey() {
         const d = new Date();
@@ -1317,7 +1425,7 @@ function doGet(e) {
         const rawText = card.innerText || '';
         if (/Belum ada jadwal/i.test(rawText)) {
             cachedSchedules = [];
-            sessionStorage.setItem('st_today_sched_' + todayKey(), '[]');
+            localStorage.setItem('st_today_sched_' + todayKey(), '[]');
             return;
         }
 
@@ -1351,53 +1459,100 @@ function doGet(e) {
 
         if (found.length > 0) {
             cachedSchedules = found;
-            sessionStorage.setItem('st_today_sched_' + todayKey(), JSON.stringify(found));
+            localStorage.setItem('st_today_sched_' + todayKey(), JSON.stringify(found));
         }
     }
 
     function getActiveSchedules() {
         if (cachedSchedules.length > 0) return cachedSchedules;
         try {
-            return JSON.parse(sessionStorage.getItem('st_today_sched_' + todayKey()) || '[]');
+            return JSON.parse(localStorage.getItem('st_today_sched_' + todayKey()) || '[]');
         } catch (e) {
             return [];
         }
     }
 
+    async function kirimNotifikasiSistem(item, isPre) {
+        if (!('Notification' in window)) return;
+        if (Notification.permission === 'default') {
+            try { await Notification.requestPermission(); } catch (e) {}
+        }
+        if (Notification.permission !== 'granted') return;
+
+        const title = isPre ? `⏰ 5 Menit Lagi: ${item.mapel}` : `🔔 Waktunya Mengajar: ${item.mapel}`;
+        const options = {
+            body: `Kelas ${item.kelas} • Pukul ${item.start} - ${item.end}\nKetuk untuk membuka Smart Teacher`,
+            icon: 'logo-pusat.png',
+            badge: 'logo-pusat.png',
+            tag: 'st-jadwal-alarm',
+            renotify: true,
+            requireInteraction: true,
+            vibrate: [500, 150, 500, 150, 700],
+            actions: [
+                { action: 'open', title: 'Buka Aplikasi' },
+                { action: 'dismiss', title: 'Tutup' }
+            ]
+        };
+
+        try {
+            if ('serviceWorker' in navigator) {
+                const reg = await navigator.serviceWorker.ready;
+                if (reg && reg.showNotification) {
+                    await reg.showNotification(title, options);
+                    return;
+                }
+            }
+        } catch (e) {}
+
+        try {
+            new Notification(title, options);
+        } catch (e) {}
+    }
+
     window.picuPeringatanAlarm = function (item, isPre) {
+        ensureAlarmElements();
         const modal = document.getElementById('schedule-alarm-modal');
-        if (!modal) return;
+        if (modal) {
+            const badge = document.getElementById('alarm-modal-badge');
+            const title = document.getElementById('alarm-modal-title');
+            const time = document.getElementById('alarm-modal-time');
+            const mapel = document.getElementById('alarm-modal-mapel');
+            const kelas = document.getElementById('alarm-modal-kelas');
 
-        document.getElementById('alarm-modal-badge').textContent = isPre ? '5 Menit Lagi Masuk Kelas' : 'Waktunya Mengajar Sekarang';
-        document.getElementById('alarm-modal-title').textContent = isPre ? 'Persiapan Mengajar!' : 'Bel Jam Pelajaran!';
-        document.getElementById('alarm-modal-time').textContent = `JAM ${item.start} - ${item.end}`;
-        document.getElementById('alarm-modal-mapel').textContent = item.mapel;
-        document.getElementById('alarm-modal-kelas').textContent = `Kelas ${item.kelas}`;
+            if (badge) badge.textContent = isPre ? '5 Menit Lagi Masuk Kelas' : 'Waktunya Mengajar Sekarang';
+            if (title) title.textContent = isPre ? 'Persiapan Mengajar!' : 'Bel Jam Pelajaran!';
+            if (time) time.textContent = `JAM ${item.start} - ${item.end}`;
+            if (mapel) mapel.textContent = item.mapel;
+            if (kelas) kelas.textContent = `Kelas ${item.kelas}`;
+            modal.classList.remove('hidden');
+        }
 
-        modal.classList.remove('hidden');
+        // Putar audio WAV berulang di jalur media agar tetap berbunyi walau layar mati
+        if (alarmAudioEl) {
+            alarmAudioEl.volume = 1.0;
+            alarmAudioEl.currentTime = 0;
+            alarmAudioEl.play().catch(() => {});
+        }
 
-        // Bunyikan bel keras & getarkan HP terus setiap 2,5 detik sampai dimatikan
         clearInterval(alarmLoopTimer);
-        playSchoolChime();
         if (navigator.vibrate) navigator.vibrate([500, 150, 500, 150, 700]);
         alarmLoopTimer = setInterval(() => {
-            playSchoolChime();
             if (navigator.vibrate) navigator.vibrate([500, 150, 500]);
-        }, 2500);
+            if (alarmAudioEl && alarmAudioEl.paused) {
+                alarmAudioEl.play().catch(() => {});
+            }
+        }, 2600);
 
-        if ('Notification' in window && Notification.permission === 'granted') {
-            try {
-                new Notification(isPre ? `5 Menit Lagi: ${item.mapel}` : `Waktunya Mengajar: ${item.mapel}`, {
-                    body: `Kelas ${item.kelas} • Pukul ${item.start} - ${item.end}`,
-                    icon: 'logo-pusat.png'
-                });
-            } catch (e) {}
-        }
+        kirimNotifikasiSistem(item, isPre);
     };
 
     window.matikanAlarmJadwal = function () {
         clearInterval(alarmLoopTimer);
         alarmLoopTimer = null;
+        if (alarmAudioEl) {
+            alarmAudioEl.pause();
+            alarmAudioEl.currentTime = 0;
+        }
         if (navigator.vibrate) navigator.vibrate(0);
         const modal = document.getElementById('schedule-alarm-modal');
         if (modal) modal.classList.add('hidden');
@@ -1408,27 +1563,38 @@ function doGet(e) {
         if (typeof switchTab === 'function') switchTab(tabName);
     };
 
-    window.bukaPengaturanAlarm = function () {
+    window.bukaPengaturanAlarm = async function () {
+        ensureAlarmElements();
         scanDashboardSchedule();
         const pref = getPref();
-        document.getElementById('toggle-alarm-aktif').checked = pref.enabled;
-        document.getElementById('toggle-alarm-pre5').checked = pref.pre5;
-        document.getElementById('alarm-count-info').textContent = `${getActiveSchedules().length} jadwal`;
-        document.getElementById('alarm-settings-modal').classList.remove('hidden');
+
+        const elAktif = document.getElementById('toggle-alarm-aktif');
+        const elPre5 = document.getElementById('toggle-alarm-pre5');
+        const elCount = document.getElementById('alarm-count-info');
+        const modal = document.getElementById('alarm-settings-modal');
+
+        if (elAktif) elAktif.checked = pref.enabled;
+        if (elPre5) elPre5.checked = pref.pre5;
+        if (elCount) elCount.textContent = `${getActiveSchedules().length} jadwal`;
+        if (modal) modal.classList.remove('hidden');
 
         if ('Notification' in window && Notification.permission === 'default') {
-            Notification.requestPermission().catch(() => {});
+            try { await Notification.requestPermission(); } catch (e) {}
         }
     };
 
     window.tutupPengaturanAlarm = function () {
-        document.getElementById('alarm-settings-modal').classList.add('hidden');
+        const modal = document.getElementById('alarm-settings-modal');
+        if (modal) modal.classList.add('hidden');
     };
 
     window.simpanPreferensiAlarm = function () {
-        const enabled = document.getElementById('toggle-alarm-aktif').checked;
-        const pre5 = document.getElementById('toggle-alarm-pre5').checked;
+        const elAktif = document.getElementById('toggle-alarm-aktif');
+        const elPre5 = document.getElementById('toggle-alarm-pre5');
+        const enabled = elAktif ? elAktif.checked : true;
+        const pre5 = elPre5 ? elPre5.checked : true;
         localStorage.setItem(PREF_KEY, JSON.stringify({ enabled, pre5 }));
+
         const dot = document.getElementById('st-bell-status-dot');
         const solid = document.getElementById('st-bell-status-solid');
         if (dot) dot.style.display = enabled ? '' : 'none';
@@ -1443,7 +1609,41 @@ function doGet(e) {
         picuPeringatanAlarm(sample, false);
     };
 
-    setInterval(() => {
+    // Ekspor jadwal hari ini ke file .ics untuk Kalender/Alarm bawaan HP
+    window.eksporJadwalKeKalenderHP = function () {
+        const list = getActiveSchedules();
+        if (!list.length) {
+            alert('Belum ada jadwal mengajar pada hari ini untuk dipasang ke kalender.');
+            return;
+        }
+        const now = new Date();
+        const ymd = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}`;
+        let ics = 'BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//Smart Teacher V3.0//Alarm Jadwal//ID\r\n';
+
+        list.forEach((item, i) => {
+            const s = item.start.replace(':', '') + '00';
+            const e = item.end.replace(':', '') + '00';
+            ics += 'BEGIN:VEVENT\r\n';
+            ics += `UID:st-${ymd}-${i}@smartteacher\r\n`;
+            ics += `DTSTAMP:${ymd}T000000\r\n`;
+            ics += `DTSTART:${ymd}T${s}\r\n`;
+            ics += `DTEND:${ymd}T${e}\r\n`;
+            ics += `SUMMARY:Mengajar ${item.mapel} (${item.kelas})\r\n`;
+            ics += `DESCRIPTION:Pengingat otomatis dari Smart Teacher V3.0\r\n`;
+            ics += 'BEGIN:VALARM\r\nACTION:DISPLAY\r\nDESCRIPTION:5 Menit Lagi Masuk Kelas\r\nTRIGGER:-PT5M\r\nEND:VALARM\r\n';
+            ics += 'BEGIN:VALARM\r\nACTION:DISPLAY\r\nDESCRIPTION:Waktunya Mengajar\r\nTRIGGER:PT0M\r\nEND:VALARM\r\n';
+            ics += 'END:VEVENT\r\n';
+        });
+        ics += 'END:VCALENDAR';
+
+        const blob = new Blob([ics], { type: 'text/calendar;charset=utf-8' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = `Jadwal-Mengajar-${ymd}.ics`;
+        a.click();
+    };
+
+    function cekWaktuJadwal() {
         const pref = getPref();
         if (!pref.enabled) return;
 
@@ -1471,9 +1671,15 @@ function doGet(e) {
                 picuPeringatanAlarm(item, true);
             }
         });
-    }, 1000);
+    }
+
+    setInterval(cekWaktuJadwal, 1000);
+    document.addEventListener('visibilitychange', () => {
+        if (!document.hidden) cekWaktuJadwal();
+    });
 
     document.addEventListener('DOMContentLoaded', () => {
+        ensureAlarmElements();
         scanDashboardSchedule();
         const main = document.getElementById('main-content');
         if (main) {
