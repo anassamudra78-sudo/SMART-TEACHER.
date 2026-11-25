@@ -299,6 +299,20 @@ html, body {
 /* =========================================================
    LIGHT MODE HARMONIZER LENGKAP (SEMUA TRANSPARANSI & MODAL)
    ========================================================= */
+        html:not(.dark) body,
+html:not(.dark) #main-content,
+html:not(.dark) body > div.flex {
+    background-color: #e9eef5 !important;
+    color: #0f172a !important;
+}
+
+/* Jaga lapisan gelap belakang modal agar tidak berubah putih */
+html:not(.dark) #main-content .fixed.inset-0 {
+    background-color: rgba(15, 23, 42, 0.65) !important;
+    background-image: none !important;
+    border: none !important;
+    box-shadow: none !important;
+}
 html:not(.dark) header.glass-effect,
 html:not(.dark) #dnd-topbar,
 html:not(.dark) #quiz-arena-modal > .sticky {
@@ -357,22 +371,22 @@ html:not(.dark) :is(#main-content, #quiz-arena-modal, #dnd-arena-modal, #guide-m
     color: #0f172a !important;
 }
 
-/* Pertahankan teks putih HANYA pada tombol/badge solid yang aslinya memang memakai .text-white */
+/* Teks putih HANYA pada tombol/badge solid gelap-menengah (aman untuk kuning, terang & transparan) */
 html:not(.dark) :is(#main-content, #quiz-arena-modal, #dnd-arena-modal, #guide-modal, #bedah-soal-modal, #bank-soal-modal, #modal-workspace) :is(
-    button:not([class*="bg-slate-"]):not([class*="bg-white/"]), a,
-    [class*="from-emerald"], [class*="from-brand"], [class*="from-indigo"], [class*="from-purple"],
-    [class*="from-amber"], [class*="from-orange"], [class*="from-rose"], [class*="from-cyan"], [class*="from-sky"], [class*="from-blue"], [class*="from-teal"],
-    [class*="bg-brand-5"], [class*="bg-brand-6"], [class*="bg-emerald-5"], [class*="bg-emerald-6"], [class*="bg-teal-6"],
-    [class*="bg-indigo-6"], [class*="bg-purple-6"], [class*="bg-rose-5"], [class*="bg-rose-6"],
-    [class*="bg-amber-5"], [class*="bg-orange-5"], [class*="bg-cyan-6"], [class*="bg-sky-5"], [class*="bg-sky-6"], [class*="bg-blue-6"]
-) :is(h1, h2, h3, h4, p, span, div, i):is(.text-white, [class*="text-white/"]),
+    button, a, span
+):not([class*="amber"]):not([class*="yellow"]):not([class*="bg-slate-"]):not([class*="bg-white/"]):not([class*="600/"]):not([class*="700/"]):is(
+    [class*="from-brand"], [class*="from-emerald"], [class*="from-teal"], [class*="from-cyan"], [class*="from-sky"], [class*="from-blue"], [class*="from-indigo"], [class*="from-purple"], [class*="from-rose"],
+    [class*="bg-brand-6"], [class*="bg-brand-7"], [class*="bg-emerald-6"], [class*="bg-emerald-7"], [class*="bg-teal-6"], [class*="bg-cyan-6"], [class*="bg-sky-6"], [class*="bg-blue-6"], [class*="bg-indigo-6"], [class*="bg-purple-6"], [class*="bg-rose-6"]
+),
 html:not(.dark) :is(#main-content, #quiz-arena-modal, #dnd-arena-modal, #guide-modal, #bedah-soal-modal, #bank-soal-modal, #modal-workspace) :is(
-    button:not([class*="bg-slate-"]):not([class*="bg-white/"]), a,
-    span:is([class*="bg-indigo-6"], [class*="bg-emerald-6"], [class*="bg-brand-5"], [class*="bg-brand-6"], [class*="bg-purple-6"], [class*="bg-rose-6"], [class*="bg-amber-5"], [class*="bg-orange-5"], [class*="bg-sky-6"])
-):is(.text-white, [class*="text-white/"]) {
+    button, a
+):not([class*="amber"]):not([class*="yellow"]):not([class*="bg-slate-"]):not([class*="bg-white/"]):not([class*="600/"]):not([class*="700/"]):is(
+    [class*="from-brand"], [class*="from-emerald"], [class*="from-teal"], [class*="from-cyan"], [class*="from-sky"], [class*="from-blue"], [class*="from-indigo"], [class*="from-purple"], [class*="from-rose"],
+    [class*="bg-brand-6"], [class*="bg-brand-7"], [class*="bg-emerald-6"], [class*="bg-emerald-7"], [class*="bg-teal-6"], [class*="bg-cyan-6"], [class*="bg-sky-6"], [class*="bg-blue-6"], [class*="bg-indigo-6"], [class*="bg-purple-6"], [class*="bg-rose-6"]
+) :is(h1, h2, h3, h4, p, span, div, i) {
     color: #ffffff !important;
 }
-/* 7. Pertajam teks sekunder & aksen warna di Workspace, Kuis, Bank Soal & DnD */
+        /* 7. Pertajam teks sekunder & aksen warna di Workspace, Kuis, Bank Soal & DnD */
 html:not(.dark) :is(#main-content, #quiz-arena-modal, #dnd-arena-modal, #guide-modal, #bedah-soal-modal, #bank-soal-modal, #modal-workspace) :is(p, span, td, th, label, div, button):is(.text-slate-200, .text-slate-300) {
     color: #334155 !important;
 }
@@ -562,6 +576,37 @@ html:not(.dark) :is(#sidebar, #mobile-drawer) button[onclick*="bukaModalWorkspac
     background-color: #ecfdf5 !important;
     border-color: #10b981 !important;
     transform: translateY(-1px);
+}
+
+/* Warna tombol "MAINKAN SEKARANG" di Drag & Drop Arena sama seperti Mode Gelap */
+html:not(.dark) #main-content :is(div:not(:has(.grid)):has([class*="emerald"]) > button, button[onclick*="match" i]),
+html:not(.dark) #main-content :is(div:not(:has(.grid)):has([class*="emerald"]) > button, button[onclick*="match" i]) :is(span, i) {
+    background: linear-gradient(135deg, #059669 0%, #10b981 100%) !important;
+    border-color: #059669 !important;
+    color: #ffffff !important;
+}
+html:not(.dark) #main-content :is(div:not(:has(.grid)):has([class*="amber"], [class*="orange"]) > button, button[onclick*="sort" i]),
+html:not(.dark) #main-content :is(div:not(:has(.grid)):has([class*="amber"], [class*="orange"]) > button, button[onclick*="sort" i]) :is(span, i) {
+    background: linear-gradient(135deg, #ea580c 0%, #f97316 100%) !important;
+    border-color: #ea580c !important;
+    color: #ffffff !important;
+}
+html:not(.dark) #main-content :is(div:not(:has(.grid)):has([class*="purple"], [class*="violet"], [class*="indigo"]) > button, button[onclick*="build" i]),
+html:not(.dark) #main-content :is(div:not(:has(.grid)):has([class*="purple"], [class*="violet"], [class*="indigo"]) > button, button[onclick*="build" i]) :is(span, i) {
+    background: linear-gradient(135deg, #7c3aed 0%, #6366f1 100%) !important;
+    border-color: #7c3aed !important;
+    color: #ffffff !important;
+}
+html:not(.dark) #main-content div:not(:has(.grid)) > button:hover {
+    filter: brightness(1.07) !important;
+}
+
+/* Hover tombol X di modal Bank Soal */
+html:not(.dark) #bank-soal-modal button.bg-white\/10:hover,
+html:not(.dark) #bank-soal-modal button.bg-white\/10:hover :is(span, i) {
+    background-color: #e11d48 !important;
+    border-color: #e11d48 !important;
+    color: #ffffff !important;
 }
 </style>
     <style>
@@ -1786,85 +1831,10 @@ function doGet(e) {
     });
 })();
 </script>
-    <!-- =========================================================
-     TOP BAR WORKSPACE PILL (INDIKATOR & SAKELAR RUANG KERJA)
-     ========================================================= -->
-<style>
-#topbar-workspace-pill {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.45rem;
-    padding: 0.38rem 0.75rem;
-    border-radius: 9999px;
-    font-size: 0.75rem;
-    font-weight: 800;
-    letter-spacing: 0.02em;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    margin-left: auto;
-    margin-right: 0.35rem;
-    max-width: 250px;
-    flex-shrink: 1;
-    min-width: 0;
-}
-
-/* Tampilan Mode Terang */
-html:not(.dark) #topbar-workspace-pill {
-    background: linear-gradient(135deg, #ecfdf5 0%, #f0fdfa 100%) !important;
-    border: 1px solid #a7f3d0 !important;
-    color: #065f46 !important;
-    box-shadow: 0 2px 8px -2px rgba(5, 150, 105, 0.14) !important;
-}
-html:not(.dark) #topbar-workspace-pill:hover {
-    background: #d1fae5 !important;
-    border-color: #34d399 !important;
-    transform: translateY(-1px);
-}
-html:not(.dark) #topbar-workspace-pill .ws-icon {
-    color: #059669 !important;
-}
-
-/* Tampilan Mode Gelap */
-html.dark #topbar-workspace-pill {
-    background: rgba(16, 185, 129, 0.12) !important;
-    border: 1px solid rgba(52, 211, 153, 0.3) !important;
-    color: #6ee7b7 !important;
-    box-shadow: 0 2px 10px -2px rgba(0, 0, 0, 0.3) !important;
-}
-html.dark #topbar-workspace-pill:hover {
-    background: rgba(16, 185, 129, 0.22) !important;
-    border-color: rgba(52, 211, 153, 0.55) !important;
-}
-html.dark #topbar-workspace-pill .ws-icon {
-    color: #34d399 !important;
-}
-
-#topbar-workspace-pill .ws-text {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
-/* Penyesuaian Layar HP agar Judul Halaman Tetap Lega */
-@media (max-width: 640px) {
-    #topbar-workspace-pill {
-        max-width: 118px;
-        padding: 0.32rem 0.55rem;
-        font-size: 0.68rem;
-        gap: 0.35rem;
-        margin-right: 0.15rem;
-    }
-    #topbar-workspace-pill .ws-icon {
-        display: none;
-    }
-}
-</style>
-
 <!-- =========================================================
-     TOP BAR ALA GATEWAY, TEMA DI LACI HP & KONTRAS KARTU GAME
+     TOP BAR ALA GATEWAY & SINKRONISASI LACI HP
      ========================================================= -->
 <style>
-/* --- 1. KAPSUL RUANG KERJA AKTIF (DESKTOP & TABLET) --- */
 #topbar-workspace-pill {
     display: inline-flex;
     align-items: center;
@@ -1925,408 +1895,6 @@ html.dark #topbar-workspace-pill .ws-icon {
     white-space: nowrap;
 }
 
-/* --- 2. TOP BAR HP ALA GATEWAY & PINDAH TOMBOL TEMA KE SIDEBAR --- */
-@media (max-width: 767px) {
-    /* Sembunyikan tombol bulan/matahari di Top Bar HP */
-    header.glass-effect button[onclick*="toggleDarkMode"] {
-        display: none !important;
-    }
-
-    header.glass-effect {
-        display: flex !important;
-        align-items: center !important;
-        justify-content: space-between !important;
-        gap: 0.6rem !important;
-        height: auto !important;
-        min-height: 3.65rem !important;
-        padding-top: 0.5rem !important;
-        padding-bottom: 0.5rem !important;
-    }
-
-    header.glass-effect > div:first-child {
-        display: flex !important;
-        align-items: center !important;
-        gap: 0.65rem !important;
-        flex: 1 1 auto !important;
-        min-width: 0 !important;
-    }
-
-    /* Tumpukan tengah: Judul di atas + Kapsul Ruang Kerja mungil di bawah */
-    #st-title-stack {
-        display: flex !important;
-        flex-direction: column !important;
-        align-items: flex-start !important;
-        justify-content: center !important;
-        min-width: 0 !important;
-        flex: 1 1 auto !important;
-        gap: 3px !important;
-    }
-
-    #st-title-stack #page-title,
-    #st-title-stack > :is(h1, h2) {
-        font-size: 1.02rem !important;
-        line-height: 1.2 !important;
-        white-space: nowrap !important;
-        overflow: hidden !important;
-        text-overflow: ellipsis !important;
-        max-width: 100% !important;
-        margin: 0 !important;
-    }
-
-    /* Sembunyikan subjudul teks bawaan di HP agar digantikan kapsul ruang kerja */
-    #st-title-stack > p {
-        display: none !important;
-    }
-
-    /* Gaya kapsul mungil ala Gateway di bawah judul HP */
-    #st-title-stack #topbar-workspace-pill {
-        margin: 0 !important;
-        padding: 2px 8px !important;
-        border-radius: 6px !important;
-        font-size: 10.5px !important;
-        line-height: 1.25 !important;
-        gap: 5px !important;
-        max-width: 100% !important;
-        box-shadow: none !important;
-    }
-    #st-title-stack #topbar-workspace-pill .ws-dot {
-        width: 6px !important;
-        height: 6px !important;
-    }
-    #st-title-stack #topbar-workspace-pill .ws-icon {
-        display: none !important;
-    }
-
-    header.glass-effect > div:last-child {
-        flex-shrink: 0 !important;
-    }
-}
-
-/* --- 3. TOMBOL TEMA DI DASAR LACI SIDEBAR HP --- */
-#mobile-drawer-theme-bar {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-top: 0.65rem;
-    padding-top: 0.65rem;
-    border-top: 1px solid rgba(148, 163, 184, 0.22);
-    font-size: 0.72rem;
-    font-weight: 600;
-}
-html:not(.dark) #mobile-drawer-theme-bar {
-    color: #64748b;
-}
-html.dark #mobile-drawer-theme-bar {
-    color: #94a3b8;
-}
-
-#mobile-drawer-theme-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.4rem;
-    padding: 0.35rem 0.7rem;
-    border-radius: 0.65rem;
-    font-size: 0.72rem;
-    font-weight: 700;
-    cursor: pointer;
-    transition: all 0.2s ease;
-}
-html:not(.dark) #mobile-drawer-theme-btn {
-    background-color: #ffffff;
-    border: 1px solid #cbd5e1;
-    color: #334155;
-}
-html.dark #mobile-drawer-theme-btn {
-    background-color: rgba(30, 41, 59, 0.9);
-    border: 1px solid rgba(71, 85, 105, 0.6);
-    color: #fbbf24;
-}
-
-/* --- 4. TEKS PUTIH PADA KARTU GAME CERAH (ARENA KUIS & DRAG & DROP) --- */
-html:not(.dark) :is(#main-content, #quiz-arena-modal, #dnd-arena-modal) :is(
-    [class*="from-orange-"], [class*="from-amber-5"], [class*="from-amber-6"],
-    [class*="from-purple-"], [class*="from-violet-"], [class*="from-fuchsia-"], [class*="from-indigo-"],
-    [class*="bg-orange-5"], [class*="bg-orange-6"], [class*="bg-purple-6"], [class*="bg-violet-6"]
-) :is(h1, h2, h3, h4, p, span, div, i) {
-    color: #ffffff !important;
-}
-</style>
-
-<!-- =========================================================
-     TOP BAR ALA GATEWAY (KOMPAK), TEMA LACI HP & KARTU GAME
-     ========================================================= -->
-<style>
-/* --- 1. KAPSUL RUANG KERJA AKTIF (DESKTOP & TABLET) --- */
-#topbar-workspace-pill {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.45rem;
-    padding: 0.36rem 0.78rem;
-    border-radius: 9999px;
-    font-size: 0.75rem;
-    font-weight: 800;
-    letter-spacing: 0.02em;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    margin-left: auto;
-    margin-right: 0.4rem;
-    max-width: 270px;
-    min-width: 0;
-}
-
-html:not(.dark) #topbar-workspace-pill {
-    background: linear-gradient(135deg, #ecfdf5 0%, #f0fdfa 100%) !important;
-    border: 1px solid #a7f3d0 !important;
-    color: #065f46 !important;
-    box-shadow: 0 2px 8px -2px rgba(5, 150, 105, 0.14) !important;
-}
-html:not(.dark) #topbar-workspace-pill:hover {
-    background: #d1fae5 !important;
-    border-color: #34d399 !important;
-}
-html:not(.dark) #topbar-workspace-pill .ws-icon {
-    color: #059669 !important;
-}
-
-html.dark #topbar-workspace-pill {
-    background: rgba(16, 185, 129, 0.14) !important;
-    border: 1px solid rgba(52, 211, 153, 0.32) !important;
-    color: #6ee7b7 !important;
-}
-html.dark #topbar-workspace-pill .ws-icon {
-    color: #34d399 !important;
-}
-
-#topbar-workspace-pill .ws-dot {
-    width: 7px;
-    height: 7px;
-    border-radius: 9999px;
-    background-color: #10b981;
-    flex-shrink: 0;
-    box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.22);
-    animation: stPulseDot 2s infinite;
-}
-@keyframes stPulseDot {
-    0%, 100% { opacity: 1; transform: scale(1); }
-    50% { opacity: 0.45; transform: scale(0.85); }
-}
-
-#topbar-workspace-pill .ws-text {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
-/* --- 2. TOP BAR HP ALA GATEWAY (RAPAT & KOMPAK) --- */
-@media (max-width: 767px) {
-    /* Sembunyikan tombol bulan/matahari di Top Bar HP */
-    header.glass-effect button[onclick*="toggleDarkMode"] {
-        display: none !important;
-    }
-
-    header.glass-effect {
-        display: flex !important;
-        align-items: center !important;
-        justify-content: space-between !important;
-        gap: 0.5rem !important;
-        height: auto !important;
-        min-height: 3.3rem !important;
-        padding: 0.42rem 0.75rem !important;
-    }
-
-    header.glass-effect > div:first-child {
-        display: flex !important;
-        align-items: center !important;
-        gap: 0.5rem !important;
-        flex: 1 1 auto !important;
-        min-width: 0 !important;
-    }
-
-    /* Hapus jarak bawaan Tailwind space-x-* agar rapat dengan tombol garis tiga */
-    header.glass-effect > div:first-child > * {
-        margin-left: 0 !important;
-    }
-
-    header.glass-effect > div:first-child > button {
-        width: 2.15rem !important;
-        height: 2.15rem !important;
-        padding: 0 !important;
-        flex-shrink: 0 !important;
-    }
-
-    /* Tumpukan tengah: Judul mungil di atas + Kapsul Ruang Kerja di bawah */
-    #st-title-stack {
-        display: flex !important;
-        flex-direction: column !important;
-        align-items: flex-start !important;
-        justify-content: center !important;
-        min-width: 0 !important;
-        flex: 1 1 auto !important;
-        gap: 2px !important;
-    }
-
-    #st-title-stack #page-title,
-    #st-title-stack > :is(h1, h2) {
-        font-size: 0.88rem !important;
-        font-weight: 800 !important;
-        line-height: 1.15 !important;
-        white-space: nowrap !important;
-        overflow: hidden !important;
-        text-overflow: ellipsis !important;
-        max-width: 100% !important;
-        margin: 0 !important;
-    }
-
-    #st-title-stack > p {
-        display: none !important;
-    }
-
-    /* Kapsul mungil ala Gateway dengan titik berkedip tetap aktif */
-    #st-title-stack #topbar-workspace-pill {
-        margin: 0 !important;
-        padding: 1.5px 6px !important;
-        border-radius: 5px !important;
-        font-size: 9.5px !important;
-        font-weight: 700 !important;
-        line-height: 1.2 !important;
-        gap: 4px !important;
-        max-width: 100% !important;
-        box-shadow: none !important;
-    }
-    #st-title-stack #topbar-workspace-pill .ws-dot {
-        width: 5px !important;
-        height: 5px !important;
-    }
-    #st-title-stack #topbar-workspace-pill .ws-icon {
-        display: none !important;
-    }
-
-    header.glass-effect > div:last-child {
-        flex-shrink: 0 !important;
-    }
-}
-
-/* --- 3. TOMBOL TEMA DI DASAR LACI SIDEBAR HP --- */
-#mobile-drawer-theme-bar {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-top: 0.65rem;
-    padding-top: 0.65rem;
-    border-top: 1px solid rgba(148, 163, 184, 0.22);
-    font-size: 0.72rem;
-    font-weight: 600;
-}
-@media (min-width: 768px) {
-    #mobile-drawer-theme-bar {
-        display: none !important;
-    }
-}
-html:not(.dark) #mobile-drawer-theme-bar {
-    color: #64748b;
-}
-html.dark #mobile-drawer-theme-bar {
-    color: #94a3b8;
-}
-
-#mobile-drawer-theme-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.4rem;
-    padding: 0.35rem 0.7rem;
-    border-radius: 0.65rem;
-    font-size: 0.72rem;
-    font-weight: 700;
-    cursor: pointer;
-    transition: all 0.2s ease;
-}
-html:not(.dark) #mobile-drawer-theme-btn {
-    background-color: #ffffff;
-    border: 1px solid #cbd5e1;
-    color: #334155;
-}
-html.dark #mobile-drawer-theme-btn {
-    background-color: rgba(30, 41, 59, 0.9);
-    border: 1px solid rgba(71, 85, 105, 0.6);
-    color: #fbbf24;
-}
-
-/* --- 4. TEKS PUTIH PADA KARTU GAME CERAH (ARENA KUIS & DRAG & DROP) --- */
-html:not(.dark) :is(#main-content, #quiz-arena-modal, #dnd-arena-modal) :is(
-    [class*="from-orange-"], [class*="from-amber-5"], [class*="from-amber-6"],
-    [class*="from-purple-"], [class*="from-violet-"], [class*="from-fuchsia-"], [class*="from-indigo-"],
-    [class*="bg-orange-5"], [class*="bg-orange-6"], [class*="bg-purple-6"], [class*="bg-violet-6"]
-) :is(h1, h2, h3, h4, p, span, div, i) {
-    color: #ffffff !important;
-}
-</style>
-
-<!-- =========================================================
-     TOP BAR ALA GATEWAY, SINKRONISASI SIDEBAR HP & KARTU GAME
-     ========================================================= -->
-<style>
-/* --- 1. KAPSUL RUANG KERJA AKTIF (DESKTOP & TABLET) --- */
-#topbar-workspace-pill {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.45rem;
-    padding: 0.36rem 0.78rem;
-    border-radius: 9999px;
-    font-size: 0.75rem;
-    font-weight: 800;
-    letter-spacing: 0.02em;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    margin-left: auto;
-    margin-right: 0.4rem;
-    max-width: 270px;
-    min-width: 0;
-}
-
-html:not(.dark) #topbar-workspace-pill {
-    background: linear-gradient(135deg, #ecfdf5 0%, #f0fdfa 100%) !important;
-    border: 1px solid #a7f3d0 !important;
-    color: #065f46 !important;
-    box-shadow: 0 2px 8px -2px rgba(5, 150, 105, 0.14) !important;
-}
-html:not(.dark) #topbar-workspace-pill:hover {
-    background: #d1fae5 !important;
-    border-color: #34d399 !important;
-}
-html:not(.dark) #topbar-workspace-pill .ws-icon {
-    color: #059669 !important;
-}
-
-html.dark #topbar-workspace-pill {
-    background: rgba(16, 185, 129, 0.14) !important;
-    border: 1px solid rgba(52, 211, 153, 0.32) !important;
-    color: #6ee7b7 !important;
-}
-html.dark #topbar-workspace-pill .ws-icon {
-    color: #34d399 !important;
-}
-
-#topbar-workspace-pill .ws-dot {
-    width: 7px;
-    height: 7px;
-    border-radius: 9999px;
-    background-color: #10b981;
-    flex-shrink: 0;
-    box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.22);
-    animation: stPulseDot 2s infinite;
-}
-@keyframes stPulseDot {
-    0%, 100% { opacity: 1; transform: scale(1); }
-    50% { opacity: 0.45; transform: scale(0.85); }
-}
-
-#topbar-workspace-pill .ws-text {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
-/* --- 2. TOP BAR HP ALA GATEWAY (RAPAT & KOMPAK) --- */
 @media (max-width: 767px) {
     header.glass-effect button[onclick*="toggleDarkMode"] {
         display: none !important;
@@ -2409,17 +1977,7 @@ html.dark #topbar-workspace-pill .ws-icon {
         flex-shrink: 0 !important;
     }
 }
-
-/* --- 3. TEKS PUTIH PADA KARTU GAME CERAH (ARENA KUIS & DRAG & DROP) --- */
-html:not(.dark) :is(#main-content, #quiz-arena-modal, #dnd-arena-modal) :is(
-    [class*="from-orange-"], [class*="from-amber-5"], [class*="from-amber-6"],
-    [class*="from-purple-"], [class*="from-violet-"], [class*="from-fuchsia-"], [class*="from-indigo-"],
-    [class*="bg-orange-5"], [class*="bg-orange-6"], [class*="bg-purple-6"], [class*="bg-violet-6"]
-) :is(h1, h2, h3, h4, p, span, div, i) {
-    color: #ffffff !important;
-}
 </style>
-
 <script>
 (function () {
     function initSmartTeacherUI() {
