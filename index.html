@@ -294,56 +294,127 @@ html, body {
         padding-bottom: 0.85rem !important;
     }
 }
-</style>
-    <style>
+</style><style>
 /* =========================================================
-   LIGHT MODE HARMONIZER LENGKAP (SEMUA TRANSPARANSI & MODAL)
+   LIGHT MODE PRO (LAYERED DAYLIGHT & HERO VISUAL ANCHORS)
    ========================================================= */
-html:not(.dark) header.glass-effect,
-html:not(.dark) #dnd-topbar,
-html:not(.dark) #quiz-arena-modal > .sticky {
-    background: rgba(255, 255, 255, 0.96) !important;
-    border-bottom: 1px solid #e2e8f0 !important;
-    box-shadow: 0 2px 12px rgba(15, 23, 42, 0.05);
-}
-
-/* 1. Latar utama Arena Kuis & Arena Drag-Drop saat Mode Terang */
-html:not(.dark) #quiz-arena-modal,
-html:not(.dark) #dnd-arena-modal {
-    background-color: #f1f5f9 !important;
+html:not(.dark) body,
+html:not(.dark) #main-content,
+html:not(.dark) body > div.flex {
+    background-color: #e9eef5 !important;
     color: #0f172a !important;
 }
 
-/* 2. Perjelas Judul Gradasi ("Arena Kuis Interaktif", "Smart Drag & Drop Arena", dll.) */
-html:not(.dark) :is(#main-content, #quiz-arena-modal, #dnd-arena-modal) :is(.bg-clip-text, .text-transparent) {
-    background-image: linear-gradient(to right, #0f172a, #4338ca, #059669) !important;
+/* 1. Top Bar Frosted Daylight dengan Garis Aksen Emerald */
+html:not(.dark) header.glass-effect,
+html:not(.dark) #dnd-topbar,
+html:not(.dark) #quiz-arena-modal > .sticky {
+    background: rgba(255, 255, 255, 0.92) !important;
+    backdrop-filter: blur(14px) !important;
+    -webkit-backdrop-filter: blur(14px) !important;
+    border-top: 2.5px solid #059669 !important;
+    border-bottom: 1px solid #cbd5e1 !important;
+    box-shadow: 0 4px 18px -6px rgba(15, 23, 42, 0.08) !important;
+}
+
+html:not(.dark) header.glass-effect button[onclick*="toggleMobileMenu"] {
+    background-color: #f1f5f9 !important;
+    border: 1px solid #cbd5e1 !important;
+    color: #334155 !important;
+    border-radius: 0.75rem !important;
+}
+
+html:not(.dark) header.glass-effect > div:last-child > div:last-child {
+    background: linear-gradient(135deg, #059669, #0d9488) !important;
+    color: #ffffff !important;
+    box-shadow: 0 4px 10px -2px rgba(5, 150, 105, 0.35) !important;
+}
+
+/* 2. Latar Utama Arena Kuis & Arena Drag-Drop */
+html:not(.dark) #quiz-arena-modal,
+html:not(.dark) #dnd-arena-modal {
+    background-color: #e9eef5 !important;
+    color: #0f172a !important;
+}
+
+/* 3. Kartu Konten Putih Timbul di Atas Latar Abu-Abu Sejuk */
+html:not(.dark) :is(#main-content, #quiz-arena-modal, #dnd-arena-modal, #guide-modal, #bedah-soal-modal, #bank-soal-modal, #modal-workspace, #modal-about-dev) :is(div, section, article, aside, table, form):is(
+    [class*="bg-slate-9"], .bg-black, [class*="bg-black/"], .bg-gray-900, .from-slate-900, .from-slate-950
+) {
+    background-color: #ffffff !important;
+    background-image: none !important;
+    border: 1px solid #d8e1eb !important;
+    box-shadow: 0 6px 20px -6px rgba(15, 23, 42, 0.08), 0 1px 3px rgba(15, 23, 42, 0.04) !important;
+}
+
+/* 4. Kotak Dalam, Input Form & Header Tabel (Lapisan Kedua) */
+html:not(.dark) :is(#main-content, #quiz-arena-modal, #dnd-arena-modal, #guide-modal, #bedah-soal-modal, #bank-soal-modal, #modal-workspace) :is(div, section, thead, tr, input, select, textarea):is(
+    [class*="bg-slate-8"], [class*="bg-slate-7"], .bg-slate-900, .bg-slate-950, .bg-black,
+    .bg-white\/5, .bg-white\/10
+) {
+    background-color: #f1f5f9 !important;
+    border-color: #cbd5e1 !important;
+    color: #0f172a !important;
+}
+
+html:not(.dark) :is(#main-content, #quiz-arena-modal, #dnd-arena-modal) button:is([class*="bg-slate-8"], [class*="bg-slate-7"], .bg-white\/5, .bg-white\/10) {
+    background-color: #f1f5f9 !important;
+    border: 1px solid #cbd5e1 !important;
+    color: #1e293b !important;
+}
+
+/* 5. KARTU UTAMA (HERO ANCHORS): Tetap Berwarna Mewah & Hidup di Mode Terang */
+html:not(.dark) #main-content div:has(> div > h1, > div > h2, > h1, > h2):is([class*="bg-slate-9"], [class*="from-slate-9"]):has(*:is(h1, h2, p)) {
+    background-color: #ffffff !important;
+}
+
+/* Hero Dashboard: Selamat Datang di Smart Teacher -> Gradasi Emerald-Teal */
+html:not(.dark) #main-content div[class*="bg-slate-9"]:has(h1, h2):has(span, p):first-child,
+html:not(.dark) #main-content > div > div:first-child:is([class*="bg-slate-9"], [class*="from-slate-9"]) {
+    background: linear-gradient(135deg, #064e3b 0%, #047857 55%, #0f766e 100%) !important;
+    border: 1px solid #059669 !important;
+    box-shadow: 0 14px 30px -10px rgba(6, 78, 59, 0.35) !important;
+}
+html:not(.dark) #main-content > div > div:first-child:is([class*="bg-slate-9"], [class*="from-slate-9"]) :is(h1, h2, h3, p, span):not([class*="text-amber"]) {
+    color: #ffffff !important;
+}
+html:not(.dark) #main-content > div > div:first-child:is([class*="bg-slate-9"], [class*="from-slate-9"]) div[class*="bg-slate-8"] {
+    background: rgba(255, 255, 255, 0.14) !important;
+    border: 1px solid rgba(255, 255, 255, 0.25) !important;
+    backdrop-filter: blur(8px) !important;
+}
+
+/* Hero Lobi Game: Arena Kuis Interaktif & Drag & Drop -> Gradasi Royal Indigo-Slate */
+html:not(.dark) #main-content div[class*="bg-slate-9"]:has(.bg-clip-text, .text-transparent) {
+    background: linear-gradient(135deg, #1e1b4b 0%, #312e81 52%, #0f172a 100%) !important;
+    border: 1px solid #4338ca !important;
+    box-shadow: 0 16px 34px -10px rgba(30, 27, 75, 0.38) !important;
+}
+html:not(.dark) #main-content div[class*="bg-slate-9"]:has(.bg-clip-text, .text-transparent) :is(.bg-clip-text, .text-transparent) {
+    background-image: linear-gradient(to right, #ffffff, #c7d2fe, #6ee7b7) !important;
     -webkit-background-clip: text !important;
     background-clip: text !important;
     color: transparent !important;
     -webkit-text-fill-color: transparent !important;
 }
-
-/* 3. Tangkap SEMUA kartu & kotak slate-900 / slate-950 / black (termasuk /40, /50, /60, /80) */
-html:not(.dark) :is(#main-content, #quiz-arena-modal, #dnd-arena-modal, #guide-modal, #bedah-soal-modal, #bank-soal-modal, #modal-workspace, #modal-about-dev) :is(div, section, article, aside, table, thead, tr, form, ul, li):is(
-    [class*="bg-slate-9"], .bg-black, [class*="bg-black/"], .bg-gray-900, .from-slate-900, .from-slate-950
-) {
-    background-color: #ffffff !important;
-    background-image: none !important;
-    border-color: #e2e8f0 !important;
-    box-shadow: 0 4px 20px -4px rgba(15, 23, 42, 0.07);
+html:not(.dark) #main-content div[class*="bg-slate-9"]:has(.bg-clip-text, .text-transparent) > p,
+html:not(.dark) #main-content div[class*="bg-slate-9"]:has(.bg-clip-text, .text-transparent) div > p {
+    color: #e2e8f0 !important;
+}
+html:not(.dark) #main-content div[class*="bg-slate-9"]:has(.bg-clip-text, .text-transparent) div[class*="bg-slate-8"] {
+    background: rgba(15, 23, 42, 0.55) !important;
+    border: 1px solid rgba(165, 180, 252, 0.28) !important;
+}
+html:not(.dark) #main-content div[class*="bg-slate-9"]:has(.bg-clip-text, .text-transparent) :is(input, select) {
+    background: rgba(255, 255, 255, 0.12) !important;
+    border: 1px solid rgba(255, 255, 255, 0.25) !important;
+    color: #ffffff !important;
+}
+html:not(.dark) #main-content div[class*="bg-slate-9"]:has(.bg-clip-text, .text-transparent) label {
+    color: #c7d2fe !important;
 }
 
-/* 4. Tangkap SEMUA kotak sekunder & pilihan jawaban (slate-800, slate-700, dropdown, input) */
-html:not(.dark) :is(#main-content, #quiz-arena-modal, #dnd-arena-modal, #guide-modal, #bedah-soal-modal, #bank-soal-modal, #modal-workspace) :is(div, section, thead, tr, input, select, textarea, button):is(
-    [class*="bg-slate-8"], [class*="bg-slate-7"], .bg-slate-900, .bg-slate-950, .bg-black,
-    .bg-white\/5, .bg-white\/10
-) {
-    background-color: #f8fafc !important;
-    border-color: #cbd5e1 !important;
-    color: #0f172a !important;
-}
-
-/* 5. Kotak aksen lembut untuk jawaban benar, duel & status */
+/* 6. Kotak Aksen Lembut untuk Jawaban, Duel & Status */
 html:not(.dark) :is(#main-content, #quiz-arena-modal, #dnd-arena-modal, #bank-soal-modal) [class*="bg-emerald-9"] { background-color: #dcfce7 !important; border-color: #86efac !important; }
 html:not(.dark) :is(#main-content, #quiz-arena-modal, #dnd-arena-modal, #bank-soal-modal) [class*="bg-indigo-9"]  { background-color: #eef2ff !important; border-color: #c7d2fe !important; }
 html:not(.dark) :is(#main-content, #quiz-arena-modal, #dnd-arena-modal, #bank-soal-modal) [class*="bg-blue-9"]    { background-color: #eff6ff !important; border-color: #bfdbfe !important; }
@@ -351,39 +422,62 @@ html:not(.dark) :is(#main-content, #quiz-arena-modal, #dnd-arena-modal, #bank-so
 html:not(.dark) :is(#main-content, #quiz-arena-modal, #dnd-arena-modal, #bank-soal-modal) [class*="bg-amber-9"]   { background-color: #fffbeb !important; border-color: #fde68a !important; }
 html:not(.dark) :is(#main-content, #quiz-arena-modal, #dnd-arena-modal, #bank-soal-modal) [class*="bg-purple-9"]  { background-color: #faf5ff !important; border-color: #e9d5ff !important; }
 
-/* 6. Ubah teks putih & putih-transparan menjadi gelap tajam */
-html:not(.dark) :is(#main-content, #quiz-arena-modal, #dnd-arena-modal, #guide-modal, #bedah-soal-modal, #bank-soal-modal, #modal-workspace, #modal-about-dev) :not(button):not(a):not([class*="from-emerald"]):not([class*="from-brand"]):not([class*="from-indigo"]):not([class*="from-purple"]):not([class*="from-amber"]):not([class*="from-orange"]):not([class*="from-rose"]):not([class*="from-cyan"]):not([class*="from-blue"]):not([class*="from-teal"]):not([class*="bg-emerald-"]):not([class*="bg-brand-"]):not([class*="bg-indigo-"]):not([class*="bg-purple-"]):not([class*="bg-rose-"]):not([class*="bg-amber-"]):not([class*="bg-orange-"]):not([class*="bg-cyan-"]):not([class*="bg-blue-"]) > :is(.text-white, [class*="text-white/"], .text-slate-100),
+/* 7. Teks Gelap Tajam di Atas Kartu Putih & Abu-Abu */
 html:not(.dark) :is(#main-content, #quiz-arena-modal, #dnd-arena-modal, #guide-modal, #bedah-soal-modal, #bank-soal-modal, #modal-workspace, #modal-about-dev) :is(h1, h2, h3, h4, p, span, td, th, label, select, input):is(.text-white, [class*="text-white/"], .text-slate-100) {
     color: #0f172a !important;
 }
-
-/* Pertahankan teks putih pada tombol & badge berwarna solid/gradasi cerah (seperti badge "70 Soal") */
-html:not(.dark) :is(#main-content, #quiz-arena-modal, #dnd-arena-modal, #guide-modal, #bedah-soal-modal, #bank-soal-modal, #modal-workspace) :is(
-    button:not([class*="bg-slate-"]):not([class*="bg-white/"]), a,
-    [class*="from-emerald"], [class*="from-brand"], [class*="from-indigo"], [class*="from-purple"],
-    [class*="from-amber"], [class*="from-orange"], [class*="from-rose"], [class*="from-cyan"], [class*="from-blue"], [class*="from-teal"],
-    [class*="bg-emerald-5"], [class*="bg-emerald-6"], [class*="bg-brand-6"], [class*="bg-indigo-6"], [class*="bg-purple-6"],
-    [class*="bg-rose-5"], [class*="bg-rose-6"], [class*="bg-amber-5"], [class*="bg-orange-5"], [class*="bg-cyan-6"], [class*="bg-blue-6"]
-) :is(h1, h2, h3, h4, p, span, div, i):is(.text-white, [class*="text-white/"]),
-html:not(.dark) :is(#main-content, #quiz-arena-modal, #dnd-arena-modal, #guide-modal, #bedah-soal-modal, #bank-soal-modal, #modal-workspace) :is(
-    button:not([class*="bg-slate-"]):not([class*="bg-white/"]), a,
-    span:is([class*="bg-indigo-6"], [class*="bg-emerald-6"], [class*="bg-brand-6"], [class*="bg-purple-6"], [class*="bg-rose-6"], [class*="bg-amber-5"], [class*="bg-orange-5"])
-):is(.text-white, [class*="text-white/"]) {
-    color: #ffffff !important;
-}
-
-/* 7. Pertajam teks sekunder & aksen warna di Workspace, Kuis, Bank Soal & DnD */
-html:not(.dark) :is(#main-content, #quiz-arena-modal, #dnd-arena-modal, #guide-modal, #bedah-soal-modal, #bank-soal-modal, #modal-workspace) :is(p, span, td, th, label, div, button):is(.text-slate-200, .text-slate-300) {
+html:not(.dark) :is(#main-content, #quiz-arena-modal, #dnd-arena-modal, #guide-modal, #bedah-soal-modal, #bank-soal-modal, #modal-workspace) :is(p, span, td, th, label, div):is(.text-slate-200, .text-slate-300) {
     color: #334155 !important;
 }
 html:not(.dark) :is(#main-content, #quiz-arena-modal, #dnd-arena-modal, #guide-modal, #bedah-soal-modal, #bank-soal-modal, #modal-workspace) :is(p, span, td, th, label, div).text-slate-400 {
     color: #475569 !important;
 }
-html:not(.dark) :is(#main-content, #quiz-arena-modal, #dnd-arena-modal, #bank-soal-modal) .bg-rose-500\/10,
-html:not(.dark) :is(#main-content, #quiz-arena-modal, #dnd-arena-modal, #bank-soal-modal) .bg-rose-500\/20 { background-color: #ffe4e6 !important; }
-html:not(.dark) :is(#main-content, #quiz-arena-modal, #dnd-arena-modal, #bank-soal-modal) .bg-amber-500\/10,
-html:not(.dark) :is(#main-content, #quiz-arena-modal, #dnd-arena-modal, #bank-soal-modal) .bg-amber-500\/20 { background-color: #fef3c7 !important; }
 
+/* 8. SEMUA TOMBOL & BADGE BERWARNA PEKAT WAJIB BERHURUF PUTIH BERSIH */
+html:not(.dark) :is(#main-content, #quiz-arena-modal, #dnd-arena-modal, #guide-modal, #bedah-soal-modal, #bank-soal-modal, #modal-workspace) :is(button, a, span):is(
+    [class*="from-brand"], [class*="from-emerald"], [class*="from-green"], [class*="from-teal"],
+    [class*="from-cyan"], [class*="from-sky"], [class*="from-blue"], [class*="from-indigo"],
+    [class*="from-violet"], [class*="from-purple"], [class*="from-fuchsia"], [class*="from-pink"],
+    [class*="from-rose"], [class*="from-red"], [class*="from-orange"], [class*="from-amber"],
+    [class*="bg-brand-5"], [class*="bg-brand-6"], [class*="bg-brand-7"],
+    [class*="bg-emerald-5"], [class*="bg-emerald-6"], [class*="bg-emerald-7"],
+    [class*="bg-green-5"], [class*="bg-green-6"], [class*="bg-teal-5"], [class*="bg-teal-6"],
+    [class*="bg-cyan-5"], [class*="bg-cyan-6"], [class*="bg-sky-5"], [class*="bg-sky-6"],
+    [class*="bg-blue-5"], [class*="bg-blue-6"], [class*="bg-indigo-5"], [class*="bg-indigo-6"],
+    [class*="bg-violet-5"], [class*="bg-violet-6"], [class*="bg-purple-5"], [class*="bg-purple-6"],
+    [class*="bg-fuchsia-6"], [class*="bg-pink-6"], [class*="bg-rose-5"], [class*="bg-rose-6"],
+    [class*="bg-red-5"], [class*="bg-red-6"], [class*="bg-orange-5"], [class*="bg-orange-6"],
+    [class*="bg-amber-5"], [class*="bg-amber-6"]
+),
+html:not(.dark) :is(#main-content, #quiz-arena-modal, #dnd-arena-modal, #guide-modal, #bedah-soal-modal, #bank-soal-modal, #modal-workspace) :is(button, a):is(
+    [class*="from-brand"], [class*="from-emerald"], [class*="from-green"], [class*="from-teal"],
+    [class*="from-cyan"], [class*="from-sky"], [class*="from-blue"], [class*="from-indigo"],
+    [class*="from-violet"], [class*="from-purple"], [class*="from-fuchsia"], [class*="from-pink"],
+    [class*="from-rose"], [class*="from-red"], [class*="from-orange"], [class*="from-amber"],
+    [class*="bg-brand-5"], [class*="bg-brand-6"], [class*="bg-brand-7"],
+    [class*="bg-emerald-5"], [class*="bg-emerald-6"], [class*="bg-emerald-7"],
+    [class*="bg-green-5"], [class*="bg-green-6"], [class*="bg-teal-5"], [class*="bg-teal-6"],
+    [class*="bg-cyan-5"], [class*="bg-cyan-6"], [class*="bg-sky-5"], [class*="bg-sky-6"],
+    [class*="bg-blue-5"], [class*="bg-blue-6"], [class*="bg-indigo-5"], [class*="bg-indigo-6"],
+    [class*="bg-violet-5"], [class*="bg-violet-6"], [class*="bg-purple-5"], [class*="bg-purple-6"],
+    [class*="bg-fuchsia-6"], [class*="bg-pink-6"], [class*="bg-rose-5"], [class*="bg-rose-6"],
+    [class*="bg-red-5"], [class*="bg-red-6"], [class*="bg-orange-5"], [class*="bg-orange-6"],
+    [class*="bg-amber-5"], [class*="bg-amber-6"]
+) :is(h1, h2, h3, h4, p, span, div, i) {
+    color: #ffffff !important;
+}
+
+/* Pertahankan teks putih pada hero banner agar tidak tertimpa aturan #7 */
+html:not(.dark) #main-content > div > div:first-child:is([class*="bg-slate-9"], [class*="from-slate-9"]) :is(h1, h2, h3, p, span):not([class*="text-amber"]) {
+    color: #ffffff !important;
+}
+html:not(.dark) #main-content div[class*="bg-slate-9"]:has(.bg-clip-text, .text-transparent) > p,
+html:not(.dark) #main-content div[class*="bg-slate-9"]:has(.bg-clip-text, .text-transparent) div > p,
+html:not(.dark) #main-content div[class*="bg-slate-9"]:has(.bg-clip-text, .text-transparent) :is(input, select) {
+    color: #ffffff !important;
+}
+
+/* 9. Warna Aksen Teks di Kartu Putih */
 html:not(.dark) :is(#main-content, #quiz-arena-modal, #dnd-arena-modal, #bank-soal-modal) :is(.text-rose-300, .text-rose-400) { color: #be123c !important; }
 html:not(.dark) :is(#main-content, #quiz-arena-modal, #dnd-arena-modal, #bank-soal-modal) :is(.text-amber-300, .text-amber-400) { color: #b45309 !important; }
 html:not(.dark) :is(#main-content, #quiz-arena-modal, #dnd-arena-modal, #bank-soal-modal) :is(.text-emerald-300, .text-emerald-400, .text-brand-400) { color: #047857 !important; }
@@ -392,17 +486,17 @@ html:not(.dark) :is(#main-content, #quiz-arena-modal, #dnd-arena-modal, #bank-so
 html:not(.dark) :is(#main-content, #quiz-arena-modal, #dnd-arena-modal, #bank-soal-modal) :is(.text-purple-300, .text-purple-400) { color: #6d28d9 !important; }
 html:not(.dark) :is(#main-content, #quiz-arena-modal, #dnd-arena-modal, #bank-soal-modal) :is(.text-orange-300, .text-orange-400) { color: #c2410c !important; }
 
-/* 8. Spion Kiri (Sidebar & Laci HP) + Panel Laci Kanan */
+/* 10. Sidebar & Laci Navigasi HP Mode Terang */
 html:not(.dark) #sidebar,
 html:not(.dark) #mobile-drawer {
     background: #ffffff !important;
     background-image: none !important;
     color: #1e293b !important;
-    border-right: 1px solid #e2e8f0 !important;
-    box-shadow: 4px 0 24px -6px rgba(15, 23, 42, 0.08) !important;
+    border-right: 1px solid #cbd5e1 !important;
+    box-shadow: 6px 0 24px -8px rgba(15, 23, 42, 0.08) !important;
 }
 html:not(.dark) :is(#sidebar, #mobile-drawer) > div:first-child {
-    background-color: #f8fafc !important;
+    background: linear-gradient(180deg, #ecfdf5 0%, #ffffff 100%) !important;
     border-bottom: 1px solid #e2e8f0 !important;
 }
 html:not(.dark) :is(#sidebar, #mobile-drawer) h1.text-white {
@@ -412,119 +506,11 @@ html:not(.dark) :is(#sidebar, #mobile-drawer) h1.text-white {
 html:not(.dark) :is(#sidebar, #mobile-drawer) .text-amber-300 {
     color: #d97706 !important;
 }
-html:not(.dark) :is(#sidebar-menu, #mobile-menu-list) :is(button, a):not([class*="bg-brand"]):not([class*="bg-emerald"]):not([class*="from-brand"]):not([class*="from-emerald"]) {
-    color: #475569 !important;
-}
-html:not(.dark) :is(#sidebar-menu, #mobile-menu-list) :is(button, a):not([class*="bg-brand"]):not([class*="bg-emerald"]):not([class*="from-brand"]):not([class*="from-emerald"]):hover {
-    background-color: #f1f5f9 !important;
-    color: #0f172a !important;
-}
-html:not(.dark) :is(#sidebar-menu, #mobile-menu-list) :is(button, a):is([class*="bg-brand"], [class*="bg-emerald"], [class*="from-brand"], [class*="from-emerald"]),
-html:not(.dark) :is(#sidebar-menu, #mobile-menu-list) :is(button, a):is([class*="bg-brand"], [class*="bg-emerald"], [class*="from-brand"], [class*="from-emerald"]) * {
-    color: #ffffff !important;
-}
-html:not(.dark) :is(#sidebar-menu, #mobile-menu-list) .border-white\/10,
-html:not(.dark) :is(#sidebar-menu, #mobile-menu-list) .border-slate-800 {
-    border-color: #e2e8f0 !important;
-}
-html:not(.dark) :is(#sidebar, #mobile-drawer) > div:last-child {
-    background-color: #f8fafc !important;
-    border-top: 1px solid #e2e8f0 !important;
-}
-html:not(.dark) :is(#sidebar, #mobile-drawer) button[onclick*="bukaModalWorkspace"] {
-    background-color: #ffffff !important;
-    border-color: #cbd5e1 !important;
-    color: #0f172a !important;
-    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04) !important;
-}
-html:not(.dark) :is(#sidebar, #mobile-drawer) button[onclick*="bukaModalWorkspace"]:hover {
-    background-color: #ecfdf5 !important;
-    border-color: #10b981 !important;
-}
-html:not(.dark) #label-ruang-kerja,
-html:not(.dark) #mobile-label-ruang-kerja {
-    color: #0f172a !important;
-}
-html:not(.dark) :is(#sidebar, #mobile-drawer) .text-emerald-400 { color: #059669 !important; }
-html:not(.dark) :is(#sidebar, #mobile-drawer) .text-slate-400 { color: #64748b !important; }
-html:not(.dark) :is(#sidebar, #mobile-drawer) button[onclick*="toggleDarkMode"],
-html:not(.dark) #mobile-drawer button[onclick*="toggleMobileMenu"] {
-    background-color: #e2e8f0 !important;
-    color: #475569 !important;
-}
-html:not(.dark) #edge-panel > button {
-    background-color: rgba(255, 255, 255, 0.95) !important;
-    color: #334155 !important;
-    border-color: #cbd5e1 !important;
-    box-shadow: -4px 0 12px rgba(15, 23, 42, 0.08) !important;
-}
-html:not(.dark) #edge-panel > button:hover {
-    background-color: #f1f5f9 !important;
-    color: #059669 !important;
-}
-html:not(.dark) #edge-panel > div {
-    background-color: rgba(255, 255, 255, 0.96) !important;
-    border-color: #cbd5e1 !important;
-    box-shadow: -8px 0 24px rgba(15, 23, 42, 0.12) !important;
-}
-        /* =========================================================
-   10. UPGRADE TOP BAR & SIDEBAR (FROSTED GLASS & NAVIGATION DOCK)
-   ========================================================= */
-
-/* --- A. TOP BAR (HEADER) --- */
-html:not(.dark) header.glass-effect {
-    background: rgba(255, 255, 255, 0.86) !important;
-    backdrop-filter: blur(14px) !important;
-    -webkit-backdrop-filter: blur(14px) !important;
-    border-top: 2.5px solid #059669 !important;
-    border-bottom: 1px solid rgba(226, 232, 240, 0.9) !important;
-    box-shadow: 0 4px 20px -6px rgba(15, 23, 42, 0.06) !important;
-}
-
-/* Wadah tombol hamburger (☰) di kiri agar seimbang dengan tombol kanan */
-html:not(.dark) header.glass-effect button[onclick*="toggleMobileMenu"] {
-    background-color: #f1f5f9 !important;
-    border: 1px solid #e2e8f0 !important;
-    color: #334155 !important;
-    border-radius: 0.75rem !important;
-    transition: all 0.2s ease;
-}
-html:not(.dark) header.glass-effect button[onclick*="toggleMobileMenu"]:hover {
-    background-color: #ecfdf5 !important;
-    border-color: #a7f3d0 !important;
-    color: #047857 !important;
-}
-
-/* Avatar ST di kanan atas diberi aksen gradasi & ring halus */
-html:not(.dark) header.glass-effect > div:last-child > div:last-child {
-    background: linear-gradient(135deg, #059669, #0d9488) !important;
-    color: #ffffff !important;
-    box-shadow: 0 4px 10px -2px rgba(5, 150, 105, 0.35) !important;
-}
-
-/* --- B. SIDEBAR & LACI NAVIGASI HP --- */
-html:not(.dark) #sidebar,
-html:not(.dark) #mobile-drawer {
-    background: #f8fafc !important;
-    background-image: none !important;
-    border-right: 1px solid #e2e8f0 !important;
-    box-shadow: 6px 0 28px -8px rgba(15, 23, 42, 0.07) !important;
-}
-
-/* Header Logo Sidebar dengan sapuan emerald lembut */
-html:not(.dark) :is(#sidebar, #mobile-drawer) > div:first-child {
-    background: linear-gradient(180deg, #ecfdf5 0%, #f8fafc 100%) !important;
-    border-bottom: 1px solid #e2e8f0 !important;
-}
-
-/* Label Kategori Menu ("OPERASIONAL HARIAN", "DATA AKADEMIK", dll.) */
 html:not(.dark) :is(#sidebar-menu, #mobile-menu-list) :is(p, div, span).uppercase {
     color: #94a3b8 !important;
     letter-spacing: 0.08em !important;
     font-weight: 800 !important;
 }
-
-/* Item Menu Tidak Aktif & Efek Hover/Tap */
 html:not(.dark) :is(#sidebar-menu, #mobile-menu-list) :is(button, a):not([class*="bg-brand"]):not([class*="bg-emerald"]):not([class*="from-brand"]):not([class*="from-emerald"]) {
     color: #475569 !important;
     border-radius: 0.85rem !important;
@@ -533,35 +519,37 @@ html:not(.dark) :is(#sidebar-menu, #mobile-menu-list) :is(button, a):not([class*
 html:not(.dark) :is(#sidebar-menu, #mobile-menu-list) :is(button, a):not([class*="bg-brand"]):not([class*="bg-emerald"]):not([class*="from-brand"]):not([class*="from-emerald"]):hover {
     background-color: #ecfdf5 !important;
     color: #047857 !important;
-    transform: translateX(2px);
 }
-html:not(.dark) :is(#sidebar-menu, #mobile-menu-list) :is(button, a):not([class*="bg-brand"]):not([class*="bg-emerald"]):not([class*="from-brand"]):not([class*="from-emerald"]):hover i {
-    color: #059669 !important;
-}
-
-/* Item Menu Aktif -> Gradasi Emerald + Colored Shadow */
-html:not(.dark) :is(#sidebar-menu, #mobile-menu-list) :is(button, a):is([class*="bg-brand"], [class*="bg-emerald"], [class*="from-brand"], [class*="from-emerald"]) {
+html:not(.dark) :is(#sidebar-menu, #mobile-menu-list) :is(button, a):is([class*="bg-brand"], [class*="bg-emerald"], [class*="from-brand"], [class*="from-emerald"]),
+html:not(.dark) :is(#sidebar-menu, #mobile-menu-list) :is(button, a):is([class*="bg-brand"], [class*="bg-emerald"], [class*="from-brand"], [class*="from-emerald"]) * {
     background: linear-gradient(135deg, #059669 0%, #10b981 100%) !important;
-    box-shadow: 0 6px 16px -4px rgba(16, 185, 129, 0.38) !important;
-    border-radius: 0.85rem !important;
+    color: #ffffff !important;
 }
-
-/* Footer & Kartu Sakelar "RUANG KERJA AKTIF" */
 html:not(.dark) :is(#sidebar, #mobile-drawer) > div:last-child {
-    background-color: #f1f5f9 !important;
+    background-color: #f8fafc !important;
     border-top: 1px solid #e2e8f0 !important;
 }
 html:not(.dark) :is(#sidebar, #mobile-drawer) button[onclick*="bukaModalWorkspace"] {
     background-color: #ffffff !important;
     border: 1.5px solid #a7f3d0 !important;
     border-radius: 0.9rem !important;
-    box-shadow: 0 4px 12px -2px rgba(5, 150, 105, 0.08) !important;
-    transition: all 0.2s ease !important;
+    box-shadow: 0 3px 10px -2px rgba(5, 150, 105, 0.08) !important;
 }
-html:not(.dark) :is(#sidebar, #mobile-drawer) button[onclick*="bukaModalWorkspace"]:hover {
-    background-color: #ecfdf5 !important;
-    border-color: #10b981 !important;
-    transform: translateY(-1px);
+html:not(.dark) #label-ruang-kerja,
+html:not(.dark) #mobile-label-ruang-kerja {
+    color: #0f172a !important;
+}
+html:not(.dark) :is(#sidebar, #mobile-drawer) .text-emerald-400 { color: #059669 !important; }
+html:not(.dark) :is(#sidebar, #mobile-drawer) .text-slate-400 { color: #64748b !important; }
+html:not(.dark) :is(#sidebar, #mobile-drawer) button[onclick*="toggleDarkMode"] {
+    background-color: #e2e8f0 !important;
+    color: #475569 !important;
+}
+html:not(.dark) #edge-panel > button,
+html:not(.dark) #edge-panel > div {
+    background-color: rgba(255, 255, 255, 0.96) !important;
+    color: #334155 !important;
+    border-color: #cbd5e1 !important;
 }
 </style>
     <style>
@@ -710,7 +698,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
            <!-- MOBILE / TABLET DRAWER (SERAGAM DENGAN SIDEBAR DESKTOP) -->
             <div id="mobile-menu-overlay" onclick="toggleMobileMenu(true)" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-40 hidden transition-opacity"></div>
-            <div id="mobile-drawer" class="fixed inset-y-0 left-0 w-72 h-[100dvh] bg-gradient-to-b from-slate-900 via-slate-900 to-slate-950 text-slate-100 z-50 transform -translate-x-full transition-transform duration-300 flex flex-col border-r border-slate-800 shadow-2xl">
+           <div id="mobile-drawer" class="fixed inset-y-0 left-0 w-72 h-[100dvh] bg-gradient-to-b from-slate-900 via-slate-900 to-slate-950 text-slate-100 z-50 transform -translate-x-full transition-transform duration-300 flex flex-col border-r border-slate-800 shadow-2xl">
                 <div class="flex items-center space-x-3 px-5 py-4 border-b border-white/10 bg-white/5 shrink-0">
                     <img src="logo-pusat.png" class="w-9 h-9 rounded-xl shadow-[0_0_12px_rgba(16,185,129,0.35)]" alt="Logo">
                     <div>
@@ -2262,8 +2250,18 @@ html:not(.dark) :is(#main-content, #quiz-arena-modal, #dnd-arena-modal) :is(
 </style>
 
 <!-- =========================================================
-     TOP BAR ALA GATEWAY, SINKRONISASI SIDEBAR HP & KARTU GAME
+     DEFAULT DARK MODE, TOP BAR GATEWAY & SINKRONISASI LACI HP
      ========================================================= -->
+<script>
+// Jadikan Mode Gelap sebagai bawaan jika pengguna belum pernah memilih Mode Terang
+(function () {
+    const savedTheme = localStorage.getItem('theme') || localStorage.getItem('darkMode');
+    if (savedTheme !== 'light' && savedTheme !== 'false') {
+        document.documentElement.classList.add('dark');
+    }
+})();
+</script>
+
 <style>
 /* --- 1. KAPSUL RUANG KERJA AKTIF (DESKTOP & TABLET) --- */
 #topbar-workspace-pill {
@@ -2408,15 +2406,6 @@ html.dark #topbar-workspace-pill .ws-icon {
     header.glass-effect > div:last-child {
         flex-shrink: 0 !important;
     }
-}
-
-/* --- 3. TEKS PUTIH PADA KARTU GAME CERAH (ARENA KUIS & DRAG & DROP) --- */
-html:not(.dark) :is(#main-content, #quiz-arena-modal, #dnd-arena-modal) :is(
-    [class*="from-orange-"], [class*="from-amber-5"], [class*="from-amber-6"],
-    [class*="from-purple-"], [class*="from-violet-"], [class*="from-fuchsia-"], [class*="from-indigo-"],
-    [class*="bg-orange-5"], [class*="bg-orange-6"], [class*="bg-purple-6"], [class*="bg-violet-6"]
-) :is(h1, h2, h3, h4, p, span, div, i) {
-    color: #ffffff !important;
 }
 </style>
 
