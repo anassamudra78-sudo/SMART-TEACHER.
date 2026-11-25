@@ -297,7 +297,7 @@ html, body {
     }
 }
 </style>
-    <style>
+   <style>
 /* =========================================================
    LIGHT MODE PRO (KHUSUS MODE TERANG - KONTRAS TAJAM)
    ========================================================= */
@@ -359,19 +359,29 @@ html:not(.dark) :is(#main-content, #guide-modal, #bedah-soal-modal, #bank-soal-m
     color: #0f172a !important;
 }
 
+/* Tombol sekunder berlatar terang wajib berhuruf gelap tajam (termasuk ikon & span di dalamnya) */
 html:not(.dark) :is(#main-content, #guide-modal, #bedah-soal-modal, #bank-soal-modal, #modal-workspace, #audio-settings-modal, #setup-db-modal) button:is(
     [class*="bg-slate-8"], [class*="bg-slate-7"], .bg-white\/5, .bg-white\/10
-) {
+),
+html:not(.dark) :is(#main-content, #guide-modal, #bedah-soal-modal, #bank-soal-modal, #modal-workspace, #audio-settings-modal, #setup-db-modal) button:is(
+    [class*="bg-slate-8"], [class*="bg-slate-7"], .bg-white\/5, .bg-white\/10
+) :is(span, i, div) {
     background-color: #f1f5f9 !important;
-    border: 1px solid #cbd5e1 !important;
-    color: #1e293b !important;
+    border-color: #cbd5e1 !important;
+    color: #0f172a !important;
+}
+html:not(.dark) :is(#main-content, #guide-modal, #bedah-soal-modal, #bank-soal-modal, #modal-workspace) button:is(
+    [class*="bg-slate-8"], [class*="bg-slate-7"], .bg-white\/5, .bg-white\/10
+) :is(span, i, div) {
+    background-color: transparent !important;
+    border: none !important;
 }
 
 html:not(.dark) :is(input, textarea)::placeholder {
     color: #94a3b8 !important;
 }
 
-/* 4. Hero Dashboard ("Selamat Datang") - Hanya untuk Banner Tanpa Form/Tabel */
+/* 4. Banner Utama Atas (Dashboard, Editor DND, dll.) & Elemen di Dalamnya */
 html:not(.dark) #main-content > div > div:first-child:is([class*="bg-slate-9"], [class*="from-slate-9"]):not(:has(form, input, select, textarea, table)) {
     background: linear-gradient(135deg, #064e3b 0%, #047857 55%, #0f766e 100%) !important;
     border: 1px solid #059669 !important;
@@ -380,34 +390,48 @@ html:not(.dark) #main-content > div > div:first-child:is([class*="bg-slate-9"], 
 html:not(.dark) #main-content > div > div:first-child:is([class*="bg-slate-9"], [class*="from-slate-9"]):not(:has(form, input, select, textarea, table)) :is(h1, h2, h3, p, span):not([class*="text-amber"]) {
     color: #ffffff !important;
 }
-html:not(.dark) #main-content > div > div:first-child:is([class*="bg-slate-9"], [class*="from-slate-9"]):not(:has(form, input, select, textarea, table)) div[class*="bg-slate-8"] {
-    background: rgba(255, 255, 255, 0.14) !important;
-    border: 1px solid rgba(255, 255, 255, 0.25) !important;
+/* Kotak "TAHUN AJARAN AKTIF" & tombol "Kembali" di dalam Banner Hijau tetap gelap transparan */
+html:not(.dark) #main-content > div > div:first-child:is([class*="bg-slate-9"], [class*="from-slate-9"]):not(:has(form, input, select, textarea, table)) :is(div, button):is(
+    [class*="bg-slate-9"], [class*="bg-slate-8"], .bg-black, [class*="bg-black/"], .bg-white\/5, .bg-white\/10
+) {
+    background-color: rgba(6, 38, 28, 0.48) !important;
+    border: 1px solid rgba(255, 255, 255, 0.28) !important;
+    color: #ffffff !important;
+    box-shadow: none !important;
+}
+html:not(.dark) #main-content > div > div:first-child:is([class*="bg-slate-9"], [class*="from-slate-9"]):not(:has(form, input, select, textarea, table)) button :is(span, i) {
+    color: #ffffff !important;
 }
 
 /* 5. Hero Lobi Game ("Arena Kuis Interaktif" & "Smart Drag & Drop Arena") */
-html:not(.dark) #main-content div[class*="bg-slate-9"]:has(.bg-clip-text, .text-transparent) {
+html:not(.dark) #main-content div:is([class*="bg-slate-9"], [class*="from-slate-9"], [class*="from-indigo-9"], [class*="from-emerald-9"]):has(.bg-clip-text, .text-transparent) {
     background: linear-gradient(135deg, #1e1b4b 0%, #312e81 52%, #0f172a 100%) !important;
     border: 1px solid #4338ca !important;
     box-shadow: 0 16px 34px -10px rgba(30, 27, 75, 0.35) !important;
 }
-html:not(.dark) #main-content div[class*="bg-slate-9"]:has(.bg-clip-text, .text-transparent) :is(.bg-clip-text, .text-transparent) {
-    background-image: linear-gradient(to right, #ffffff, #c7d2fe, #6ee7b7) !important;
+/* Pertahankan nuansa emerald pada Hero Drag & Drop Arena */
+html:not(.dark) #main-content div:is([class*="from-emerald-9"], [class*="from-teal-9"]):has(.bg-clip-text, .text-transparent) {
+    background: linear-gradient(135deg, #064e3b 0%, #065f46 52%, #0f766e 100%) !important;
+    border: 1px solid #059669 !important;
+}
+html:not(.dark) #main-content div:is([class*="bg-slate-9"], [class*="from-slate-9"], [class*="from-indigo-9"], [class*="from-emerald-9"], [class*="from-teal-9"]):has(.bg-clip-text, .text-transparent) :is(.bg-clip-text, .text-transparent) {
+    background-image: linear-gradient(to right, #ffffff, #e0e7ff, #a7f3d0) !important;
     -webkit-background-clip: text !important;
     background-clip: text !important;
     color: transparent !important;
     -webkit-text-fill-color: transparent !important;
 }
-html:not(.dark) #main-content div[class*="bg-slate-9"]:has(.bg-clip-text, .text-transparent) :is(p, label) {
-    color: #e2e8f0 !important;
+/* Kotak rentang soal ("MULAI DARI") & lencana ("PLAY & LEARN") tetap gelap transparan */
+html:not(.dark) #main-content div:is([class*="bg-slate-9"], [class*="from-slate-9"], [class*="from-indigo-9"], [class*="from-emerald-9"], [class*="from-teal-9"]):has(.bg-clip-text, .text-transparent) :is(div, span):is(
+    [class*="bg-slate-9"], [class*="bg-slate-8"], .bg-black, [class*="bg-black/"], .bg-white\/10
+) {
+    background-color: rgba(15, 23, 42, 0.52) !important;
+    border: 1px solid rgba(255, 255, 255, 0.24) !important;
+    box-shadow: none !important;
 }
-html:not(.dark) #main-content div[class*="bg-slate-9"]:has(.bg-clip-text, .text-transparent) div[class*="bg-slate-8"] {
-    background: rgba(15, 23, 42, 0.55) !important;
-    border: 1px solid rgba(165, 180, 252, 0.28) !important;
-}
-html:not(.dark) #main-content div[class*="bg-slate-9"]:has(.bg-clip-text, .text-transparent) :is(input, select) {
+html:not(.dark) #main-content div:is([class*="bg-slate-9"], [class*="from-slate-9"], [class*="from-indigo-9"], [class*="from-emerald-9"], [class*="from-teal-9"]):has(.bg-clip-text, .text-transparent) :is(input, select) {
     background: rgba(255, 255, 255, 0.14) !important;
-    border: 1px solid rgba(255, 255, 255, 0.25) !important;
+    border: 1px solid rgba(255, 255, 255, 0.28) !important;
     color: #ffffff !important;
 }
 
@@ -431,9 +455,9 @@ html:not(.dark) :is(#main-content, #guide-modal, #bedah-soal-modal, #bank-soal-m
     color: #475569 !important;
 }
 
-/* Pertahankan teks putih pada dua Hero Banner agar tidak tertimpa aturan #7 */
+/* Pertahankan teks putih pada semua Hero Banner agar tidak tertimpa aturan #7 */
 html:not(.dark) #main-content > div > div:first-child:is([class*="bg-slate-9"], [class*="from-slate-9"]):not(:has(form, input, select, textarea, table)) :is(h1, h2, h3, p, span):not([class*="text-amber"]),
-html:not(.dark) #main-content div[class*="bg-slate-9"]:has(.bg-clip-text, .text-transparent) :is(p, label, input, select) {
+html:not(.dark) #main-content div:is([class*="bg-slate-9"], [class*="from-slate-9"], [class*="from-indigo-9"], [class*="from-emerald-9"], [class*="from-teal-9"]):has(.bg-clip-text, .text-transparent) :is(p, span, label, input, select) {
     color: #ffffff !important;
 }
 
@@ -447,8 +471,8 @@ html:not(.dark) :is(#main-content, #guide-modal, #bedah-soal-modal, #bank-soal-m
 html:not(.dark) :is(#main-content, #guide-modal, #bedah-soal-modal, #bank-soal-modal, #modal-workspace, #modal-about-dev) :is(.text-orange-300, .text-orange-400) { color: #c2410c !important; }
 html:not(.dark) :is(#main-content, #guide-modal, #bedah-soal-modal, #bank-soal-modal, #modal-workspace, #modal-about-dev) :is(.text-sky-300, .text-sky-400, .text-blue-400) { color: #0369a1 !important; }
 
-/* 9. HANYA Tombol & Badge SOLID (Bukan Transparan /10 atau /20) yang Berhuruf Putih */
-html:not(.dark) :is(#main-content, #guide-modal, #bedah-soal-modal, #bank-soal-modal, #modal-workspace, #setup-db-modal) :is(button, a, span):not([class*="500/"]):not([class*="600/"]):not([class*="700/"]):is(
+/* 9. HANYA Tombol & Badge SOLID (Kecualikan bg-slate-* dan bg-white/* agar kelas hover: tidak merusak teks) */
+html:not(.dark) :is(#main-content, #guide-modal, #bedah-soal-modal, #bank-soal-modal, #modal-workspace, #setup-db-modal) :is(button, a, span):not([class*="500/"]):not([class*="600/"]):not([class*="700/"]):not([class*="bg-slate-"]):not([class*="bg-white/"]):is(
     [class*="from-brand"], [class*="from-emerald"], [class*="from-green"], [class*="from-teal"],
     [class*="from-cyan"], [class*="from-sky"], [class*="from-blue"], [class*="from-indigo"],
     [class*="from-violet"], [class*="from-purple"], [class*="from-fuchsia"], [class*="from-pink"],
@@ -463,7 +487,7 @@ html:not(.dark) :is(#main-content, #guide-modal, #bedah-soal-modal, #bank-soal-m
     [class*="bg-red-5"], [class*="bg-red-6"], [class*="bg-orange-5"], [class*="bg-orange-6"],
     [class*="bg-amber-5"], [class*="bg-amber-6"]
 ),
-html:not(.dark) :is(#main-content, #guide-modal, #bedah-soal-modal, #bank-soal-modal, #modal-workspace, #setup-db-modal) :is(button, a):not([class*="500/"]):not([class*="600/"]):not([class*="700/"]):is(
+html:not(.dark) :is(#main-content, #guide-modal, #bedah-soal-modal, #bank-soal-modal, #modal-workspace, #setup-db-modal) :is(button, a):not([class*="500/"]):not([class*="600/"]):not([class*="700/"]):not([class*="bg-slate-"]):not([class*="bg-white/"]):is(
     [class*="from-brand"], [class*="from-emerald"], [class*="from-green"], [class*="from-teal"],
     [class*="from-cyan"], [class*="from-sky"], [class*="from-blue"], [class*="from-indigo"],
     [class*="from-violet"], [class*="from-purple"], [class*="from-fuchsia"], [class*="from-pink"],
@@ -478,6 +502,20 @@ html:not(.dark) :is(#main-content, #guide-modal, #bedah-soal-modal, #bank-soal-m
     [class*="bg-red-5"], [class*="bg-red-6"], [class*="bg-orange-5"], [class*="bg-orange-6"],
     [class*="bg-amber-5"], [class*="bg-amber-6"]
 ) :is(h1, h2, h3, h4, p, span, div, i) {
+    color: #ffffff !important;
+}
+
+/* Efek hover menyala untuk tombol sekunder (seperti "MAINKAN SEKARANG" & tombol X modal) */
+html:not(.dark) :is(#main-content, #bank-soal-modal) button:is([class*="bg-slate-8"], .bg-white\/10):hover,
+html:not(.dark) :is(#main-content, #bank-soal-modal) button:is([class*="bg-slate-8"], .bg-white\/10):hover :is(span, i) {
+    background-color: #059669 !important;
+    border-color: #059669 !important;
+    color: #ffffff !important;
+}
+html:not(.dark) #bank-soal-modal button.bg-white\/10:hover,
+html:not(.dark) #bank-soal-modal button.bg-white\/10:hover :is(span, i) {
+    background-color: #e11d48 !important;
+    border-color: #e11d48 !important;
     color: #ffffff !important;
 }
 
