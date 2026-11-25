@@ -608,6 +608,67 @@ html:not(.dark) #bank-soal-modal button.bg-white\/10:hover :is(span, i) {
     border-color: #e11d48 !important;
     color: #ffffff !important;
 }
+        /* Hover tombol X di modal Bank Soal */
+html:not(.dark) #bank-soal-modal button.bg-white\/10:hover,
+html:not(.dark) #bank-soal-modal button.bg-white\/10:hover :is(span, i) {
+    background-color: #e11d48 !important;
+    border-color: #e11d48 !important;
+    color: #ffffff !important;
+}
+
+/* =========================================================
+   TEMA DAYLIGHT EMERALD (REFERENSI TRING! / LOGO PUTIH-HIJAU)
+   ========================================================= */
+/* 1. Top Bar Hijau Zamrud & Teks/Ikon Putih */
+html:not(.dark) header.glass-effect {
+    background: linear-gradient(135deg, #064e3b 0%, #047857 55%, #059669 100%) !important;
+    border-top: none !important;
+    border-bottom: 1px solid #047857 !important;
+    box-shadow: 0 6px 20px -6px rgba(6, 78, 59, 0.35) !important;
+}
+html:not(.dark) header.glass-effect #page-title {
+    color: #ffffff !important;
+}
+html:not(.dark) header.glass-effect #page-subtitle {
+    color: #d1fae5 !important;
+}
+html:not(.dark) header.glass-effect :is(#mobile-menu-btn, button[onclick="toggleFullScreenApp()"], button[onclick*="toggleDarkMode"]) {
+    background-color: rgba(255, 255, 255, 0.16) !important;
+    border: 1px solid rgba(255, 255, 255, 0.25) !important;
+    color: #ffffff !important;
+}
+html:not(.dark) header.glass-effect > div:last-child > div:last-child {
+    background: #ffffff !important;
+    color: #065f46 !important;
+    font-weight: 900 !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+}
+html:not(.dark) header.glass-effect #topbar-workspace-pill {
+    background: rgba(255, 255, 255, 0.16) !important;
+    border: 1px solid rgba(255, 255, 255, 0.3) !important;
+    color: #ffffff !important;
+    box-shadow: none !important;
+}
+html:not(.dark) header.glass-effect #topbar-workspace-pill .ws-icon {
+    color: #a7f3d0 !important;
+}
+
+/* 2. Latar Kanvas Hijau Mint Lembut + Kartu Putih Timbul */
+html:not(.dark) #main-content {
+    background: linear-gradient(180deg, #dcfce7 0%, #eef7f2 130px, #f3f8f5 100%) !important;
+}
+html:not(.dark) #main-content div:is([class*="bg-slate-9"], .from-slate-900, .from-slate-950):not(.fixed) {
+    border-color: #cde3d8 !important;
+    box-shadow: 0 8px 22px -8px rgba(6, 78, 59, 0.10), 0 1px 3px rgba(15, 23, 42, 0.04) !important;
+}
+
+/* 3. Tombol Utama Hijau Zamrud Pekat */
+html:not(.dark) #main-content :is(button, a):is([class*="bg-brand-6"], [class*="bg-emerald-6"], [class*="from-brand"], [class*="from-emerald"]),
+html:not(.dark) #main-content :is(button, a):is([class*="bg-brand-6"], [class*="bg-emerald-6"], [class*="from-brand"], [class*="from-emerald"]) :is(span, i) {
+    background: linear-gradient(135deg, #065f46 0%, #059669 100%) !important;
+    color: #ffffff !important;
+}
+</style>
 </style>
     <style>
 /* Sembunyikan tombol Fullscreen otomatis saat dibuka sebagai Aplikasi (PWA / Layar Utama) */
