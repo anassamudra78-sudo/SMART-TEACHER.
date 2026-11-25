@@ -708,18 +708,15 @@ document.addEventListener('DOMContentLoaded', function () {
                 </div>
             </header>
 
-            <!-- MOBILE / TABLET DRAWER (SERAGAM DENGAN SIDEBAR DESKTOP) -->
+           <!-- MOBILE / TABLET DRAWER (SERAGAM DENGAN SIDEBAR DESKTOP) -->
             <div id="mobile-menu-overlay" onclick="toggleMobileMenu(true)" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-40 hidden transition-opacity"></div>
             <div id="mobile-drawer" class="fixed inset-y-0 left-0 w-72 h-[100dvh] bg-gradient-to-b from-slate-900 via-slate-900 to-slate-950 text-slate-100 z-50 transform -translate-x-full transition-transform duration-300 flex flex-col border-r border-slate-800 shadow-2xl">
-                <div class="flex items-center justify-between px-5 py-4 border-b border-white/10 bg-white/5 shrink-0">
-                    <div class="flex items-center space-x-3">
-                        <img src="logo-pusat.png" class="w-9 h-9 rounded-xl shadow-[0_0_12px_rgba(16,185,129,0.35)]" alt="Logo">
-                        <div>
-                            <h1 class="font-extrabold text-base tracking-tight text-white leading-tight">SMART TEACHER</h1>
-                            <p class="text-[9px] text-amber-300 uppercase tracking-widest font-semibold">Integrated Workspace v3.0</p>
-                        </div>
+                <div class="flex items-center space-x-3 px-5 py-4 border-b border-white/10 bg-white/5 shrink-0">
+                    <img src="logo-pusat.png" class="w-9 h-9 rounded-xl shadow-[0_0_12px_rgba(16,185,129,0.35)]" alt="Logo">
+                    <div>
+                        <h1 class="font-extrabold text-base tracking-tight text-white leading-tight">SMART TEACHER</h1>
+                        <p class="text-[9px] text-amber-300 uppercase tracking-widest font-semibold">Integrated Workspace v3.0</p>
                     </div>
-                    <button onclick="toggleMobileMenu(true)" class="w-8 h-8 rounded-lg bg-white/5 hover:bg-rose-500/20 text-slate-400 hover:text-rose-400 flex items-center justify-center transition-colors"><i class="fa-solid fa-xmark text-base"></i></button>
                 </div>
 
                 <div id="mobile-menu-list" class="flex-1 overflow-y-auto px-4 py-4 space-y-1 text-sm custom-scrollbar"></div>
@@ -744,7 +741,12 @@ document.addEventListener('DOMContentLoaded', function () {
                             <div class="w-1.5 h-1.5 rounded-full bg-brand-500 animate-pulse shrink-0"></div>
                             <span id="mobile-tahun-ajaran" class="font-semibold text-slate-400 truncate">TA: -</span>
                         </div>
-                        <button onclick="bukaModalDev(); toggleMobileMenu(true);" class="text-slate-400 hover:text-emerald-400 font-semibold transition-colors shrink-0">v3.0 • Muh. Nashir</button>
+                        <div class="flex items-center gap-2 shrink-0">
+                            <button onclick="bukaModalDev(); toggleMobileMenu(true);" class="text-slate-400 hover:text-emerald-400 font-semibold transition-colors" title="Info Pengembang">v3.0 • Muh. Nashir</button>
+                            <button onclick="toggleDarkMode()" class="w-6 h-6 rounded-md bg-white/5 hover:bg-white/15 text-yellow-400 flex items-center justify-center transition-all text-[11px]" title="Ganti Tema">
+                                <i id="mobile-dark-mode-icon" class="fa-solid fa-moon"></i>
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -2260,7 +2262,7 @@ html:not(.dark) :is(#main-content, #quiz-arena-modal, #dnd-arena-modal) :is(
 </style>
 
 <!-- =========================================================
-     TOP BAR ALA GATEWAY (KOMPAK), SAKLAR TEMA LACI HP & KARTU GAME
+     TOP BAR ALA GATEWAY, SINKRONISASI SIDEBAR HP & KARTU GAME
      ========================================================= -->
 <style>
 /* --- 1. KAPSUL RUANG KERJA AKTIF (DESKTOP & TABLET) --- */
@@ -2326,7 +2328,6 @@ html.dark #topbar-workspace-pill .ws-icon {
 
 /* --- 2. TOP BAR HP ALA GATEWAY (RAPAT & KOMPAK) --- */
 @media (max-width: 767px) {
-    /* Sembunyikan tombol bulan/matahari di Top Bar HP */
     header.glass-effect button[onclick*="toggleDarkMode"] {
         display: none !important;
     }
@@ -2353,14 +2354,13 @@ html.dark #topbar-workspace-pill .ws-icon {
         margin-left: 0 !important;
     }
 
-    header.glass-effect > div:first-child > button {
+    #mobile-menu-btn {
         width: 2.15rem !important;
         height: 2.15rem !important;
         padding: 0 !important;
         flex-shrink: 0 !important;
     }
 
-    /* Tumpukan tengah: Judul mungil di atas + Kapsul Ruang Kerja di bawah */
     #st-title-stack {
         display: flex !important;
         flex-direction: column !important;
@@ -2371,8 +2371,7 @@ html.dark #topbar-workspace-pill .ws-icon {
         gap: 2px !important;
     }
 
-    #st-title-stack #page-title,
-    #st-title-stack > :is(h1, h2) {
+    #st-title-stack #page-title {
         font-size: 0.88rem !important;
         font-weight: 800 !important;
         line-height: 1.15 !important;
@@ -2383,11 +2382,10 @@ html.dark #topbar-workspace-pill .ws-icon {
         margin: 0 !important;
     }
 
-    #st-title-stack > p {
+    #st-title-stack #page-subtitle {
         display: none !important;
     }
 
-    /* Kapsul mungil ala Gateway dengan titik berkedip tetap aktif */
     #st-title-stack #topbar-workspace-pill {
         margin: 0 !important;
         padding: 1.5px 6px !important;
@@ -2412,53 +2410,7 @@ html.dark #topbar-workspace-pill .ws-icon {
     }
 }
 
-/* --- 3. SAKLAR TEMA DI DASAR LACI SIDEBAR HP --- */
-.st-mobile-theme-bar {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-top: 0.6rem;
-    padding-top: 0.6rem;
-    border-top: 1px solid rgba(148, 163, 184, 0.22);
-    font-size: 0.72rem;
-    font-weight: 600;
-    width: 100%;
-}
-@media (min-width: 768px) {
-    .st-mobile-theme-bar {
-        display: none !important;
-    }
-}
-html:not(.dark) .st-mobile-theme-bar {
-    color: #64748b;
-}
-html.dark .st-mobile-theme-bar {
-    color: #94a3b8;
-}
-
-.st-mobile-theme-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.4rem;
-    padding: 0.35rem 0.72rem;
-    border-radius: 0.65rem;
-    font-size: 0.72rem;
-    font-weight: 700;
-    cursor: pointer;
-    transition: all 0.2s ease;
-}
-html:not(.dark) .st-mobile-theme-btn {
-    background-color: #ffffff;
-    border: 1px solid #cbd5e1;
-    color: #334155;
-}
-html.dark .st-mobile-theme-btn {
-    background-color: rgba(30, 41, 59, 0.95);
-    border: 1px solid rgba(71, 85, 105, 0.65);
-    color: #fbbf24;
-}
-
-/* --- 4. TEKS PUTIH PADA KARTU GAME CERAH (ARENA KUIS & DRAG & DROP) --- */
+/* --- 3. TEKS PUTIH PADA KARTU GAME CERAH (ARENA KUIS & DRAG & DROP) --- */
 html:not(.dark) :is(#main-content, #quiz-arena-modal, #dnd-arena-modal) :is(
     [class*="from-orange-"], [class*="from-amber-5"], [class*="from-amber-6"],
     [class*="from-purple-"], [class*="from-violet-"], [class*="from-fuchsia-"], [class*="from-indigo-"],
@@ -2470,78 +2422,16 @@ html:not(.dark) :is(#main-content, #quiz-arena-modal, #dnd-arena-modal) :is(
 
 <script>
 (function () {
-    function syncAllThemeButtons() {
-        const isDark = document.documentElement.classList.contains('dark');
-        document.querySelectorAll('.st-mobile-theme-btn').forEach((btn) => {
-            const icon = btn.querySelector('i');
-            const label = btn.querySelector('span');
-            if (icon) {
-                icon.className = isDark ? 'fa-solid fa-sun' : 'fa-solid fa-moon';
-            }
-            if (label) {
-                label.textContent = isDark ? 'Mode Terang' : 'Mode Gelap';
-            }
-        });
-    }
-
-    function createThemeBarElement() {
-        const bar = document.createElement('div');
-        bar.className = 'st-mobile-theme-bar';
-        bar.innerHTML = `
-            <span>Tampilan Layar</span>
-            <button type="button" class="st-mobile-theme-btn">
-                <i class="fa-solid fa-moon"></i>
-                <span>Mode Gelap</span>
-            </button>
-        `;
-        bar.querySelector('.st-mobile-theme-btn').addEventListener('click', function (e) {
-            e.stopPropagation();
-            if (typeof toggleDarkMode === 'function') {
-                toggleDarkMode();
-            }
-        });
-        return bar;
-    }
-
-    function injectDrawerThemeSwitches() {
-        // 1. Cari semua kotak pemilih Ruang Kerja di sidebar/drawer (kecuali pil Top Bar)
-        const wsTriggers = Array.from(document.querySelectorAll('[onclick*="bukaModalWorkspace"]'))
-            .filter((el) => el.id !== 'topbar-workspace-pill');
-
-        wsTriggers.forEach((trigger) => {
-            const parentBox = trigger.parentElement;
-            if (!parentBox || parentBox.querySelector('.st-mobile-theme-bar')) return;
-            trigger.insertAdjacentElement('afterend', createThemeBarElement());
-        });
-
-        // 2. Cadangan: cek semua elemen <aside> atau panel drawer tetap jika belum terpasang
-        const drawers = document.querySelectorAll('aside, [id*="drawer" i], [id*="sidebar" i], [id*="mobile-menu" i]');
-        drawers.forEach((drawer) => {
-            if (drawer.querySelector('.st-mobile-theme-bar')) return;
-            const footerTarget = drawer.lastElementChild || drawer;
-            footerTarget.appendChild(createThemeBarElement());
-        });
-
-        syncAllThemeButtons();
-    }
-
-    function setupResponsiveTopbarAndDrawer() {
+    function initSmartTeacherUI() {
         const header = document.querySelector('header.glass-effect');
-        const sourceLabel = document.getElementById('label-ruang-kerja');
+        const sourceWs = document.getElementById('label-ruang-kerja');
+        const sourceTa = document.getElementById('sidebar-tahun-ajaran');
+        const sourceIcon = document.getElementById('dark-mode-icon');
         const pageTitle = document.getElementById('page-title');
-        if (!header || !sourceLabel || !pageTitle) return;
+        if (!header || !sourceWs || !pageTitle) return;
 
-        const titleWrapper = pageTitle.parentElement;
-        if (titleWrapper && titleWrapper !== header.firstElementChild) {
-            titleWrapper.id = 'st-title-stack';
-        } else if (header.firstElementChild) {
-            let stack = document.getElementById('st-title-stack');
-            if (!stack) {
-                stack = document.createElement('div');
-                stack.id = 'st-title-stack';
-                pageTitle.parentNode.insertBefore(stack, pageTitle);
-                stack.appendChild(pageTitle);
-            }
+        if (pageTitle.parentElement) {
+            pageTitle.parentElement.id = 'st-title-stack';
         }
 
         let pill = document.getElementById('topbar-workspace-pill');
@@ -2557,62 +2447,50 @@ html:not(.dark) :is(#main-content, #quiz-arena-modal, #dnd-arena-modal) :is(
                 <i class="fa-solid fa-chevron-down text-[8px] opacity-75 shrink-0"></i>
             `;
             pill.addEventListener('click', function () {
-                if (typeof bukaModalWorkspace === 'function') {
-                    bukaModalWorkspace();
-                }
+                if (typeof bukaModalWorkspace === 'function') bukaModalWorkspace();
             });
         }
 
         function placeWorkspacePill() {
             const stack = document.getElementById('st-title-stack');
             if (window.innerWidth < 768 && stack) {
-                if (pill.parentElement !== stack) {
-                    stack.appendChild(pill);
-                }
-            } else {
-                if (header.lastElementChild && pill.parentElement !== header) {
-                    header.insertBefore(pill, header.lastElementChild);
-                }
+                if (pill.parentElement !== stack) stack.appendChild(pill);
+            } else if (header.lastElementChild && pill.parentElement !== header) {
+                header.insertBefore(pill, header.lastElementChild);
             }
         }
-
         placeWorkspacePill();
         window.addEventListener('resize', placeWorkspacePill);
 
-        const syncWorkspaceName = () => {
-            const target = document.getElementById('topbar-ws-text');
-            const currentName = (sourceLabel.textContent || '').trim();
-            if (target && currentName) {
-                target.textContent = currentName;
+        function mirrorSidebarData() {
+            const wsName = (sourceWs.textContent || '').trim();
+            if (wsName) {
+                const topWs = document.getElementById('topbar-ws-text');
+                const mobWs = document.getElementById('mobile-label-ruang-kerja');
+                if (topWs) topWs.textContent = wsName;
+                if (mobWs) mobWs.textContent = wsName;
             }
-        };
-        syncWorkspaceName();
-        new MutationObserver(syncWorkspaceName).observe(sourceLabel, {
-            childList: true,
-            characterData: true,
-            subtree: true
-        });
-
-        // Pasang saklar tema di laci menu & pantau perubahan mode gelap/terang
-        injectDrawerThemeSwitches();
-        new MutationObserver(syncAllThemeButtons).observe(document.documentElement, {
-            attributes: true,
-            attributeFilter: ['class']
-        });
-
-        // Pastikan saklar tetap terpasang jika laci HP baru dirender saat tombol garis tiga diklik
-        const menuBtn = header.querySelector('div:first-child > button');
-        if (menuBtn) {
-            menuBtn.addEventListener('click', function () {
-                setTimeout(injectDrawerThemeSwitches, 60);
-            });
+            const mobTa = document.getElementById('mobile-tahun-ajaran');
+            if (sourceTa && mobTa) {
+                mobTa.textContent = sourceTa.textContent;
+            }
+            const mobIcon = document.getElementById('mobile-dark-mode-icon');
+            if (mobIcon) {
+                const isDark = document.documentElement.classList.contains('dark');
+                mobIcon.className = sourceIcon ? sourceIcon.className : (isDark ? 'fa-solid fa-sun' : 'fa-solid fa-moon');
+            }
         }
+
+        mirrorSidebarData();
+        new MutationObserver(mirrorSidebarData).observe(sourceWs, { childList: true, characterData: true, subtree: true });
+        if (sourceTa) new MutationObserver(mirrorSidebarData).observe(sourceTa, { childList: true, characterData: true, subtree: true });
+        new MutationObserver(mirrorSidebarData).observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
     }
 
     if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', setupResponsiveTopbarAndDrawer);
+        document.addEventListener('DOMContentLoaded', initSmartTeacherUI);
     } else {
-        setupResponsiveTopbarAndDrawer();
+        initSmartTeacherUI();
     }
 })();
 </script>
