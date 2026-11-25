@@ -468,6 +468,32 @@ html:not(.dark) #edge-panel > div {
     box-shadow: -8px 0 24px rgba(15, 23, 42, 0.12) !important;
 }
 </style>
+    <style>
+/* Sembunyikan tombol Fullscreen otomatis saat dibuka sebagai Aplikasi (PWA / Layar Utama) */
+@media all and (display-mode: standalone), (display-mode: fullscreen), (display-mode: minimal-ui) {
+    button[onclick="toggleFullScreenApp()"] {
+        display: none !important;
+    }
+}
+</style>
+
+<script>
+// Deteksi aman untuk iOS Home Screen & pembungkus APK Android (WebView)
+document.addEventListener('DOMContentLoaded', function () {
+    const isStandalonePWA = window.matchMedia('(display-mode: standalone)').matches ||
+                            window.matchMedia('(display-mode: fullscreen)').matches ||
+                            window.navigator.standalone === true;
+    const isAndroidAPK    = /; wv\)/i.test(navigator.userAgent) ||
+                            typeof window.Android !== 'undefined' ||
+                            typeof window.Capacitor !== 'undefined' ||
+                            typeof window.cordova !== 'undefined';
+
+    if (isStandalonePWA || isAndroidAPK) {
+        const btnFs = document.querySelector('button[onclick="toggleFullScreenApp()"]');
+        if (btnFs) btnFs.style.setProperty('display', 'none', 'important');
+    }
+});
+</script>
 </head>
 <body class="bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 font-sans antialiased transition-colors duration-300">
 
