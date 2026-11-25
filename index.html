@@ -467,6 +467,102 @@ html:not(.dark) #edge-panel > div {
     border-color: #cbd5e1 !important;
     box-shadow: -8px 0 24px rgba(15, 23, 42, 0.12) !important;
 }
+        /* =========================================================
+   10. UPGRADE TOP BAR & SIDEBAR (FROSTED GLASS & NAVIGATION DOCK)
+   ========================================================= */
+
+/* --- A. TOP BAR (HEADER) --- */
+html:not(.dark) header.glass-effect {
+    background: rgba(255, 255, 255, 0.86) !important;
+    backdrop-filter: blur(14px) !important;
+    -webkit-backdrop-filter: blur(14px) !important;
+    border-top: 2.5px solid #059669 !important;
+    border-bottom: 1px solid rgba(226, 232, 240, 0.9) !important;
+    box-shadow: 0 4px 20px -6px rgba(15, 23, 42, 0.06) !important;
+}
+
+/* Wadah tombol hamburger (☰) di kiri agar seimbang dengan tombol kanan */
+html:not(.dark) header.glass-effect button[onclick*="toggleMobileMenu"] {
+    background-color: #f1f5f9 !important;
+    border: 1px solid #e2e8f0 !important;
+    color: #334155 !important;
+    border-radius: 0.75rem !important;
+    transition: all 0.2s ease;
+}
+html:not(.dark) header.glass-effect button[onclick*="toggleMobileMenu"]:hover {
+    background-color: #ecfdf5 !important;
+    border-color: #a7f3d0 !important;
+    color: #047857 !important;
+}
+
+/* Avatar ST di kanan atas diberi aksen gradasi & ring halus */
+html:not(.dark) header.glass-effect > div:last-child > div:last-child {
+    background: linear-gradient(135deg, #059669, #0d9488) !important;
+    color: #ffffff !important;
+    box-shadow: 0 4px 10px -2px rgba(5, 150, 105, 0.35) !important;
+}
+
+/* --- B. SIDEBAR & LACI NAVIGASI HP --- */
+html:not(.dark) #sidebar,
+html:not(.dark) #mobile-drawer {
+    background: #f8fafc !important;
+    background-image: none !important;
+    border-right: 1px solid #e2e8f0 !important;
+    box-shadow: 6px 0 28px -8px rgba(15, 23, 42, 0.07) !important;
+}
+
+/* Header Logo Sidebar dengan sapuan emerald lembut */
+html:not(.dark) :is(#sidebar, #mobile-drawer) > div:first-child {
+    background: linear-gradient(180deg, #ecfdf5 0%, #f8fafc 100%) !important;
+    border-bottom: 1px solid #e2e8f0 !important;
+}
+
+/* Label Kategori Menu ("OPERASIONAL HARIAN", "DATA AKADEMIK", dll.) */
+html:not(.dark) :is(#sidebar-menu, #mobile-menu-list) :is(p, div, span).uppercase {
+    color: #94a3b8 !important;
+    letter-spacing: 0.08em !important;
+    font-weight: 800 !important;
+}
+
+/* Item Menu Tidak Aktif & Efek Hover/Tap */
+html:not(.dark) :is(#sidebar-menu, #mobile-menu-list) :is(button, a):not([class*="bg-brand"]):not([class*="bg-emerald"]):not([class*="from-brand"]):not([class*="from-emerald"]) {
+    color: #475569 !important;
+    border-radius: 0.85rem !important;
+    transition: all 0.18s ease !important;
+}
+html:not(.dark) :is(#sidebar-menu, #mobile-menu-list) :is(button, a):not([class*="bg-brand"]):not([class*="bg-emerald"]):not([class*="from-brand"]):not([class*="from-emerald"]):hover {
+    background-color: #ecfdf5 !important;
+    color: #047857 !important;
+    transform: translateX(2px);
+}
+html:not(.dark) :is(#sidebar-menu, #mobile-menu-list) :is(button, a):not([class*="bg-brand"]):not([class*="bg-emerald"]):not([class*="from-brand"]):not([class*="from-emerald"]):hover i {
+    color: #059669 !important;
+}
+
+/* Item Menu Aktif -> Gradasi Emerald + Colored Shadow */
+html:not(.dark) :is(#sidebar-menu, #mobile-menu-list) :is(button, a):is([class*="bg-brand"], [class*="bg-emerald"], [class*="from-brand"], [class*="from-emerald"]) {
+    background: linear-gradient(135deg, #059669 0%, #10b981 100%) !important;
+    box-shadow: 0 6px 16px -4px rgba(16, 185, 129, 0.38) !important;
+    border-radius: 0.85rem !important;
+}
+
+/* Footer & Kartu Sakelar "RUANG KERJA AKTIF" */
+html:not(.dark) :is(#sidebar, #mobile-drawer) > div:last-child {
+    background-color: #f1f5f9 !important;
+    border-top: 1px solid #e2e8f0 !important;
+}
+html:not(.dark) :is(#sidebar, #mobile-drawer) button[onclick*="bukaModalWorkspace"] {
+    background-color: #ffffff !important;
+    border: 1.5px solid #a7f3d0 !important;
+    border-radius: 0.9rem !important;
+    box-shadow: 0 4px 12px -2px rgba(5, 150, 105, 0.08) !important;
+    transition: all 0.2s ease !important;
+}
+html:not(.dark) :is(#sidebar, #mobile-drawer) button[onclick*="bukaModalWorkspace"]:hover {
+    background-color: #ecfdf5 !important;
+    border-color: #10b981 !important;
+    transform: translateY(-1px);
+}
 </style>
     <style>
 /* Sembunyikan tombol Fullscreen otomatis saat dibuka sebagai Aplikasi (PWA / Layar Utama) */
@@ -1686,6 +1782,136 @@ function doGet(e) {
             new MutationObserver(scanDashboardSchedule).observe(main, { childList: true, subtree: true });
         }
     });
+})();
+</script>
+    <!-- =========================================================
+     TOP BAR WORKSPACE PILL (INDIKATOR & SAKELAR RUANG KERJA)
+     ========================================================= -->
+<style>
+#topbar-workspace-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.38rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 800;
+    letter-spacing: 0.02em;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    margin-left: auto;
+    margin-right: 0.35rem;
+    max-width: 250px;
+    flex-shrink: 1;
+    min-width: 0;
+}
+
+/* Tampilan Mode Terang */
+html:not(.dark) #topbar-workspace-pill {
+    background: linear-gradient(135deg, #ecfdf5 0%, #f0fdfa 100%) !important;
+    border: 1px solid #a7f3d0 !important;
+    color: #065f46 !important;
+    box-shadow: 0 2px 8px -2px rgba(5, 150, 105, 0.14) !important;
+}
+html:not(.dark) #topbar-workspace-pill:hover {
+    background: #d1fae5 !important;
+    border-color: #34d399 !important;
+    transform: translateY(-1px);
+}
+html:not(.dark) #topbar-workspace-pill .ws-icon {
+    color: #059669 !important;
+}
+
+/* Tampilan Mode Gelap */
+html.dark #topbar-workspace-pill {
+    background: rgba(16, 185, 129, 0.12) !important;
+    border: 1px solid rgba(52, 211, 153, 0.3) !important;
+    color: #6ee7b7 !important;
+    box-shadow: 0 2px 10px -2px rgba(0, 0, 0, 0.3) !important;
+}
+html.dark #topbar-workspace-pill:hover {
+    background: rgba(16, 185, 129, 0.22) !important;
+    border-color: rgba(52, 211, 153, 0.55) !important;
+}
+html.dark #topbar-workspace-pill .ws-icon {
+    color: #34d399 !important;
+}
+
+#topbar-workspace-pill .ws-text {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Penyesuaian Layar HP agar Judul Halaman Tetap Lega */
+@media (max-width: 640px) {
+    #topbar-workspace-pill {
+        max-width: 118px;
+        padding: 0.32rem 0.55rem;
+        font-size: 0.68rem;
+        gap: 0.35rem;
+        margin-right: 0.15rem;
+    }
+    #topbar-workspace-pill .ws-icon {
+        display: none;
+    }
+}
+</style>
+
+<script>
+(function () {
+    function initTopbarWorkspacePill() {
+        const header = document.querySelector('header.glass-effect');
+        const sourceLabel = document.getElementById('label-ruang-kerja');
+        if (!header || !sourceLabel) return;
+
+        let pill = document.getElementById('topbar-workspace-pill');
+        if (!pill) {
+            pill = document.createElement('button');
+            pill.id = 'topbar-workspace-pill';
+            pill.type = 'button';
+            pill.title = 'Klik untuk ganti Ruang Kerja / Lembaga';
+            pill.innerHTML = `
+                <span class="w-2 h-2 rounded-full bg-emerald-500 shrink-0 animate-pulse"></span>
+                <i class="fa-solid fa-building-columns ws-icon text-[11px] shrink-0"></i>
+                <span id="topbar-ws-text" class="ws-text">Ruang Kerja Utama</span>
+                <i class="fa-solid fa-chevron-down text-[9px] opacity-70 shrink-0"></i>
+            `;
+            pill.addEventListener('click', function () {
+                if (typeof bukaModalWorkspace === 'function') {
+                    bukaModalWorkspace();
+                }
+            });
+
+            // Sisipkan tepat sebelum kelompok tombol kanan (Tema & Avatar ST)
+            if (header.lastElementChild) {
+                header.insertBefore(pill, header.lastElementChild);
+            } else {
+                header.appendChild(pill);
+            }
+        }
+
+        const syncText = () => {
+            const target = document.getElementById('topbar-ws-text');
+            const currentName = (sourceLabel.textContent || '').trim();
+            if (target && currentName) {
+                target.textContent = currentName;
+            }
+        };
+
+        syncText();
+        new MutationObserver(syncText).observe(sourceLabel, {
+            childList: true,
+            characterData: true,
+            subtree: true
+        });
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initTopbarWorkspacePill);
+    } else {
+        initTopbarWorkspacePill();
+    }
 })();
 </script>
 </body>
