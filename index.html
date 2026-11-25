@@ -42,6 +42,7 @@
         }
         
     </script>
+    
     <style>
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
@@ -116,6 +117,7 @@
             pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
         }
     </script>
+    
    <style>
 html, body {
     max-width: 100vw !important;
@@ -2246,18 +2248,8 @@ html:not(.dark) :is(#main-content, #quiz-arena-modal, #dnd-arena-modal) :is(
 </style>
 
 <!-- =========================================================
-     DEFAULT DARK MODE, TOP BAR GATEWAY & SINKRONISASI LACI HP
+     TOP BAR ALA GATEWAY & SINKRONISASI LACI HP
      ========================================================= -->
-<script>
-// Jadikan Mode Gelap sebagai bawaan jika pengguna belum pernah memilih Mode Terang
-(function () {
-    const savedTheme = localStorage.getItem('theme') || localStorage.getItem('darkMode');
-    if (savedTheme !== 'light' && savedTheme !== 'false') {
-        document.documentElement.classList.add('dark');
-    }
-})();
-</script>
-
 <style>
 /* --- 1. KAPSUL RUANG KERJA AKTIF (DESKTOP & TABLET) --- */
 #topbar-workspace-pill {
