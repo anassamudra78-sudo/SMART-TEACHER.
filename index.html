@@ -297,7 +297,7 @@ html, body {
 </style>
     <style>
 /* =========================================================
-   LIGHT MODE HARMONIZER LENGKAP (WORKSPACE, KUIS, DND & SIDEBAR)
+   LIGHT MODE HARMONIZER LENGKAP (SEMUA TRANSPARANSI & MODAL)
    ========================================================= */
 html:not(.dark) header.glass-effect,
 html:not(.dark) #dnd-topbar,
@@ -323,12 +323,9 @@ html:not(.dark) :is(#main-content, #quiz-arena-modal, #dnd-arena-modal) :is(.bg-
     -webkit-text-fill-color: transparent !important;
 }
 
-/* 3. Ubah kartu & container gelap (slate-900 / slate-950 / black) menjadi putih bersih */
+/* 3. Tangkap SEMUA kartu & kotak slate-900 / slate-950 / black (termasuk /40, /50, /60, /80) */
 html:not(.dark) :is(#main-content, #quiz-arena-modal, #dnd-arena-modal, #guide-modal, #bedah-soal-modal, #bank-soal-modal, #modal-workspace, #modal-about-dev) :is(div, section, article, aside, table, thead, tr, form, ul, li):is(
-    .bg-slate-900, .bg-slate-900\/80, .bg-slate-900\/90, .bg-slate-900\/95,
-    .bg-slate-950, .bg-slate-950\/50, .bg-slate-950\/60, .bg-slate-950\/70, .bg-slate-950\/80,
-    .bg-black, .bg-black\/40, .bg-black\/50, .bg-gray-900,
-    .from-slate-900, .from-slate-950
+    [class*="bg-slate-9"], .bg-black, [class*="bg-black/"], .bg-gray-900, .from-slate-900, .from-slate-950
 ) {
     background-color: #ffffff !important;
     background-image: none !important;
@@ -336,10 +333,9 @@ html:not(.dark) :is(#main-content, #quiz-arena-modal, #dnd-arena-modal, #guide-m
     box-shadow: 0 4px 20px -4px rgba(15, 23, 42, 0.07);
 }
 
-/* 4. Ubah kotak sekunder, dropdown gelap ("1", "Semua"), input & tombol sekunder menjadi terang */
+/* 4. Tangkap SEMUA kotak sekunder & pilihan jawaban (slate-800, slate-700, dropdown, input) */
 html:not(.dark) :is(#main-content, #quiz-arena-modal, #dnd-arena-modal, #guide-modal, #bedah-soal-modal, #bank-soal-modal, #modal-workspace) :is(div, section, thead, tr, input, select, textarea, button):is(
-    .bg-slate-900, .bg-slate-950, .bg-black,
-    .bg-slate-800, .bg-slate-800\/50, .bg-slate-800\/60, .bg-slate-800\/80, .bg-slate-800\/90,
+    [class*="bg-slate-8"], [class*="bg-slate-7"], .bg-slate-900, .bg-slate-950, .bg-black,
     .bg-white\/5, .bg-white\/10
 ) {
     background-color: #f8fafc !important;
@@ -347,51 +343,54 @@ html:not(.dark) :is(#main-content, #quiz-arena-modal, #dnd-arena-modal, #guide-m
     color: #0f172a !important;
 }
 
-/* 5. Ubah kotak aksen gelap (950/40) di lobi & duel menjadi pastel lembut */
-html:not(.dark) :is(#main-content, #quiz-arena-modal, #dnd-arena-modal) .bg-indigo-950\/40 { background-color: #eef2ff !important; border-color: #c7d2fe !important; }
-html:not(.dark) :is(#main-content, #quiz-arena-modal, #dnd-arena-modal) .bg-blue-950\/40   { background-color: #eff6ff !important; border-color: #bfdbfe !important; }
-html:not(.dark) :is(#main-content, #quiz-arena-modal, #dnd-arena-modal) .bg-rose-950\/40   { background-color: #fff1f2 !important; border-color: #fecdd3 !important; }
-html:not(.dark) :is(#main-content, #quiz-arena-modal, #dnd-arena-modal) .bg-emerald-950\/40{ background-color: #ecfdf5 !important; border-color: #a7f3d0 !important; }
-html:not(.dark) :is(#main-content, #quiz-arena-modal, #dnd-arena-modal) .bg-amber-950\/40  { background-color: #fffbeb !important; border-color: #fde68a !important; }
-html:not(.dark) :is(#main-content, #quiz-arena-modal, #dnd-arena-modal) .bg-purple-950\/40 { background-color: #faf5ff !important; border-color: #e9d5ff !important; }
+/* 5. Kotak aksen lembut untuk jawaban benar, duel & status */
+html:not(.dark) :is(#main-content, #quiz-arena-modal, #dnd-arena-modal, #bank-soal-modal) [class*="bg-emerald-9"] { background-color: #dcfce7 !important; border-color: #86efac !important; }
+html:not(.dark) :is(#main-content, #quiz-arena-modal, #dnd-arena-modal, #bank-soal-modal) [class*="bg-indigo-9"]  { background-color: #eef2ff !important; border-color: #c7d2fe !important; }
+html:not(.dark) :is(#main-content, #quiz-arena-modal, #dnd-arena-modal, #bank-soal-modal) [class*="bg-blue-9"]    { background-color: #eff6ff !important; border-color: #bfdbfe !important; }
+html:not(.dark) :is(#main-content, #quiz-arena-modal, #dnd-arena-modal, #bank-soal-modal) [class*="bg-rose-9"]    { background-color: #fff1f2 !important; border-color: #fecdd3 !important; }
+html:not(.dark) :is(#main-content, #quiz-arena-modal, #dnd-arena-modal, #bank-soal-modal) [class*="bg-amber-9"]   { background-color: #fffbeb !important; border-color: #fde68a !important; }
+html:not(.dark) :is(#main-content, #quiz-arena-modal, #dnd-arena-modal, #bank-soal-modal) [class*="bg-purple-9"]  { background-color: #faf5ff !important; border-color: #e9d5ff !important; }
 
-/* 6. Ubah teks putih & putih-transparan (seperti tombol Audio Efek) menjadi gelap tajam */
+/* 6. Ubah teks putih & putih-transparan menjadi gelap tajam */
 html:not(.dark) :is(#main-content, #quiz-arena-modal, #dnd-arena-modal, #guide-modal, #bedah-soal-modal, #bank-soal-modal, #modal-workspace, #modal-about-dev) :not(button):not(a):not([class*="from-emerald"]):not([class*="from-brand"]):not([class*="from-indigo"]):not([class*="from-purple"]):not([class*="from-amber"]):not([class*="from-orange"]):not([class*="from-rose"]):not([class*="from-cyan"]):not([class*="from-blue"]):not([class*="from-teal"]):not([class*="bg-emerald-"]):not([class*="bg-brand-"]):not([class*="bg-indigo-"]):not([class*="bg-purple-"]):not([class*="bg-rose-"]):not([class*="bg-amber-"]):not([class*="bg-orange-"]):not([class*="bg-cyan-"]):not([class*="bg-blue-"]) > :is(.text-white, [class*="text-white/"], .text-slate-100),
 html:not(.dark) :is(#main-content, #quiz-arena-modal, #dnd-arena-modal, #guide-modal, #bedah-soal-modal, #bank-soal-modal, #modal-workspace, #modal-about-dev) :is(h1, h2, h3, h4, p, span, td, th, label, select, input):is(.text-white, [class*="text-white/"], .text-slate-100) {
     color: #0f172a !important;
 }
 
-/* Pertahankan teks putih pada tombol & kartu berwarna solid/gradasi cerah */
+/* Pertahankan teks putih pada tombol & badge berwarna solid/gradasi cerah (seperti badge "70 Soal") */
 html:not(.dark) :is(#main-content, #quiz-arena-modal, #dnd-arena-modal, #guide-modal, #bedah-soal-modal, #bank-soal-modal, #modal-workspace) :is(
-    button:not(.bg-slate-800):not(.bg-slate-900):not(.bg-white\/5):not(.bg-white\/10), a,
+    button:not([class*="bg-slate-"]):not([class*="bg-white/"]), a,
     [class*="from-emerald"], [class*="from-brand"], [class*="from-indigo"], [class*="from-purple"],
     [class*="from-amber"], [class*="from-orange"], [class*="from-rose"], [class*="from-cyan"], [class*="from-blue"], [class*="from-teal"],
     [class*="bg-emerald-5"], [class*="bg-emerald-6"], [class*="bg-brand-6"], [class*="bg-indigo-6"], [class*="bg-purple-6"],
     [class*="bg-rose-5"], [class*="bg-rose-6"], [class*="bg-amber-5"], [class*="bg-orange-5"], [class*="bg-cyan-6"], [class*="bg-blue-6"]
 ) :is(h1, h2, h3, h4, p, span, div, i):is(.text-white, [class*="text-white/"]),
-html:not(.dark) :is(#main-content, #quiz-arena-modal, #dnd-arena-modal, #guide-modal, #bedah-soal-modal, #bank-soal-modal, #modal-workspace) :is(button:not(.bg-slate-800):not(.bg-slate-900):not(.bg-white\/5):not(.bg-white\/10), a):is(.text-white, [class*="text-white/"]) {
+html:not(.dark) :is(#main-content, #quiz-arena-modal, #dnd-arena-modal, #guide-modal, #bedah-soal-modal, #bank-soal-modal, #modal-workspace) :is(
+    button:not([class*="bg-slate-"]):not([class*="bg-white/"]), a,
+    span:is([class*="bg-indigo-6"], [class*="bg-emerald-6"], [class*="bg-brand-6"], [class*="bg-purple-6"], [class*="bg-rose-6"], [class*="bg-amber-5"], [class*="bg-orange-5"])
+):is(.text-white, [class*="text-white/"]) {
     color: #ffffff !important;
 }
 
-/* 7. Pertajam teks sekunder & aksen warna di Workspace, Kuis & DnD */
+/* 7. Pertajam teks sekunder & aksen warna di Workspace, Kuis, Bank Soal & DnD */
 html:not(.dark) :is(#main-content, #quiz-arena-modal, #dnd-arena-modal, #guide-modal, #bedah-soal-modal, #bank-soal-modal, #modal-workspace) :is(p, span, td, th, label, div, button):is(.text-slate-200, .text-slate-300) {
     color: #334155 !important;
 }
 html:not(.dark) :is(#main-content, #quiz-arena-modal, #dnd-arena-modal, #guide-modal, #bedah-soal-modal, #bank-soal-modal, #modal-workspace) :is(p, span, td, th, label, div).text-slate-400 {
-    color: #64748b !important;
+    color: #475569 !important;
 }
-html:not(.dark) :is(#main-content, #quiz-arena-modal, #dnd-arena-modal) .bg-rose-500\/10,
-html:not(.dark) :is(#main-content, #quiz-arena-modal, #dnd-arena-modal) .bg-rose-500\/20 { background-color: #ffe4e6 !important; }
-html:not(.dark) :is(#main-content, #quiz-arena-modal, #dnd-arena-modal) .bg-amber-500\/10,
-html:not(.dark) :is(#main-content, #quiz-arena-modal, #dnd-arena-modal) .bg-amber-500\/20 { background-color: #fef3c7 !important; }
+html:not(.dark) :is(#main-content, #quiz-arena-modal, #dnd-arena-modal, #bank-soal-modal) .bg-rose-500\/10,
+html:not(.dark) :is(#main-content, #quiz-arena-modal, #dnd-arena-modal, #bank-soal-modal) .bg-rose-500\/20 { background-color: #ffe4e6 !important; }
+html:not(.dark) :is(#main-content, #quiz-arena-modal, #dnd-arena-modal, #bank-soal-modal) .bg-amber-500\/10,
+html:not(.dark) :is(#main-content, #quiz-arena-modal, #dnd-arena-modal, #bank-soal-modal) .bg-amber-500\/20 { background-color: #fef3c7 !important; }
 
-html:not(.dark) :is(#main-content, #quiz-arena-modal, #dnd-arena-modal) :is(.text-rose-300, .text-rose-400) { color: #be123c !important; }
-html:not(.dark) :is(#main-content, #quiz-arena-modal, #dnd-arena-modal) :is(.text-amber-300, .text-amber-400) { color: #b45309 !important; }
-html:not(.dark) :is(#main-content, #quiz-arena-modal, #dnd-arena-modal) :is(.text-emerald-300, .text-emerald-400, .text-brand-400) { color: #047857 !important; }
-html:not(.dark) :is(#main-content, #quiz-arena-modal, #dnd-arena-modal) :is(.text-cyan-300, .text-cyan-400) { color: #0e7490 !important; }
-html:not(.dark) :is(#main-content, #quiz-arena-modal, #dnd-arena-modal) :is(.text-indigo-300, .text-indigo-400) { color: #4338ca !important; }
-html:not(.dark) :is(#main-content, #quiz-arena-modal, #dnd-arena-modal) :is(.text-purple-300, .text-purple-400) { color: #6d28d9 !important; }
-html:not(.dark) :is(#main-content, #quiz-arena-modal, #dnd-arena-modal) :is(.text-orange-300, .text-orange-400) { color: #c2410c !important; }
+html:not(.dark) :is(#main-content, #quiz-arena-modal, #dnd-arena-modal, #bank-soal-modal) :is(.text-rose-300, .text-rose-400) { color: #be123c !important; }
+html:not(.dark) :is(#main-content, #quiz-arena-modal, #dnd-arena-modal, #bank-soal-modal) :is(.text-amber-300, .text-amber-400) { color: #b45309 !important; }
+html:not(.dark) :is(#main-content, #quiz-arena-modal, #dnd-arena-modal, #bank-soal-modal) :is(.text-emerald-300, .text-emerald-400, .text-brand-400) { color: #047857 !important; }
+html:not(.dark) :is(#main-content, #quiz-arena-modal, #dnd-arena-modal, #bank-soal-modal) :is(.text-cyan-300, .text-cyan-400) { color: #0e7490 !important; }
+html:not(.dark) :is(#main-content, #quiz-arena-modal, #dnd-arena-modal, #bank-soal-modal) :is(.text-indigo-300, .text-indigo-400) { color: #4338ca !important; }
+html:not(.dark) :is(#main-content, #quiz-arena-modal, #dnd-arena-modal, #bank-soal-modal) :is(.text-purple-300, .text-purple-400) { color: #6d28d9 !important; }
+html:not(.dark) :is(#main-content, #quiz-arena-modal, #dnd-arena-modal, #bank-soal-modal) :is(.text-orange-300, .text-orange-400) { color: #c2410c !important; }
 
 /* 8. Spion Kiri (Sidebar & Laci HP) + Panel Laci Kanan */
 html:not(.dark) #sidebar,
