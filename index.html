@@ -357,21 +357,21 @@ html:not(.dark) :is(#main-content, #quiz-arena-modal, #dnd-arena-modal, #guide-m
     color: #0f172a !important;
 }
 
-/* Pertahankan teks putih pada tombol & badge berwarna solid/gradasi cerah (seperti badge "70 Soal") */
+/* Pertahankan teks putih HANYA pada tombol/badge solid yang aslinya memang memakai .text-white */
 html:not(.dark) :is(#main-content, #quiz-arena-modal, #dnd-arena-modal, #guide-modal, #bedah-soal-modal, #bank-soal-modal, #modal-workspace) :is(
     button:not([class*="bg-slate-"]):not([class*="bg-white/"]), a,
     [class*="from-emerald"], [class*="from-brand"], [class*="from-indigo"], [class*="from-purple"],
-    [class*="from-amber"], [class*="from-orange"], [class*="from-rose"], [class*="from-cyan"], [class*="from-blue"], [class*="from-teal"],
-    [class*="bg-emerald-5"], [class*="bg-emerald-6"], [class*="bg-brand-6"], [class*="bg-indigo-6"], [class*="bg-purple-6"],
-    [class*="bg-rose-5"], [class*="bg-rose-6"], [class*="bg-amber-5"], [class*="bg-orange-5"], [class*="bg-cyan-6"], [class*="bg-blue-6"]
+    [class*="from-amber"], [class*="from-orange"], [class*="from-rose"], [class*="from-cyan"], [class*="from-sky"], [class*="from-blue"], [class*="from-teal"],
+    [class*="bg-brand-5"], [class*="bg-brand-6"], [class*="bg-emerald-5"], [class*="bg-emerald-6"], [class*="bg-teal-6"],
+    [class*="bg-indigo-6"], [class*="bg-purple-6"], [class*="bg-rose-5"], [class*="bg-rose-6"],
+    [class*="bg-amber-5"], [class*="bg-orange-5"], [class*="bg-cyan-6"], [class*="bg-sky-5"], [class*="bg-sky-6"], [class*="bg-blue-6"]
 ) :is(h1, h2, h3, h4, p, span, div, i):is(.text-white, [class*="text-white/"]),
 html:not(.dark) :is(#main-content, #quiz-arena-modal, #dnd-arena-modal, #guide-modal, #bedah-soal-modal, #bank-soal-modal, #modal-workspace) :is(
     button:not([class*="bg-slate-"]):not([class*="bg-white/"]), a,
-    span:is([class*="bg-indigo-6"], [class*="bg-emerald-6"], [class*="bg-brand-6"], [class*="bg-purple-6"], [class*="bg-rose-6"], [class*="bg-amber-5"], [class*="bg-orange-5"])
+    span:is([class*="bg-indigo-6"], [class*="bg-emerald-6"], [class*="bg-brand-5"], [class*="bg-brand-6"], [class*="bg-purple-6"], [class*="bg-rose-6"], [class*="bg-amber-5"], [class*="bg-orange-5"], [class*="bg-sky-6"])
 ):is(.text-white, [class*="text-white/"]) {
     color: #ffffff !important;
 }
-
 /* 7. Pertajam teks sekunder & aksen warna di Workspace, Kuis, Bank Soal & DnD */
 html:not(.dark) :is(#main-content, #quiz-arena-modal, #dnd-arena-modal, #guide-modal, #bedah-soal-modal, #bank-soal-modal, #modal-workspace) :is(p, span, td, th, label, div, button):is(.text-slate-200, .text-slate-300) {
     color: #334155 !important;
