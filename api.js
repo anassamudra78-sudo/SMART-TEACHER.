@@ -196,7 +196,9 @@ async function loadDatabase() {
     
     if (!AppState.db.bankSoal) AppState.db.bankSoal = [];
     AppState.kuis.bankSoalManual = AppState.db.bankSoal;
-    
+    if (typeof window.syncWorkspaceLogoFromDb === "function") {
+        window.syncWorkspaceLogoFromDb();
+    }
     if (typeof updateUI === "function") updateUI();
 }
 
