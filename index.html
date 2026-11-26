@@ -2320,36 +2320,41 @@ html.dark #topbar-workspace-pill .ws-icon {
         });
     };
 
+   let isInjectingWsButtons = false;
     function injectListWorkspaceLogoButtons() {
+        if (isInjectingWsButtons) return;
         const list = document.getElementById('list-workspace');
         if (!list) return;
-        const logos = getLogos();
 
-        Array.from(list.children).forEach(row => {
-            const oldBtn = row.querySelector('[data-ws-logo-btn]');
-            if (oldBtn) oldBtn.remove();
+        isInjectingWsButtons = true;
+        try {
+            const logos = getLogos();
+            Array.from(list.children).forEach(row => {
+                if (row.querySelector('[data-ws-logo-btn]')) return;
 
-            const titleCandidate = row.querySelector('p, span, h4, strong, b') || row;
-            const rawLine = (titleCandidate.textContent || row.innerText || '').split('\n')[0].trim();
-            if (!rawLine) return;
+                const titleCandidate = row.querySelector('p, span, h4, strong, b') || row;
+                const rawLine = (titleCandidate.textContent || row.innerText || '').split('\n')[0].trim();
+                if (!rawLine) return;
 
-            const hasLogo = !!logos[normalizeKey(rawLine)];
-            const btn = document.createElement('button');
-            btn.type = 'button';
-            btn.setAttribute('data-ws-logo-btn', '1');
-            btn.title = 'Pasang / Ganti Logo Ruang Kerja';
-            btn.className = 'ml-2 px-2 py-1 rounded-lg bg-emerald-500/15 hover:bg-emerald-600 text-emerald-500 hover:text-white text-[10px] font-bold shrink-0 transition-colors flex items-center gap-1';
-            btn.innerHTML = hasLogo
-                ? `<i class="fa-solid fa-image"></i> Logo`
-                : `<i class="fa-solid fa-camera"></i>`;
-            btn.addEventListener('click', function (e) {
-                e.stopPropagation();
-                bukaModalLogoWs(rawLine);
+                const hasLogo = !!logos[normalizeKey(rawLine)];
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.setAttribute('data-ws-logo-btn', '1');
+                btn.title = 'Pasang / Ganti Logo Ruang Kerja';
+                btn.className = 'ml-2 px-2 py-1 rounded-lg bg-emerald-500/15 hover:bg-emerald-600 text-emerald-500 hover:text-white text-[10px] font-bold shrink-0 transition-colors flex items-center gap-1';
+                btn.innerHTML = hasLogo
+                    ? `<i class="fa-solid fa-image"></i> Logo`
+                    : `<i class="fa-solid fa-camera"></i>`;
+                btn.addEventListener('click', function (e) {
+                    e.stopPropagation();
+                    bukaModalLogoWs(rawLine);
+                });
+                row.appendChild(btn);
             });
-            row.appendChild(btn);
-        });
+        } finally {
+            setTimeout(function () { isInjectingWsButtons = false; }, 50);
+        }
     }
-
     document.addEventListener('DOMContentLoaded', function () {
         const picker = document.getElementById('input-st-logo-picker');
         if (picker) {
