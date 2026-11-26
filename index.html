@@ -668,6 +668,22 @@ html:not(.dark) #main-content :is(button, a):is([class*="bg-brand-6"], [class*="
     background: linear-gradient(135deg, #065f46 0%, #059669 100%) !important;
     color: #ffffff !important;
 }
+        /* 4. Penyempurnaan Akhir Desainer: Jembatan Sidebar Atas, Tombol Panduan & Sentuhan Halus */
+html:not(.dark) :is(#sidebar, #mobile-drawer) > div:first-child {
+    background: linear-gradient(180deg, #d1fae5 0%, #ecfdf5 60%, #f8fafc 100%) !important;
+    border-bottom: 1px solid #a7f3d0 !important;
+}
+
+html:not(.dark) #main-content :is(button, a):not([class*="500/"]):not([class*="600/"]):is([class*="bg-amber-5"], [class*="bg-amber-6"], [class*="from-amber-5"]),
+html:not(.dark) #main-content :is(button, a):not([class*="500/"]):not([class*="600/"]):is([class*="bg-amber-5"], [class*="bg-amber-6"], [class*="from-amber-5"]) :is(span, i) {
+    background: linear-gradient(135deg, #d97706 0%, #ea580c 100%) !important;
+    color: #ffffff !important;
+    box-shadow: 0 4px 12px -2px rgba(217, 119, 6, 0.35) !important;
+}
+
+html:not(.dark) #main-content :is(button, a):is([class*="bg-brand-6"], [class*="bg-emerald-6"], [class*="from-brand"], [class*="from-emerald"], [class*="bg-sky-6"], [class*="bg-blue-6"]) {
+    box-shadow: 0 4px 12px -2px rgba(5, 150, 105, 0.28) !important;
+}
 </style>
 </style>
     <style>
