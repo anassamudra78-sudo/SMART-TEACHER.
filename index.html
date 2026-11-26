@@ -2180,14 +2180,63 @@ html.dark #topbar-workspace-pill .ws-icon {
         return (el && el.textContent.trim()) || 'Ruang Kerja Utama';
     }
 
-    // Kompres ke 96x96px agar ringan untuk sel Google Sheets namun tetap tajam
+     function trimBlankBorders(sourceCanvas) {
+        const w = sourceCanvas.width, h = sourceCanvas.height;
+        const ctx = sourceCanvas.getContext('2d');
+        const imgData = ctx.getImageData(0, 0, w, h).data;
+        let top = h, bottom = 0, left = w, right = 0, found = false;
+
+        for (let y = 0; y < h; y++) {
+            for (let x = 0; x < w; x++) {
+                const i = (y * w + x) * 4;
+                const r = imgData[i], g = imgData[i + 1], b = imgData[i + 2], a = imgData[i + 3];
+                const isBlank = (a < 20) || (r > 245 && g > 245 && b > 245);
+                if (!isBlank) {
+                    if (y < top) top = y;
+                    if (y > bottom) bottom = y;
+                    if (x < left) left = x;
+                    if (x > right) right = x;
+                    found = true;
+                }
+            }
+        }
+
+        if (!found || right <= left || bottom <= top) return sourceCanvas;
+
+        const cropW = right - left + 1;
+        const cropH = bottom - top + 1;
+        const pad = Math.round(Math.max(cropW, cropH) * 0.04);
+        const sx = Math.max(0, left - pad);
+        const sy = Math.max(0, top - pad);
+        const sw = Math.min(w - sx, cropW + pad * 2);
+        const sh = Math.min(h - sy, cropH + pad * 2);
+
+        const trimmed = document.createElement('canvas');
+        trimmed.width = sw;
+        trimmed.height = sh;
+        trimmed.getContext('2d').drawImage(sourceCanvas, sx, sy, sw, sh, 0, 0, sw, sh);
+        return trimmed;
+    }
+
     function compressLogoFile(file, callback) {
         const reader = new FileReader();
         reader.onload = function (ev) {
             const img = new Image();
             img.onload = function () {
-                const max = 96;
-                let w = img.width, h = img.height;
+                const scanMax = 512;
+                let sw = img.width, sh = img.height;
+                if (sw > sh) { if (sw > scanMax) { sh = Math.round(sh * scanMax / sw); sw = scanMax; } }
+                else { if (sh > scanMax) { sw = Math.round(sw * scanMax / sh); sh = scanMax; } }
+
+                const tempCanvas = document.createElement('canvas');
+                tempCanvas.width = sw;
+                tempCanvas.height = sh;
+                tempCanvas.getContext('2d').drawImage(img, 0, 0, sw, sh);
+
+                const croppedCanvas = trimBlankBorders(tempCanvas);
+
+                const max = 128;
+                let w = croppedCanvas.width, h = croppedCanvas.height;
                 if (w > h) { if (w > max) { h = Math.round(h * max / w); w = max; } }
                 else { if (h > max) { w = Math.round(w * max / h); h = max; } }
 
@@ -2196,11 +2245,11 @@ html.dark #topbar-workspace-pill .ws-icon {
                 canvas.height = h;
                 const ctx = canvas.getContext('2d');
                 ctx.clearRect(0, 0, w, h);
-                ctx.drawImage(img, 0, 0, w, h);
+                ctx.drawImage(croppedCanvas, 0, 0, w, h);
 
                 let dataUrl = canvas.toDataURL('image/png');
-                if (dataUrl.length > 28000) {
-                    dataUrl = canvas.toDataURL('image/jpeg', 0.82);
+                if (dataUrl.length > 38000) {
+                    dataUrl = canvas.toDataURL('image/jpeg', 0.85);
                 }
                 callback(dataUrl);
             };
@@ -2244,7 +2293,7 @@ html.dark #topbar-workspace-pill .ws-icon {
         injectListWorkspaceLogoButtons();
     };
 
-    window.renderTopbarStLogo = function () {
+        window.renderTopbarStLogo = function () {
         const badge = document.getElementById('topbar-st-badge')
             || document.querySelector('header.glass-effect [onclick*="bukaModalLogoWs"]')
             || document.querySelector('header.glass-effect > div:last-child > div:last-child');
@@ -2263,11 +2312,14 @@ html.dark #topbar-workspace-pill .ws-icon {
         const logoUrl = getLogos()[normalizeKey(wsName)];
 
         if (logoUrl) {
-            badge.innerHTML = `<img src="${logoUrl}" alt="Logo ${wsName}" class="w-full h-full object-contain bg-white p-1 rounded-xl pointer-events-none">`;
+            badge.style.padding = '0';
+            badge.innerHTML = `<img src="${logoUrl}" alt="Logo ${wsName}" class="w-full h-full object-contain bg-white dark:bg-slate-100 p-0.5 rounded-xl ring-1 ring-black/5 dark:ring-white/20 pointer-events-none">`;
         } else {
+            badge.style.padding = '';
             badge.innerHTML = 'ST';
         }
     };
+
 
     window.bukaModalLogoWs = function (customWsName) {
         targetWsForLogo = (customWsName || getActiveWsName()).trim();
