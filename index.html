@@ -2301,7 +2301,7 @@ html.dark #topbar-workspace-pill .ws-icon {
         injectListWorkspaceLogoButtons();
     };
 
-        window.renderTopbarStLogo = function () {
+       window.renderTopbarStLogo = function () {
         const badge = document.getElementById('topbar-st-badge')
             || document.querySelector('header.glass-effect [onclick*="bukaModalLogoWs"]')
             || document.querySelector('header.glass-effect > div:last-child > div:last-child');
@@ -2321,13 +2321,12 @@ html.dark #topbar-workspace-pill .ws-icon {
 
         if (logoUrl) {
             badge.style.padding = '0';
-            badge.innerHTML = `<img src="${logoUrl}" alt="Logo ${wsName}" class="w-full h-full object-contain bg-white dark:bg-slate-100 p-0.5 rounded-xl ring-1 ring-black/5 dark:ring-white/20 pointer-events-none">`;
+            badge.innerHTML = `<img src="${logoUrl}" alt="Logo ${wsName}" class="w-full h-full object-contain bg-white dark:bg-slate-800 p-0.5 rounded-xl ring-1 ring-black/5 dark:ring-white/15 pointer-events-none">`;
         } else {
             badge.style.padding = '';
             badge.innerHTML = 'ST';
         }
     };
-
 
     window.bukaModalLogoWs = function (customWsName) {
         targetWsForLogo = (customWsName || getActiveWsName()).trim();
