@@ -2309,7 +2309,7 @@ html.dark #topbar-workspace-pill .ws-icon {
 
         badge.id = 'topbar-st-badge';
         badge.title = 'Klik untuk ganti logo ruang kerja ini';
-        badge.classList.add('overflow-hidden', 'cursor-pointer');
+        badge.classList.add('overflow-hidden', 'cursor-pointer', 'transition-transform', 'duration-200', 'hover:scale-105', 'active:scale-95');
         badge.style.cursor = 'pointer';
         badge.onclick = function (e) {
             e.stopPropagation();
@@ -2320,14 +2320,16 @@ html.dark #topbar-workspace-pill .ws-icon {
         const logoUrl = getLogos()[normalizeKey(wsName)];
 
         if (logoUrl) {
-            badge.style.padding = '0';
-            badge.innerHTML = `<img src="${logoUrl}" alt="Logo ${wsName}" class="w-full h-full object-contain bg-white dark:bg-slate-800 p-0.5 rounded-xl ring-1 ring-black/5 dark:ring-white/15 pointer-events-none">`;
+            badge.style.padding = '2px';
+            badge.classList.add('bg-white/25', 'dark:bg-white/10', 'ring-1', 'ring-white/40', 'dark:ring-white/15', 'shadow-md');
+            badge.innerHTML = `<img src="${logoUrl}" alt="Logo ${wsName}" class="w-full h-full object-contain bg-white/95 dark:bg-slate-800 p-1 rounded-[10px] ring-1 ring-black/5 dark:ring-white/10 pointer-events-none">`;
         } else {
             badge.style.padding = '';
+            badge.classList.remove('bg-white/25', 'dark:bg-white/10', 'ring-1', 'ring-white/40', 'dark:ring-white/15', 'shadow-md');
             badge.innerHTML = 'ST';
         }
     };
-
+    
     window.bukaModalLogoWs = function (customWsName) {
         targetWsForLogo = (customWsName || getActiveWsName()).trim();
         const logos = getLogos();
