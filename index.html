@@ -2301,7 +2301,7 @@ html.dark #topbar-workspace-pill .ws-icon {
         injectListWorkspaceLogoButtons();
     };
 
-      window.renderTopbarStLogo = function () {
+       window.renderTopbarStLogo = function () {
         const badge = document.getElementById('topbar-st-badge')
             || document.querySelector('header.glass-effect [onclick*="bukaModalLogoWs"]')
             || document.querySelector('header.glass-effect > div:last-child > div:last-child');
@@ -2309,6 +2309,7 @@ html.dark #topbar-workspace-pill .ws-icon {
 
         badge.id = 'topbar-st-badge';
         badge.title = 'Klik untuk ganti logo ruang kerja ini';
+        badge.style.cursor = 'pointer';
         badge.onclick = function (e) {
             e.stopPropagation();
             bukaModalLogoWs();
@@ -2316,18 +2317,34 @@ html.dark #topbar-workspace-pill .ws-icon {
 
         const wsName = getActiveWsName();
         const logoUrl = getLogos()[normalizeKey(wsName)];
-        const isDark = document.documentElement.classList.contains('dark');
+
+        // Sembunyikan ikon gedung generik di kapsul jika logo resmi sudah aktif agar tidak dobel simbol
+        const wsBtn = badge.parentElement && badge.parentElement.querySelector('button');
+        if (wsBtn) {
+            const genericIcon = wsBtn.querySelector('.fa-building-columns, .fa-school, .fa-landmark');
+            if (genericIcon) genericIcon.style.display = logoUrl ? 'none' : '';
+        }
 
         if (logoUrl) {
-            badge.className = 'shrink-0 select-none';
-            badge.style.cssText = isDark
-                ? 'width:40px;height:40px;border-radius:9999px;padding:0;overflow:hidden;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;background:rgba(15,23,42,0.55);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,0.14);box-shadow:inset 0 1px 1px rgba(255,255,255,0.12),0 4px 12px rgba(0,0,0,0.3);'
-                : 'width:40px;height:40px;border-radius:9999px;padding:0;overflow:hidden;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.20);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,0.28);box-shadow:inset 0 1px 1px rgba(255,255,255,0.25),0 4px 12px rgba(0,0,0,0.14);';
-            badge.innerHTML = `<img src="${logoUrl}" alt="Logo ${wsName}" style="width:100%;height:100%;object-fit:contain;padding:5px;border-radius:9999px;filter:drop-shadow(0 1px 2px rgba(0,0,0,0.3));pointer-events:none;">`;
+            badge.style.padding = '0';
+            badge.style.background = 'transparent';
+            badge.classList.remove('rounded-xl', 'rounded-lg', 'bg-white', 'bg-white/25', 'dark:bg-white/10');
+            badge.classList.add(
+                'rounded-full', 'overflow-hidden', 'cursor-pointer',
+                'transition-all', 'duration-300', 'hover:scale-105', 'active:scale-95',
+                'ring-1', 'ring-white/50', 'dark:ring-white/15',
+                'shadow-[inset_0_1px_1px_rgba(255,255,255,0.45),0_4px_14px_rgba(0,0,0,0.15)]'
+            );
+            badge.innerHTML = `<div class="w-full h-full rounded-full bg-white/25 dark:bg-white/[0.08] backdrop-blur-md p-1.5 flex items-center justify-center pointer-events-none"><img src="${logoUrl}" alt="Logo ${wsName}" class="w-full h-full object-contain drop-shadow-[0_1px_2px_rgba(0,0,0,0.2)]"></div>`;
         } else {
-            badge.removeAttribute('style');
-            badge.style.cursor = 'pointer';
-            badge.className = 'w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center font-bold text-white cursor-pointer shrink-0';
+            badge.style.padding = '';
+            badge.style.background = '';
+            badge.classList.remove(
+                'rounded-full', 'bg-white/25', 'dark:bg-white/10',
+                'ring-1', 'ring-white/50', 'dark:ring-white/15',
+                'shadow-[inset_0_1px_1px_rgba(255,255,255,0.45),0_4px_14px_rgba(0,0,0,0.15)]'
+            );
+            badge.classList.add('rounded-xl');
             badge.innerHTML = 'ST';
         }
     };
