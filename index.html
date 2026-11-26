@@ -2219,6 +2219,7 @@ html.dark #topbar-workspace-pill .ws-icon {
     }
 
     function compressLogoFile(file, callback) {
+        function compressLogoFile(file, callback) {
         const reader = new FileReader();
         reader.onload = function (ev) {
             const img = new Image();
@@ -2234,24 +2235,32 @@ html.dark #topbar-workspace-pill .ws-icon {
                 tempCanvas.getContext('2d').drawImage(img, 0, 0, sw, sh);
 
                 const croppedCanvas = trimBlankBorders(tempCanvas);
+                const sizes = [160, 140, 128, 112, 96];
+                let finalDataUrl = '';
 
-                const max = 128;
-                let w = croppedCanvas.width, h = croppedCanvas.height;
-                if (w > h) { if (w > max) { h = Math.round(h * max / w); w = max; } }
-                else { if (h > max) { w = Math.round(w * max / h); h = max; } }
+                for (let i = 0; i < sizes.length; i++) {
+                    const targetMax = sizes[i];
+                    let w = croppedCanvas.width, h = croppedCanvas.height;
+                    if (w > h) { if (w > targetMax) { h = Math.round(h * targetMax / w); w = targetMax; } }
+                    else { if (h > targetMax) { w = Math.round(w * targetMax / h); h = targetMax; } }
 
-                const canvas = document.createElement('canvas');
-                canvas.width = w;
-                canvas.height = h;
-                const ctx = canvas.getContext('2d');
-                ctx.clearRect(0, 0, w, h);
-                ctx.drawImage(croppedCanvas, 0, 0, w, h);
+                    const canvas = document.createElement('canvas');
+                    canvas.width = w;
+                    canvas.height = h;
+                    const ctx = canvas.getContext('2d');
+                    ctx.clearRect(0, 0, w, h);
+                    ctx.drawImage(croppedCanvas, 0, 0, w, h);
 
-                let dataUrl = canvas.toDataURL('image/png');
-                if (dataUrl.length > 38000) {
-                    dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+                    let candidate = canvas.toDataURL('image/webp', 0.92);
+                    if (!candidate.startsWith('data:image/webp')) {
+                        candidate = canvas.toDataURL('image/png');
+                    }
+
+                    finalDataUrl = candidate;
+                    if (finalDataUrl.length <= 45000) break;
                 }
-                callback(dataUrl);
+
+                callback(finalDataUrl);
             };
             img.src = ev.target.result;
         };
