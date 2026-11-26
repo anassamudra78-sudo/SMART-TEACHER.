@@ -2180,13 +2180,13 @@ html.dark #topbar-workspace-pill .ws-icon {
         return (el && el.textContent.trim()) || 'Ruang Kerja Utama';
     }
 
-    // Kompres otomatis ke 128x128 PNG agar ringan di penyimpanan namun tetap tajam
+    // Kompres ke 96x96px agar ringan untuk sel Google Sheets namun tetap tajam
     function compressLogoFile(file, callback) {
         const reader = new FileReader();
         reader.onload = function (ev) {
             const img = new Image();
             img.onload = function () {
-                const max = 128;
+                const max = 96;
                 let w = img.width, h = img.height;
                 if (w > h) { if (w > max) { h = Math.round(h * max / w); w = max; } }
                 else { if (h > max) { w = Math.round(w * max / h); h = max; } }
@@ -2197,14 +2197,54 @@ html.dark #topbar-workspace-pill .ws-icon {
                 const ctx = canvas.getContext('2d');
                 ctx.clearRect(0, 0, w, h);
                 ctx.drawImage(img, 0, 0, w, h);
-                callback(canvas.toDataURL('image/png'));
+
+                let dataUrl = canvas.toDataURL('image/png');
+                if (dataUrl.length > 28000) {
+                    dataUrl = canvas.toDataURL('image/jpeg', 0.82);
+                }
+                callback(dataUrl);
             };
             img.src = ev.target.result;
         };
         reader.readAsDataURL(file);
     }
 
-   window.renderTopbarStLogo = function () {
+    function simpanLogoKeCloudAktif(wsName, dataUrl) {
+        if (typeof AppState === 'undefined' || !AppState.db || !AppState.db.sekolah) return;
+        if (normalizeKey(wsName) !== normalizeKey(getActiveWsName())) return;
+        AppState.db.sekolah.logo = dataUrl;
+        if (typeof saveDatabase === 'function') {
+            saveDatabase(true);
+        }
+    }
+
+    // Dipanggil otomatis oleh api.js setelah data Google Sheets selesai dimuat
+    window.syncWorkspaceLogoFromDb = function () {
+        if (typeof AppState === 'undefined' || !AppState.db || !AppState.db.sekolah) return;
+        const key = normalizeKey(getActiveWsName());
+        const logos = getLogos();
+        const cloudLogo = AppState.db.sekolah.logo;
+
+        if (typeof cloudLogo === 'string' && cloudLogo.startsWith('data:image')) {
+            if (logos[key] !== cloudLogo) {
+                logos[key] = cloudLogo;
+                saveLogos(logos);
+            }
+        } else if (cloudLogo === '') {
+            if (logos[key]) {
+                delete logos[key];
+                saveLogos(logos);
+            }
+        } else if (logos[key]) {
+            AppState.db.sekolah.logo = logos[key];
+            if (typeof saveDatabase === 'function') saveDatabase(true);
+        }
+
+        renderTopbarStLogo();
+        injectListWorkspaceLogoButtons();
+    };
+
+    window.renderTopbarStLogo = function () {
         const badge = document.getElementById('topbar-st-badge')
             || document.querySelector('header.glass-effect [onclick*="bukaModalLogoWs"]')
             || document.querySelector('header.glass-effect > div:last-child > div:last-child');
@@ -2228,6 +2268,7 @@ html.dark #topbar-workspace-pill .ws-icon {
             badge.innerHTML = 'ST';
         }
     };
+
     window.bukaModalLogoWs = function (customWsName) {
         targetWsForLogo = (customWsName || getActiveWsName()).trim();
         const logos = getLogos();
@@ -2257,6 +2298,7 @@ html.dark #topbar-workspace-pill .ws-icon {
         const logos = getLogos();
         delete logos[normalizeKey(targetWsForLogo)];
         saveLogos(logos);
+        simpanLogoKeCloudAktif(targetWsForLogo, '');
         renderTopbarStLogo();
         bukaModalLogoWs(targetWsForLogo);
         injectListWorkspaceLogoButtons();
@@ -2278,14 +2320,15 @@ html.dark #topbar-workspace-pill .ws-icon {
         });
     };
 
-    // Tambahkan tombol kamera kecil pada setiap baris di daftar "Ganti Ruang Kerja"
     function injectListWorkspaceLogoButtons() {
         const list = document.getElementById('list-workspace');
         if (!list) return;
         const logos = getLogos();
 
         Array.from(list.children).forEach(row => {
-            if (row.querySelector('[data-ws-logo-btn]')) return;
+            const oldBtn = row.querySelector('[data-ws-logo-btn]');
+            if (oldBtn) oldBtn.remove();
+
             const titleCandidate = row.querySelector('p, span, h4, strong, b') || row;
             const rawLine = (titleCandidate.textContent || row.innerText || '').split('\n')[0].trim();
             if (!rawLine) return;
@@ -2317,6 +2360,7 @@ html.dark #topbar-workspace-pill .ws-icon {
                     const logos = getLogos();
                     logos[normalizeKey(targetWsForLogo)] = dataUrl;
                     saveLogos(logos);
+                    simpanLogoKeCloudAktif(targetWsForLogo, dataUrl);
                     picker.value = '';
                     renderTopbarStLogo();
                     bukaModalLogoWs(targetWsForLogo);
@@ -2326,7 +2370,7 @@ html.dark #topbar-workspace-pill .ws-icon {
         }
 
         renderTopbarStLogo();
-        setTimeout(renderTopbarStLogo, 600);
+        setTimeout(syncWorkspaceLogoFromDb, 800);
 
         const wsLabel = document.getElementById('label-ruang-kerja');
         if (wsLabel) {
