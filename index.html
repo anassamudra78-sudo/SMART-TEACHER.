@@ -2331,10 +2331,12 @@ html.dark #topbar-workspace-pill .ws-icon {
             badge.style.padding = '0';
             badge.style.background = 'transparent';
             badge.style.backgroundClip = 'padding-box';
-            badge.style.border = '1.5px solid rgba(52, 211, 153, 0.55)';
+            badge.style.border = isDark
+                ? '1px solid rgba(52, 211, 153, 0.45)'
+                : '1px solid rgba(167, 243, 208, 0.55)';
             badge.style.boxShadow = isDark
-                ? '0 0 14px rgba(16, 185, 129, 0.28), inset 0 0 8px rgba(52, 211, 153, 0.14)'
-                : '0 0 12px rgba(52, 211, 153, 0.34), inset 0 0 8px rgba(52, 211, 153, 0.16)';
+                ? '0 0 10px rgba(16, 185, 129, 0.24), inset 0 0 6px rgba(52, 211, 153, 0.15)'
+                : '0 3px 10px rgba(6, 78, 59, 0.25), inset 0 0 6px rgba(167, 243, 208, 0.28)';
 
             badge.classList.remove(
                 'rounded-xl', 'rounded-lg', 'bg-white', 'bg-white/25', 'dark:bg-white/10',
@@ -2346,11 +2348,7 @@ html.dark #topbar-workspace-pill .ws-icon {
                 'transition-all', 'duration-300', 'hover:scale-105', 'active:scale-95'
             );
 
-            const innerBg = isDark
-                ? 'radial-gradient(circle at 30% 30%, rgba(16, 185, 129, 0.14), rgba(15, 23, 42, 0.72))'
-                : 'radial-gradient(circle at 30% 30%, rgba(52, 211, 153, 0.18), rgba(6, 78, 59, 0.42))';
-
-            badge.innerHTML = `<div style="width:100%;height:100%;border-radius:9999px;background:${innerBg};backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);padding:6px;display:flex;align-items:center;justify-content:center;pointer-events:none;"><img src="${logoUrl}" alt="Logo ${wsName}" style="width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 1px 2px rgba(0,0,0,0.28));"></div>`;
+            badge.innerHTML = `<div class="w-full h-full rounded-full bg-white/25 dark:bg-white/[0.08] backdrop-blur-md p-1.5 flex items-center justify-center pointer-events-none"><img src="${logoUrl}" alt="Logo ${wsName}" class="w-full h-full object-contain drop-shadow-[0_1px_2px_rgba(0,0,0,0.2)]"></div>`;
         } else {
             badge.style.padding = '';
             badge.style.background = '';
