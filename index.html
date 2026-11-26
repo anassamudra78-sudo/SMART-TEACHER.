@@ -2204,19 +2204,30 @@ html.dark #topbar-workspace-pill .ws-icon {
         reader.readAsDataURL(file);
     }
 
-    window.renderTopbarStLogo = function () {
-        const badge = document.getElementById('topbar-st-badge');
+   window.renderTopbarStLogo = function () {
+        const badge = document.getElementById('topbar-st-badge')
+            || document.querySelector('header.glass-effect [onclick*="bukaModalLogoWs"]')
+            || document.querySelector('header.glass-effect > div:last-child > div:last-child');
         if (!badge) return;
+
+        badge.id = 'topbar-st-badge';
+        badge.title = 'Klik untuk ganti logo ruang kerja ini';
+        badge.classList.add('overflow-hidden', 'cursor-pointer');
+        badge.style.cursor = 'pointer';
+        badge.onclick = function (e) {
+            e.stopPropagation();
+            bukaModalLogoWs();
+        };
+
         const wsName = getActiveWsName();
         const logoUrl = getLogos()[normalizeKey(wsName)];
 
         if (logoUrl) {
-            badge.innerHTML = `<img src="${logoUrl}" alt="Logo ${wsName}" class="w-full h-full object-contain bg-white p-1 rounded-xl">`;
+            badge.innerHTML = `<img src="${logoUrl}" alt="Logo ${wsName}" class="w-full h-full object-contain bg-white p-1 rounded-xl pointer-events-none">`;
         } else {
             badge.innerHTML = 'ST';
         }
     };
-
     window.bukaModalLogoWs = function (customWsName) {
         targetWsForLogo = (customWsName || getActiveWsName()).trim();
         const logos = getLogos();
