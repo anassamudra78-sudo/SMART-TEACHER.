@@ -2129,5 +2129,205 @@ html.dark #topbar-workspace-pill .ws-icon {
     }
 })();
 </script>
+    <!-- MODAL GANTI LOGO PER RUANG KERJA -->
+<div id="modal-st-logo" onclick="if(event.target===this) tutupModalLogoWs()" class="fixed inset-0 bg-slate-950/75 backdrop-blur-sm z-[220] hidden flex items-center justify-center p-4 no-print">
+    <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-3xl p-6 max-w-xs w-full text-center shadow-2xl text-slate-800 dark:text-white relative">
+        <button onclick="tutupModalLogoWs()" class="absolute top-4 right-4 w-8 h-8 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-400 hover:text-rose-500 flex items-center justify-center">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+
+        <div id="preview-st-logo-box" class="w-20 h-20 mx-auto rounded-2xl bg-gradient-to-br from-emerald-600 to-teal-600 text-white flex items-center justify-center font-black text-2xl shadow-lg mb-3 overflow-hidden border border-slate-200 dark:border-slate-700">
+            ST
+        </div>
+
+        <p class="text-[10px] font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">Logo Ruang Kerja</p>
+        <h4 id="modal-st-logo-wsname" class="text-sm font-black mt-0.5 mb-4 truncate">Ruang Kerja Utama</h4>
+
+        <input type="file" id="input-st-logo-picker" accept="image/*" class="hidden">
+
+        <div class="space-y-2">
+            <button type="button" onclick="document.getElementById('input-st-logo-picker').click()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 px-4 rounded-xl text-xs shadow-md transition-all flex items-center justify-center gap-2">
+                <i class="fa-solid fa-image"></i> Upload / Ganti Logo
+            </button>
+            <button type="button" id="btn-reset-st-logo" onclick="hapusLogoWsTarget()" class="w-full bg-slate-100 dark:bg-slate-800 hover:bg-rose-600 text-slate-600 dark:text-slate-300 hover:text-white font-bold py-2.5 px-4 rounded-xl text-xs transition-all hidden">
+                <i class="fa-solid fa-rotate-left mr-1"></i> Gunakan Lambang Default (ST)
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+(function () {
+    const LOGO_STORE_KEY = 'st_workspace_logos_v1';
+    let targetWsForLogo = '';
+
+    function getLogos() {
+        try { return JSON.parse(localStorage.getItem(LOGO_STORE_KEY) || '{}'); }
+        catch (e) { return {}; }
+    }
+
+    function saveLogos(map) {
+        try { localStorage.setItem(LOGO_STORE_KEY, JSON.stringify(map)); }
+        catch (e) { alert('Memori browser penuh. Gunakan gambar logo yang lebih kecil.'); }
+    }
+
+    function normalizeKey(name) {
+        return (name || 'Ruang Kerja Utama').trim().toUpperCase();
+    }
+
+    function getActiveWsName() {
+        const el = document.getElementById('label-ruang-kerja');
+        return (el && el.textContent.trim()) || 'Ruang Kerja Utama';
+    }
+
+    // Kompres otomatis ke 128x128 PNG agar ringan di penyimpanan namun tetap tajam
+    function compressLogoFile(file, callback) {
+        const reader = new FileReader();
+        reader.onload = function (ev) {
+            const img = new Image();
+            img.onload = function () {
+                const max = 128;
+                let w = img.width, h = img.height;
+                if (w > h) { if (w > max) { h = Math.round(h * max / w); w = max; } }
+                else { if (h > max) { w = Math.round(w * max / h); h = max; } }
+
+                const canvas = document.createElement('canvas');
+                canvas.width = w;
+                canvas.height = h;
+                const ctx = canvas.getContext('2d');
+                ctx.clearRect(0, 0, w, h);
+                ctx.drawImage(img, 0, 0, w, h);
+                callback(canvas.toDataURL('image/png'));
+            };
+            img.src = ev.target.result;
+        };
+        reader.readAsDataURL(file);
+    }
+
+    window.renderTopbarStLogo = function () {
+        const badge = document.getElementById('topbar-st-badge');
+        if (!badge) return;
+        const wsName = getActiveWsName();
+        const logoUrl = getLogos()[normalizeKey(wsName)];
+
+        if (logoUrl) {
+            badge.innerHTML = `<img src="${logoUrl}" alt="Logo ${wsName}" class="w-full h-full object-contain bg-white p-1 rounded-xl">`;
+        } else {
+            badge.innerHTML = 'ST';
+        }
+    };
+
+    window.bukaModalLogoWs = function (customWsName) {
+        targetWsForLogo = (customWsName || getActiveWsName()).trim();
+        const logos = getLogos();
+        const logoUrl = logos[normalizeKey(targetWsForLogo)];
+
+        const titleEl = document.getElementById('modal-st-logo-wsname');
+        const previewEl = document.getElementById('preview-st-logo-box');
+        const resetBtn = document.getElementById('btn-reset-st-logo');
+        const modal = document.getElementById('modal-st-logo');
+
+        if (titleEl) titleEl.textContent = targetWsForLogo;
+        if (previewEl) {
+            previewEl.innerHTML = logoUrl
+                ? `<img src="${logoUrl}" alt="Preview" class="w-full h-full object-contain bg-white p-1.5">`
+                : 'ST';
+        }
+        if (resetBtn) resetBtn.classList.toggle('hidden', !logoUrl);
+        if (modal) modal.classList.remove('hidden');
+    };
+
+    window.tutupModalLogoWs = function () {
+        const modal = document.getElementById('modal-st-logo');
+        if (modal) modal.classList.add('hidden');
+    };
+
+    window.hapusLogoWsTarget = function () {
+        const logos = getLogos();
+        delete logos[normalizeKey(targetWsForLogo)];
+        saveLogos(logos);
+        renderTopbarStLogo();
+        bukaModalLogoWs(targetWsForLogo);
+        injectListWorkspaceLogoButtons();
+    };
+
+    window.simpanLogoFormBaru = function () {
+        const namaInput = document.getElementById('ws-nama');
+        const fileInput = document.getElementById('ws-logo-file');
+        const nama = (namaInput && namaInput.value || '').trim();
+        const file = fileInput && fileInput.files && fileInput.files[0];
+        if (!nama || !file) return;
+
+        compressLogoFile(file, function (dataUrl) {
+            const logos = getLogos();
+            logos[normalizeKey(nama)] = dataUrl;
+            saveLogos(logos);
+            fileInput.value = '';
+            renderTopbarStLogo();
+        });
+    };
+
+    // Tambahkan tombol kamera kecil pada setiap baris di daftar "Ganti Ruang Kerja"
+    function injectListWorkspaceLogoButtons() {
+        const list = document.getElementById('list-workspace');
+        if (!list) return;
+        const logos = getLogos();
+
+        Array.from(list.children).forEach(row => {
+            if (row.querySelector('[data-ws-logo-btn]')) return;
+            const titleCandidate = row.querySelector('p, span, h4, strong, b') || row;
+            const rawLine = (titleCandidate.textContent || row.innerText || '').split('\n')[0].trim();
+            if (!rawLine) return;
+
+            const hasLogo = !!logos[normalizeKey(rawLine)];
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.setAttribute('data-ws-logo-btn', '1');
+            btn.title = 'Pasang / Ganti Logo Ruang Kerja';
+            btn.className = 'ml-2 px-2 py-1 rounded-lg bg-emerald-500/15 hover:bg-emerald-600 text-emerald-500 hover:text-white text-[10px] font-bold shrink-0 transition-colors flex items-center gap-1';
+            btn.innerHTML = hasLogo
+                ? `<i class="fa-solid fa-image"></i> Logo`
+                : `<i class="fa-solid fa-camera"></i>`;
+            btn.addEventListener('click', function (e) {
+                e.stopPropagation();
+                bukaModalLogoWs(rawLine);
+            });
+            row.appendChild(btn);
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        const picker = document.getElementById('input-st-logo-picker');
+        if (picker) {
+            picker.addEventListener('change', function () {
+                const file = picker.files && picker.files[0];
+                if (!file) return;
+                compressLogoFile(file, function (dataUrl) {
+                    const logos = getLogos();
+                    logos[normalizeKey(targetWsForLogo)] = dataUrl;
+                    saveLogos(logos);
+                    picker.value = '';
+                    renderTopbarStLogo();
+                    bukaModalLogoWs(targetWsForLogo);
+                    injectListWorkspaceLogoButtons();
+                });
+            });
+        }
+
+        renderTopbarStLogo();
+        setTimeout(renderTopbarStLogo, 600);
+
+        const wsLabel = document.getElementById('label-ruang-kerja');
+        if (wsLabel) {
+            new MutationObserver(renderTopbarStLogo).observe(wsLabel, { childList: true, characterData: true, subtree: true });
+        }
+
+        const wsList = document.getElementById('list-workspace');
+        if (wsList) {
+            new MutationObserver(injectListWorkspaceLogoButtons).observe(wsList, { childList: true, subtree: true });
+        }
+    });
+})();
+</script>
 </body>
 </html>
