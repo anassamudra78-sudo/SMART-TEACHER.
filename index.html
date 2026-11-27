@@ -2485,5 +2485,181 @@ html.dark #topbar-workspace-pill .ws-icon {
     });
 })();
 </script>
+    <style>
+  /* Wadah strip running text kontras tinggi (gelap-zamrud di kedua tema agar neon menyala jelas) */
+  .st-neon-ticker-box {
+    position: relative;
+    overflow: hidden !important;
+    background: linear-gradient(90deg, rgba(4, 24, 20, 0.94) 0%, rgba(6, 42, 34, 0.94) 50%, rgba(4, 24, 20, 0.94) 100%) !important;
+    border: 1px solid rgba(52, 211, 153, 0.45) !important;
+    box-shadow: 0 0 14px rgba(16, 185, 129, 0.18), inset 0 0 10px rgba(16, 185, 129, 0.10) !important;
+    border-radius: 12px !important;
+    padding: 8px 0 !important;
+    -webkit-mask-image: linear-gradient(to right, transparent 0%, #000 16px, #000 calc(100% - 16px), transparent 100%);
+    mask-image: linear-gradient(to right, transparent 0%, #000 16px, #000 calc(100% - 16px), transparent 100%);
+  }
+
+  .st-ticker-track {
+    display: inline-flex;
+    align-items: center;
+    white-space: nowrap;
+    width: max-content;
+    animation: stTickerRun var(--st-ticker-speed, 13s) linear infinite;
+    will-change: transform;
+  }
+
+  /* Tahan/jeda otomatis saat disentuh jari agar mudah dibaca */
+  .st-neon-ticker-box:hover .st-ticker-track,
+  .st-neon-ticker-box:active .st-ticker-track {
+    animation-play-state: paused;
+  }
+
+  @keyframes stTickerRun {
+    0%   { transform: translate3d(0, 0, 0); }
+    100% { transform: translate3d(-50%, 0, 0); }
+  }
+
+  .st-ticker-group {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding-right: 44px;
+  }
+
+  /* Titik indikator neon berkedip lembut */
+  .st-neon-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 9999px;
+    background: #34d399;
+    box-shadow: 0 0 8px #34d399, 0 0 14px #10b981;
+    flex-shrink: 0;
+  }
+
+  /* Jam mengajar: hijau-cyan neon terang */
+  .st-neon-time {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-weight: 800;
+    font-size: 0.85rem;
+    letter-spacing: 0.04em;
+    color: #5eead4 !important;
+    text-shadow: 0 0 8px rgba(94, 234, 212, 0.65);
+  }
+
+  /* Nama mata pelajaran / kitab: putih murni kontras tinggi dengan pendar zamrud */
+  .st-neon-subject {
+    font-weight: 800;
+    font-size: 0.85rem;
+    letter-spacing: 0.04em;
+    color: #ffffff !important;
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.35), 0 0 6px rgba(52, 211, 153, 0.55);
+  }
+
+  /* Lencana kelas (misal: ULA / IX-B): pil neon zamrud */
+  .st-neon-badge {
+    font-size: 0.70rem;
+    font-weight: 800;
+    letter-spacing: 0.05em;
+    padding: 2px 8px;
+    border-radius: 9999px;
+    color: #a7f3d0 !important;
+    background: rgba(16, 185, 129, 0.22) !important;
+    border: 1px solid rgba(52, 211, 153, 0.55) !important;
+    box-shadow: 0 0 8px rgba(16, 185, 129, 0.28);
+  }
+</style>
+
+<script>
+  (function () {
+    function highlightScheduleHtml(rawText) {
+      // Rapikan spasi berlebih & pisahkan bagian jam, mapel, serta kelas
+      const clean = rawText.replace(/[●•]/g, ' ').replace(/\s+/g, ' ').trim();
+      const match = clean.match(/^(\d{1,2}[:.]\d{2}\s*-\s*\d{1,2}[:.]\d{2})\s+(.+)$/);
+      if (match) {
+        const timePart = match[1];
+        const restParts = match[2].split(' ');
+        let badgePart = '';
+        let subjectPart = match[2];
+
+        // Jika kata terakhir adalah kode kelas pendek (misal: ULA, WUSTHA, IX-B, 8A)
+        if (restParts.length > 1 && restParts[restParts.length - 1].length <= 8) {
+          badgePart = restParts.pop();
+          subjectPart = restParts.join(' ');
+        }
+
+        return `
+          <span class="st-neon-dot"></span>
+          <span class="st-neon-time">${timePart}</span>
+          <span class="st-neon-subject">${subjectPart}</span>
+          ${badgePart ? `<span class="st-neon-badge">${badgePart}</span>` : ''}
+        `;
+      }
+
+      // Cadangan jika terdapat beberapa jadwal sekaligus dalam satu baris
+      const formatted = clean.replace(
+        /(\d{1,2}[:.]\d{2}\s*-\s*\d{1,2}[:.]\d{2})/g,
+        '<span class="st-neon-dot"></span><span class="st-neon-time">$1</span>'
+      );
+      return `<span class="st-neon-subject">${formatted}</span>`;
+    }
+
+    function applyJadwalNeonTicker() {
+      const allEls = document.querySelectorAll('h2, h3, h4, p, span, div');
+      let jadwalCard = null;
+
+      for (const el of allEls) {
+        if (el.children.length <= 2 && /JADWAL HARI INI/i.test(el.textContent || '')) {
+          jadwalCard = el.closest('.rounded-2xl, .rounded-3xl, [class*="card"]') || el.parentElement?.parentElement;
+          if (jadwalCard) break;
+        }
+      }
+      if (!jadwalCard) return;
+
+      // Cari kotak strip jadwal di dalam kartu JADWAL HARI INI
+      const strip = jadwalCard.querySelector('[class*="overflow-x"]')
+        || Array.from(jadwalCard.querySelectorAll('div')).find(d =>
+          !d.classList.contains('st-ticker-track') &&
+          !d.classList.contains('st-ticker-group') &&
+          /\d{1,2}[:.]\d{2}/.test(d.textContent || '') &&
+          d.querySelectorAll('button').length === 0
+        );
+
+      if (!strip) return;
+
+      const currentText = (strip.dataset.rawSchedule || strip.textContent || '').trim();
+      // Biarkan diam jika memang belum ada jadwal hari ini
+      if (!currentText || /belum ada jadwal/i.test(currentText)) return;
+
+      // Simpan teks asli sebelum diduplikasi agar tidak menumpuk saat update
+      if (!strip.dataset.rawSchedule) {
+        strip.dataset.rawSchedule = currentText;
+      } else if (strip.dataset.tickerReady === '1') {
+        return;
+      }
+
+      const speedSec = Math.max(10, Math.min(24, Math.round(strip.dataset.rawSchedule.length * 0.32)));
+      const itemHtml = highlightScheduleHtml(strip.dataset.rawSchedule);
+
+      strip.dataset.tickerReady = '1';
+      strip.classList.add('st-neon-ticker-box');
+      strip.style.setProperty('--st-ticker-speed', speedSec + 's');
+      strip.innerHTML = `
+        <div class="st-ticker-track">
+          <div class="st-ticker-group">${itemHtml}</div>
+          <div class="st-ticker-group" aria-hidden="true">${itemHtml}</div>
+        </div>
+      `;
+    }
+
+    document.addEventListener('DOMContentLoaded', applyJadwalNeonTicker);
+    window.addEventListener('load', applyJadwalNeonTicker);
+    setTimeout(applyJadwalNeonTicker, 600);
+    setTimeout(applyJadwalNeonTicker, 1600);
+
+    new MutationObserver(function () {
+      applyJadwalNeonTicker();
+    }).observe(document.body, { childList: true, subtree: true });
+  })();
+</script>
 </body>
 </html>
