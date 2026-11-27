@@ -2486,17 +2486,24 @@ html.dark #topbar-workspace-pill .ws-icon {
 })();
 </script>
     <style>
-  /* Wadah strip running text kontras tinggi (gelap-zamrud di kedua tema agar neon menyala jelas) */
+  /* === MODE TERANG (Default): Bersih, Cerah & Senada dengan Tema Mint-Emerald === */
   .st-neon-ticker-box {
     position: relative;
     overflow: hidden !important;
-    background: linear-gradient(90deg, rgba(4, 24, 20, 0.94) 0%, rgba(6, 42, 34, 0.94) 50%, rgba(4, 24, 20, 0.94) 100%) !important;
-    border: 1px solid rgba(52, 211, 153, 0.45) !important;
-    box-shadow: 0 0 14px rgba(16, 185, 129, 0.18), inset 0 0 10px rgba(16, 185, 129, 0.10) !important;
+    background: linear-gradient(90deg, #ecfdf5 0%, #d1fae5 50%, #ecfdf5 100%) !important;
+    border: 1px solid rgba(16, 185, 129, 0.45) !important;
+    box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.85), 0 2px 8px rgba(16, 185, 129, 0.12) !important;
     border-radius: 12px !important;
     padding: 8px 0 !important;
-    -webkit-mask-image: linear-gradient(to right, transparent 0%, #000 16px, #000 calc(100% - 16px), transparent 100%);
-    mask-image: linear-gradient(to right, transparent 0%, #000 16px, #000 calc(100% - 16px), transparent 100%);
+    -webkit-mask-image: linear-gradient(to right, transparent 0%, #000 14px, #000 calc(100% - 14px), transparent 100%);
+    mask-image: linear-gradient(to right, transparent 0%, #000 14px, #000 calc(100% - 14px), transparent 100%);
+  }
+
+  /* === MODE GELAP: Gelap-Zamrud Neon Kontras Tinggi === */
+  html.dark .st-neon-ticker-box {
+    background: linear-gradient(90deg, rgba(4, 24, 20, 0.96) 0%, rgba(6, 44, 35, 0.96) 50%, rgba(4, 24, 20, 0.96) 100%) !important;
+    border: 1px solid rgba(52, 211, 153, 0.50) !important;
+    box-shadow: 0 0 14px rgba(16, 185, 129, 0.20), inset 0 0 10px rgba(16, 185, 129, 0.12) !important;
   }
 
   .st-ticker-track {
@@ -2508,7 +2515,6 @@ html.dark #topbar-workspace-pill .ws-icon {
     will-change: transform;
   }
 
-  /* Tahan/jeda otomatis saat disentuh jari agar mudah dibaca */
   .st-neon-ticker-box:hover .st-ticker-track,
   .st-neon-ticker-box:active .st-ticker-track {
     animation-play-state: paused;
@@ -2523,142 +2529,223 @@ html.dark #topbar-workspace-pill .ws-icon {
     display: inline-flex;
     align-items: center;
     gap: 10px;
-    padding-right: 44px;
+    padding-right: 40px;
   }
 
-  /* Titik indikator neon berkedip lembut */
+  /* Titik Indikator */
   .st-neon-dot {
     width: 8px;
     height: 8px;
     border-radius: 9999px;
-    background: #34d399;
-    box-shadow: 0 0 8px #34d399, 0 0 14px #10b981;
+    background: #10b981;
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.20);
     flex-shrink: 0;
   }
+  html.dark .st-neon-dot {
+    background: #34d399;
+    box-shadow: 0 0 8px #34d399, 0 0 14px #10b981;
+  }
 
-  /* Jam mengajar: hijau-cyan neon terang */
+  /* Sekat Vertikal Pemisah Jam | Mapel | Kelas */
+  .st-neon-sep {
+    display: inline-block;
+    width: 1.5px;
+    height: 15px;
+    background: rgba(16, 185, 129, 0.45);
+    flex-shrink: 0;
+  }
+  html.dark .st-neon-sep {
+    background: linear-gradient(180deg, rgba(52, 211, 153, 0.15), rgba(52, 211, 153, 0.85), rgba(52, 211, 153, 0.15));
+    box-shadow: 0 0 6px rgba(52, 211, 153, 0.45);
+  }
+
+  /* Pemisah antar-jadwal jika lebih dari 1 mapel */
+  .st-neon-item-divider {
+    display: inline-flex;
+    align-items: center;
+    margin: 0 8px;
+    color: #059669;
+    font-size: 0.70rem;
+  }
+  html.dark .st-neon-item-divider {
+    color: #34d399;
+    text-shadow: 0 0 8px rgba(52, 211, 153, 0.8);
+  }
+
+  /* 1. JAM MENGAJAR */
   .st-neon-time {
     font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
     font-weight: 800;
-    font-size: 0.85rem;
-    letter-spacing: 0.04em;
+    font-size: 0.84rem;
+    letter-spacing: 0.03em;
+    color: #047857 !important;
+  }
+  html.dark .st-neon-time {
     color: #5eead4 !important;
-    text-shadow: 0 0 8px rgba(94, 234, 212, 0.65);
+    text-shadow: 0 0 8px rgba(94, 234, 212, 0.70);
   }
 
-  /* Nama mata pelajaran / kitab: putih murni kontras tinggi dengan pendar zamrud */
+  /* 2. NAMA MAPEL / KITAB */
   .st-neon-subject {
     font-weight: 800;
-    font-size: 0.85rem;
-    letter-spacing: 0.04em;
+    font-size: 0.84rem;
+    letter-spacing: 0.03em;
+    color: #064e3b !important;
+  }
+  html.dark .st-neon-subject {
     color: #ffffff !important;
     text-shadow: 0 0 10px rgba(255, 255, 255, 0.35), 0 0 6px rgba(52, 211, 153, 0.55);
   }
 
-  /* Lencana kelas (misal: ULA / IX-B): pil neon zamrud */
+  /* 3. LENCANA KELAS */
   .st-neon-badge {
     font-size: 0.70rem;
     font-weight: 800;
     letter-spacing: 0.05em;
-    padding: 2px 8px;
+    padding: 2px 9px;
     border-radius: 9999px;
-    color: #a7f3d0 !important;
-    background: rgba(16, 185, 129, 0.22) !important;
-    border: 1px solid rgba(52, 211, 153, 0.55) !important;
-    box-shadow: 0 0 8px rgba(16, 185, 129, 0.28);
+    color: #ffffff !important;
+    background: #10b981 !important;
+    box-shadow: 0 1px 4px rgba(16, 185, 129, 0.35);
+  }
+  html.dark .st-neon-badge {
+    color: #ecfdf5 !important;
+    background: rgba(16, 185, 129, 0.28) !important;
+    border: 1px solid rgba(52, 211, 153, 0.70) !important;
+    box-shadow: 0 0 10px rgba(16, 185, 129, 0.35);
   }
 </style>
 
 <script>
   (function () {
-    function highlightScheduleHtml(rawText) {
-      // Rapikan spasi berlebih & pisahkan bagian jam, mapel, serta kelas
-      const clean = rawText.replace(/[●•]/g, ' ').replace(/\s+/g, ' ').trim();
-      const match = clean.match(/^(\d{1,2}[:.]\d{2}\s*-\s*\d{1,2}[:.]\d{2})\s+(.+)$/);
-      if (match) {
-        const timePart = match[1];
-        const restParts = match[2].split(' ');
-        let badgePart = '';
-        let subjectPart = match[2];
+    function getSpacedText(el) {
+      const clone = el.cloneNode(true);
+      clone.innerHTML = clone.innerHTML.replace(/>\s*</g, '> <');
+      return (clone.textContent || '').replace(/[●•]/g, ' ').replace(/\s+/g, ' ').trim();
+    }
 
-        // Jika kata terakhir adalah kode kelas pendek (misal: ULA, WUSTHA, IX-B, 8A)
-        if (restParts.length > 1 && restParts[restParts.length - 1].length <= 8) {
-          badgePart = restParts.pop();
-          subjectPart = restParts.join(' ');
+    function parseScheduleItems(strip) {
+      const items = [];
+      const childBlocks = Array.from(strip.children).filter(el =>
+        /\d{1,2}[:.]\d{2}\s*-\s*\d{1,2}[:.]\d{2}/.test(el.textContent || '')
+      );
+
+      const rawList = childBlocks.length > 0
+        ? childBlocks.map(el => {
+            const spans = Array.from(el.querySelectorAll('span')).filter(s => s.textContent.trim().length > 0);
+            const lastSpan = spans[spans.length - 1];
+            const lastText = lastSpan ? lastSpan.textContent.trim() : '';
+            const fullText = getSpacedText(el);
+            return {
+              fullText,
+              hintBadge: (!/\d{1,2}[:.]\d{2}/.test(lastText) && lastText.length <= 12) ? lastText : ''
+            };
+          })
+        : getSpacedText(strip)
+            .split(/(?=\d{1,2}[:.]\d{2}\s*-\s*\d{1,2}[:.]\d{2})/)
+            .map(s => ({ fullText: s.trim(), hintBadge: '' }))
+            .filter(o => o.fullText.length > 0);
+
+      for (const entry of rawList) {
+        // \s* memastikan jam & mapel tetap terpisah meski aslinya menempel tanpa spasi
+        const m = entry.fullText.match(/^(\d{1,2}[:.]\d{2})\s*-\s*(\d{1,2}[:.]\d{2})\s*(.+)$/);
+        if (!m) continue;
+
+        const timeStr = `${m[1]} - ${m[2]}`;
+        let rest = m[3].trim();
+        let kelasStr = '';
+        let mapelStr = rest;
+
+        if (entry.hintBadge && rest.endsWith(entry.hintBadge) && rest.length > entry.hintBadge.length) {
+          kelasStr = entry.hintBadge;
+          mapelStr = rest.slice(0, -entry.hintBadge.length).trim();
+        } else {
+          const parenMatch = rest.match(/^(.+?)\s*\(([^()]{1,12})\)$/);
+          if (parenMatch) {
+            mapelStr = parenMatch[1].trim();
+            kelasStr = parenMatch[2].trim();
+          } else {
+            const parts = rest.split(' ');
+            if (parts.length > 1 && parts[parts.length - 1].length <= 10) {
+              kelasStr = parts.pop();
+              mapelStr = parts.join(' ');
+            }
+          }
         }
 
-        return `
-          <span class="st-neon-dot"></span>
-          <span class="st-neon-time">${timePart}</span>
-          <span class="st-neon-subject">${subjectPart}</span>
-          ${badgePart ? `<span class="st-neon-badge">${badgePart}</span>` : ''}
-        `;
+        items.push({ time: timeStr, mapel: mapelStr, kelas: kelasStr });
       }
+      return items;
+    }
 
-      // Cadangan jika terdapat beberapa jadwal sekaligus dalam satu baris
-      const formatted = clean.replace(
-        /(\d{1,2}[:.]\d{2}\s*-\s*\d{1,2}[:.]\d{2})/g,
-        '<span class="st-neon-dot"></span><span class="st-neon-time">$1</span>'
-      );
-      return `<span class="st-neon-subject">${formatted}</span>`;
+    function buildTickerHtml(items) {
+      return items.map((it, idx) => {
+        const itemDivider = idx > 0 ? `<span class="st-neon-item-divider">◆</span>` : '';
+        return `
+          ${itemDivider}
+          <span class="st-neon-dot"></span>
+          <span class="st-neon-time">${it.time}</span>
+          <span class="st-neon-sep"></span>
+          <span class="st-neon-subject">${it.mapel}</span>
+          ${it.kelas ? `<span class="st-neon-sep"></span><span class="st-neon-badge">${it.kelas}</span>` : ''}
+        `;
+      }).join('');
+    }
+
+    function findJadwalStrip() {
+      const scrollBoxes = document.querySelectorAll('[class*="overflow-x"], [class*="overflow-auto"]');
+      for (const el of scrollBoxes) {
+        const txt = (el.textContent || '').trim();
+        if (/\d{1,2}[:.]\d{2}\s*-\s*\d{1,2}[:.]\d{2}/.test(txt) && !/belum ada jadwal/i.test(txt)) {
+          return el;
+        }
+      }
+      const all = document.querySelectorAll('h1, h2, h3, h4, p, span, div');
+      for (const h of all) {
+        if (h.children.length <= 2 && /JADWAL HARI INI/i.test(h.textContent || '')) {
+          let box = h.parentElement;
+          for (let i = 0; i < 6 && box; i++) {
+            const found = Array.from(box.querySelectorAll('div')).find(d =>
+              !d.classList.contains('st-ticker-track') &&
+              !d.classList.contains('st-ticker-group') &&
+              /\d{1,2}[:.]\d{2}\s*-\s*\d{1,2}[:.]\d{2}/.test(d.textContent || '') &&
+              d.querySelectorAll('button').length === 0 &&
+              d.offsetHeight > 0 && d.offsetHeight < 95
+            );
+            if (found) return found;
+            box = box.parentElement;
+          }
+        }
+      }
+      return null;
     }
 
     function applyJadwalNeonTicker() {
-      const allEls = document.querySelectorAll('h2, h3, h4, p, span, div');
-      let jadwalCard = null;
+      const strip = findJadwalStrip();
+      if (!strip || strip.querySelector('.st-ticker-track')) return;
 
-      for (const el of allEls) {
-        if (el.children.length <= 2 && /JADWAL HARI INI/i.test(el.textContent || '')) {
-          jadwalCard = el.closest('.rounded-2xl, .rounded-3xl, [class*="card"]') || el.parentElement?.parentElement;
-          if (jadwalCard) break;
-        }
-      }
-      if (!jadwalCard) return;
+      const items = parseScheduleItems(strip);
+      if (items.length === 0) return;
 
-      // Cari kotak strip jadwal di dalam kartu JADWAL HARI INI
-      const strip = jadwalCard.querySelector('[class*="overflow-x"]')
-        || Array.from(jadwalCard.querySelectorAll('div')).find(d =>
-          !d.classList.contains('st-ticker-track') &&
-          !d.classList.contains('st-ticker-group') &&
-          /\d{1,2}[:.]\d{2}/.test(d.textContent || '') &&
-          d.querySelectorAll('button').length === 0
-        );
+      const innerHtml = buildTickerHtml(items);
+      const totalChars = items.reduce((acc, it) => acc + it.time.length + it.mapel.length + it.kelas.length, 0);
+      const speedSec = Math.max(10, Math.min(26, Math.round(totalChars * 0.34)));
 
-      if (!strip) return;
-
-      const currentText = (strip.dataset.rawSchedule || strip.textContent || '').trim();
-      // Biarkan diam jika memang belum ada jadwal hari ini
-      if (!currentText || /belum ada jadwal/i.test(currentText)) return;
-
-      // Simpan teks asli sebelum diduplikasi agar tidak menumpuk saat update
-      if (!strip.dataset.rawSchedule) {
-        strip.dataset.rawSchedule = currentText;
-      } else if (strip.dataset.tickerReady === '1') {
-        return;
-      }
-
-      const speedSec = Math.max(10, Math.min(24, Math.round(strip.dataset.rawSchedule.length * 0.32)));
-      const itemHtml = highlightScheduleHtml(strip.dataset.rawSchedule);
-
-      strip.dataset.tickerReady = '1';
       strip.classList.add('st-neon-ticker-box');
       strip.style.setProperty('--st-ticker-speed', speedSec + 's');
       strip.innerHTML = `
         <div class="st-ticker-track">
-          <div class="st-ticker-group">${itemHtml}</div>
-          <div class="st-ticker-group" aria-hidden="true">${itemHtml}</div>
+          <div class="st-ticker-group">${innerHtml}</div>
+          <div class="st-ticker-group" aria-hidden="true">${innerHtml}</div>
         </div>
       `;
     }
 
     document.addEventListener('DOMContentLoaded', applyJadwalNeonTicker);
     window.addEventListener('load', applyJadwalNeonTicker);
-    setTimeout(applyJadwalNeonTicker, 600);
-    setTimeout(applyJadwalNeonTicker, 1600);
+    setInterval(applyJadwalNeonTicker, 1200);
 
-    new MutationObserver(function () {
-      applyJadwalNeonTicker();
-    }).observe(document.body, { childList: true, subtree: true });
+    new MutationObserver(applyJadwalNeonTicker).observe(document.body, { childList: true, subtree: true });
   })();
 </script>
 </body>
