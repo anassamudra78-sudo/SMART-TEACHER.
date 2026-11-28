@@ -1408,7 +1408,9 @@ function lihatQRSiswa(id) {
 async function tarikDataGateway(kelasId) {
     const activeWs = getActiveWorkspace();
     const npsn = String(activeWs.npsn || '').trim();
-    const namaWs = String(activeWs.nama || '').trim().toLowerCase();
+    const rapikanTeks = (teks) => String(teks || '').trim().toLowerCase().replace(/[-_]+/g, ' ').replace(/\s+/g, ' ');
+    const namaWs = rapikanTeks(activeWs.nama);
+
     if (!npsn) {
         return showAlert("NPSN Kosong", "Kode Sekolah / NPSN untuk ruang kerja '" + activeWs.nama + "' belum diatur. Silakan buat/edit ruang kerjanya.", "error");
     }
@@ -1420,7 +1422,11 @@ async function tarikDataGateway(kelasId) {
     const kelasTerpilih = kelasId || (document.getElementById('abs-kelas')?.value || '');
 
     const kelasObj = (AppState.db.kelas || []).find(k => String(k.id) === String(kelasTerpilih));
-    const targetKodeKelas = String(kelasObj ? kelasObj.kode : '').trim().toLowerCase();
+    const targetKodeKelas = rapikanTeks(kelasObj ? kelasObj.kode : '');
+
+    if (!targetKodeKelas) {
+        return showAlert("Pilih Kelas", "Silakan pilih kelas terlebih dahulu sebelum menarik data.", "warning");
+    }
 
     const btn = document.getElementById('btn-tarik-gateway');
     const originalText = btn ? btn.innerHTML : '';
@@ -1461,53 +1467,41 @@ async function tarikDataGateway(kelasId) {
         const dataGateway = hasilFetch.flat();
         let hitungBerhasil = 0;
         let hitungDitolak = 0;
-        const siswaKelas = AppState.db.siswa.filter(s => String(s.kelasId) === String(kelasTerpilih));
-
-        const rapikanTeks = (teks) => String(teks || '').trim().toLowerCase().replace(/\s+/g, ' ');
+        const contohDitolak = [];
+        const siswaKelas = (AppState.db.siswa || []).filter(s => String(s.kelasId) === String(kelasTerpilih));
 
         dataGateway.forEach(absenGerbang => {
             if (!absenGerbang || !absenGerbang.tanggal) return;
+            const tglLog = String(absenGerbang.tanggal).trim().slice(0, 10);
 
             const rawQr = String(absenGerbang.qr || absenGerbang.nis || '').trim();
             const parts = rawQr.split('|');
             const idAtauNis = (parts[0] || '').trim();
             const namaDariLog = rapikanTeks(absenGerbang.nama || parts[1] || '');
 
-            // Ambil identitas Ruang Kerja/NPSN & Kelas dari log jika tersedia
             const logNpsn = String(
                 absenGerbang.npsn || absenGerbang.kodeSekolah || absenGerbang.kode_sekolah || parts[3] || ''
             ).trim().toUpperCase();
             const logSekolah = rapikanTeks(absenGerbang.sekolah || absenGerbang.instansi || absenGerbang.workspace || '');
             const logKelas = rapikanTeks(
-                absenGerbang.kelas || absenGerbang.rombel || absenGerbang.kelasNama || parts[2] || ''
+                absenGerbang.kelas || absenGerbang.rombel || absenGerbang.kelasNama || absenGerbang.namaKelas || absenGerbang.nama_kelas || absenGerbang.subKelas || parts[2] || ''
             );
 
-            // 1. Jika log membawa NPSN/Nama Sekolah dan BEDA dengan ruang kerja aktif -> TOLAK
-            if (logNpsn && logNpsn !== npsn.toUpperCase()) {
+            // 1. Kunci Ruang Kerja (NPSN & Nama Instansi)
+            if ((logNpsn && logNpsn !== npsn.toUpperCase()) || (logSekolah && namaWs && logSekolah !== namaWs)) {
                 hitungDitolak++;
-                return;
-            }
-            if (logSekolah && namaWs && logSekolah !== namaWs) {
-                hitungDitolak++;
+                if (contohDitolak.length < 2) contohDitolak.push(`Instansi: ${logSekolah || logNpsn}`);
                 return;
             }
 
-            // 2. Jika log membawa Nama Kelas dan BEDA dengan kelas yang dibuka -> TOLAK
-            if (logKelas && targetKodeKelas && logKelas !== targetKodeKelas) {
+            // 2. Kunci Kelas (WAJIB ada dan cocok dengan kelas yang sedang dibuka)
+            if (!logKelas || logKelas !== targetKodeKelas) {
                 hitungDitolak++;
+                if (contohDitolak.length < 2) contohDitolak.push(`Kelas log: "${logKelas || 'kosong'}"`);
                 return;
             }
 
-            // 3. WAJIB ADA bukti kecocokan Ruang Kerja (NPSN/Sekolah) ATAU Kelas
-            // Mencegah log tanpa keterangan lembaga/kelas (misal dari SMP Al Hikam) bocor ke AMSAC
-            const terverifikasiRuang = (logNpsn !== '' && logNpsn === npsn.toUpperCase()) || (logSekolah !== '' && logSekolah === namaWs);
-            const terverifikasiKelas = (logKelas !== '' && targetKodeKelas !== '' && logKelas === targetKodeKelas);
-            if (!terverifikasiRuang && !terverifikasiKelas) {
-                hitungDitolak++;
-                return;
-            }
-
-            // 4. Wajib cocok NIS / ID Siswa DAN Nama Siswa
+            // 3. Kunci NIS / ID, No. Absen & Nama Siswa
             const logNoAbsen = String(absenGerbang.noAbsen || absenGerbang.no_absen || absenGerbang.urut || '').trim();
 
             const siswaMatch = siswaKelas.find((s, idx) => {
@@ -1531,7 +1525,7 @@ async function tarikDataGateway(kelasId) {
             });
 
             if (siswaMatch) {
-                const idx = AppState.db.absensi.findIndex(a => a.siswaId === siswaMatch.id && a.tanggal === absenGerbang.tanggal && String(a.kelasId) === String(kelasTerpilih));
+                const idx = AppState.db.absensi.findIndex(a => a.siswaId === siswaMatch.id && a.tanggal === tglLog && String(a.kelasId) === String(kelasTerpilih));
                 if (idx >= 0) {
                     if (AppState.db.absensi[idx].status !== 'H') {
                         AppState.db.absensi[idx].status = 'H';
@@ -1542,7 +1536,7 @@ async function tarikDataGateway(kelasId) {
                         id: generateId(),
                         siswaId: siswaMatch.id,
                         kelasId: kelasTerpilih,
-                        tanggal: absenGerbang.tanggal,
+                        tanggal: tglLog,
                         status: 'H'
                     });
                     hitungBerhasil++;
@@ -1559,18 +1553,19 @@ async function tarikDataGateway(kelasId) {
         const elKelas = document.getElementById('abs-kelas');
         if (elKelas) elKelas.value = kelasTerpilih;
 
-        loadAbsensi();
-
         if (hitungBerhasil > 0) {
             localStorage.setItem(AppState.config.storageKey, JSON.stringify(AppState.db));
             if (AppState.config.gasUrl && AppState.config.gasUrl.startsWith("http")) {
                 fetch(AppState.config.gasUrl, { method: "POST", mode: "no-cors", body: JSON.stringify(AppState.db) }).catch(() => {});
             }
             loadAbsensi();
-            showAlert("Sinkronisasi Sukses!", `Berhasil menarik Hadir (H) sebanyak ${hitungBerhasil} catatan sah untuk ${activeWs.nama} (${kelasObj ? kelasObj.kode : ''}).`, "success");
+            showAlert("Sinkronisasi Sukses!", `Berhasil menarik Hadir (H) sebanyak ${hitungBerhasil} catatan sah khusus kelas ${kelasObj.kode} (${activeWs.nama}).`, "success");
         } else {
-            const infoTolak = hitungDitolak > 0 ? ` (${hitungDitolak} catatan dari lembaga/kelas lain otomatis ditolak).` : '.';
-            showAlert("Data Terkunci & Bersih", `Tidak ada catatan kehadiran Smart Gateway yang cocok untuk ${activeWs.nama} kelas ${kelasObj ? kelasObj.kode : ''}${infoTolak}`, "info");
+            loadAbsensi();
+            const detailTolak = hitungDitolak > 0
+                ? ` (${hitungDitolak} log ditolak karena bukan kelas ${kelasObj.kode}${contohDitolak.length ? ' — ' + contohDitolak.join(', ') : ''}).`
+                : '.';
+            showAlert("Data Terkunci & Bersih", `Tidak ada catatan kehadiran Smart Gateway untuk kelas ${kelasObj.kode} di ${activeWs.nama}${detailTolak}`, "info");
         }
     } catch (err) {
         showAlert("Koneksi Gagal", err.message, "error");
