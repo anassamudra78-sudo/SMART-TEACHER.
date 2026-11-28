@@ -1408,6 +1408,7 @@ function lihatQRSiswa(id) {
 async function tarikDataGateway(kelasId) {
     const activeWs = getActiveWorkspace();
     const npsn = String(activeWs.npsn || '').trim();
+    const namaWs = String(activeWs.nama || '').trim().toLowerCase();
     if (!npsn) {
         return showAlert("NPSN Kosong", "Kode Sekolah / NPSN untuk ruang kerja '" + activeWs.nama + "' belum diatur. Silakan buat/edit ruang kerjanya.", "error");
     }
@@ -1424,7 +1425,7 @@ async function tarikDataGateway(kelasId) {
     const btn = document.getElementById('btn-tarik-gateway');
     const originalText = btn ? btn.innerHTML : '';
     if (btn) {
-        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Menarik Data Valid...';
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Memverifikasi Data...';
         btn.disabled = true;
     }
 
@@ -1459,52 +1460,74 @@ async function tarikDataGateway(kelasId) {
 
         const dataGateway = hasilFetch.flat();
         let hitungBerhasil = 0;
+        let hitungDitolak = 0;
         const siswaKelas = AppState.db.siswa.filter(s => String(s.kelasId) === String(kelasTerpilih));
+
+        const rapikanTeks = (teks) => String(teks || '').trim().toLowerCase().replace(/\s+/g, ' ');
 
         dataGateway.forEach(absenGerbang => {
             if (!absenGerbang || !absenGerbang.tanggal) return;
 
-            // LAPIS 1: Kunci Ruang Kerja / NPSN (tolak jika log berasal dari sekolah/lembaga lain)
-            const logNpsn = String(absenGerbang.npsn || absenGerbang.kodeSekolah || absenGerbang.kode_sekolah || '').trim().toUpperCase();
-            if (logNpsn && logNpsn !== npsn.toUpperCase()) return;
-
             const rawQr = String(absenGerbang.qr || absenGerbang.nis || '').trim();
             const parts = rawQr.split('|');
             const idAtauNis = (parts[0] || '').trim();
-            const namaDariLog = String(absenGerbang.nama || parts[1] || '').trim().toLowerCase();
+            const namaDariLog = rapikanTeks(absenGerbang.nama || parts[1] || '');
 
-            // LAPIS 2: Kunci Kelas / Rombel (tolak jika kelas di log berbeda dengan kelas yang dibuka)
-            const logKelas = String(absenGerbang.kelas || absenGerbang.rombel || parts[2] || '').trim().toLowerCase();
-            if (logKelas && targetKodeKelas && logKelas !== targetKodeKelas) return;
+            // Ambil identitas Ruang Kerja/NPSN & Kelas dari log jika tersedia
+            const logNpsn = String(
+                absenGerbang.npsn || absenGerbang.kodeSekolah || absenGerbang.kode_sekolah || parts[3] || ''
+            ).trim().toUpperCase();
+            const logSekolah = rapikanTeks(absenGerbang.sekolah || absenGerbang.instansi || absenGerbang.workspace || '');
+            const logKelas = rapikanTeks(
+                absenGerbang.kelas || absenGerbang.rombel || absenGerbang.kelasNama || parts[2] || ''
+            );
 
-            // LAPIS 3 & 4: Kunci NIS / ID & Nomor Absen (jangan lolos hanya karena nama sama di lembaga lain)
+            // 1. Jika log membawa NPSN/Nama Sekolah dan BEDA dengan ruang kerja aktif -> TOLAK
+            if (logNpsn && logNpsn !== npsn.toUpperCase()) {
+                hitungDitolak++;
+                return;
+            }
+            if (logSekolah && namaWs && logSekolah !== namaWs) {
+                hitungDitolak++;
+                return;
+            }
+
+            // 2. Jika log membawa Nama Kelas dan BEDA dengan kelas yang dibuka -> TOLAK
+            if (logKelas && targetKodeKelas && logKelas !== targetKodeKelas) {
+                hitungDitolak++;
+                return;
+            }
+
+            // 3. WAJIB ADA bukti kecocokan Ruang Kerja (NPSN/Sekolah) ATAU Kelas
+            // Mencegah log tanpa keterangan lembaga/kelas (misal dari SMP Al Hikam) bocor ke AMSAC
+            const terverifikasiRuang = (logNpsn !== '' && logNpsn === npsn.toUpperCase()) || (logSekolah !== '' && logSekolah === namaWs);
+            const terverifikasiKelas = (logKelas !== '' && targetKodeKelas !== '' && logKelas === targetKodeKelas);
+            if (!terverifikasiRuang && !terverifikasiKelas) {
+                hitungDitolak++;
+                return;
+            }
+
+            // 4. Wajib cocok NIS / ID Siswa DAN Nama Siswa
             const logNoAbsen = String(absenGerbang.noAbsen || absenGerbang.no_absen || absenGerbang.urut || '').trim();
 
             const siswaMatch = siswaKelas.find((s, idx) => {
                 const dbNis = String(s.nis || '').trim();
                 const dbId = String(s.id || '').trim();
-                const dbNama = String(s.nama || '').trim().toLowerCase();
+                const dbNama = rapikanTeks(s.nama);
                 const noAbsenSiswa = String(s.noAbsen || s.urut || (idx + 1)).trim();
 
-                // Jika log menyertakan nomor absen, wajib cocok
                 if (logNoAbsen && logNoAbsen !== noAbsenSiswa) return false;
+                if (namaDariLog && dbNama && namaDariLog !== dbNama) return false;
 
-                // Prioritas 1: Cocokkan ID unik siswa di ruang kerja ini
                 if (dbId !== '' && idAtauNis !== '' && dbId === idAtauNis) return true;
 
-                // Prioritas 2: Jika siswa punya NIS, NIS wajib sama persis (nama sama dengan NIS beda akan ditolak)
                 if (dbNis !== '') {
                     const cocokNisTeks = dbNis === idAtauNis;
                     const cocokNisAngka = idAtauNis !== '' && !isNaN(dbNis) && !isNaN(idAtauNis) && Number(dbNis) === Number(idAtauNis);
-                    if (!cocokNisTeks && !cocokNisAngka) return false;
-                    // Jika log juga membawa nama, pastikan nama tidak bertabrakan
-                    if (namaDariLog && dbNama && namaDariLog !== dbNama) return false;
-                    return true;
+                    return cocokNisTeks || cocokNisAngka;
                 }
 
-                // Prioritas 3 (Cadangan jika siswa belum diisi NIS): hanya boleh cocok nama jika NPSN atau Kelas sudah terverifikasi
-                const terverifikasiRuangAtauKelas = (logNpsn === npsn.toUpperCase()) || (logKelas !== '' && logKelas === targetKodeKelas);
-                return terverifikasiRuangAtauKelas && namaDariLog !== '' && dbNama === namaDariLog;
+                return namaDariLog !== '' && dbNama === namaDariLog;
             });
 
             if (siswaMatch) {
@@ -1524,6 +1547,8 @@ async function tarikDataGateway(kelasId) {
                     });
                     hitungBerhasil++;
                 }
+            } else {
+                hitungDitolak++;
             }
         });
 
@@ -1542,9 +1567,10 @@ async function tarikDataGateway(kelasId) {
                 fetch(AppState.config.gasUrl, { method: "POST", mode: "no-cors", body: JSON.stringify(AppState.db) }).catch(() => {});
             }
             loadAbsensi();
-            showAlert("Sinkronisasi Sukses!", `Berhasil menarik Hadir (H) sebanyak ${hitungBerhasil} catatan sah untuk ${activeWs.nama} (${kelasObj ? kelasObj.kode : ''}) bulan ${bulanTerpilih}.`, "success");
+            showAlert("Sinkronisasi Sukses!", `Berhasil menarik Hadir (H) sebanyak ${hitungBerhasil} catatan sah untuk ${activeWs.nama} (${kelasObj ? kelasObj.kode : ''}).`, "success");
         } else {
-            showAlert("Data Terkunci & Bersih", `Tidak ada catatan kehadiran Smart Gateway yang cocok untuk ruang kerja ${activeWs.nama} kelas ${kelasObj ? kelasObj.kode : ''} pada bulan ${bulanTerpilih}.`, "info");
+            const infoTolak = hitungDitolak > 0 ? ` (${hitungDitolak} catatan dari lembaga/kelas lain otomatis ditolak).` : '.';
+            showAlert("Data Terkunci & Bersih", `Tidak ada catatan kehadiran Smart Gateway yang cocok untuk ${activeWs.nama} kelas ${kelasObj ? kelasObj.kode : ''}${infoTolak}`, "info");
         }
     } catch (err) {
         showAlert("Koneksi Gagal", err.message, "error");
