@@ -1489,7 +1489,7 @@ async function tarikDataGateway(kelasId) {
                 absenGerbang.kelas || absenGerbang.rombel || absenGerbang.kelasNama || absenGerbang.namaKelas || absenGerbang.nama_kelas || absenGerbang.subKelas || parts[2] || ''
             );
 
-            // 1. Wajib ada NPSN yang cocok persis dengan ruang kerja aktif
+            // 1. Wajib ada NPSN yang cocok dengan ruang kerja aktif
             if (!logNpsn || logNpsn !== npsn) {
                 hitungDitolak++;
                 return;
@@ -1505,7 +1505,7 @@ async function tarikDataGateway(kelasId) {
                 return;
             }
 
-            // 3. Wajib cocok NIS / ID Siswa dan Nama Siswa
+            // 3. Wajib ada NIS / ID Siswa dan Nama Siswa yang cocok
             if (!idAtauNis || !namaDariLog) {
                 hitungDitolak++;
                 return;
@@ -1572,7 +1572,7 @@ async function tarikDataGateway(kelasId) {
             );
         } else {
             loadAbsensi();
-            const infoTolak = hitungDitolak > 0 ? ` (${hitungDitolak} baris di luar kelas ${kelasObj.kode} atau log lama tanpa identitas ditolak).` : '.';
+            const infoTolak = hitungDitolak > 0 ? ` (${hitungDitolak} baris di luar kelas ${kelasObj.kode} atau log lama tanpa label kelas dilewati).` : '.';
             showAlert("Data Terkunci & Bersih", `Tidak ada catatan kehadiran baru untuk ${activeWs.nama} kelas ${kelasObj.kode}${infoTolak}`, "info");
         }
     } catch (err) {
