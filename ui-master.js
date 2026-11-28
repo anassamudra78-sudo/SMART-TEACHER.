@@ -1407,7 +1407,7 @@ function lihatQRSiswa(id) {
 
 async function tarikDataGateway(kelasId) {
     const activeWs = getActiveWorkspace();
-    const npsn = String(activeWs.npsn || '').trim();
+    const npsn = String(activeWs.npsn || '').trim().toUpperCase();
     const rapikanTeks = (teks) => String(teks || '').trim().toLowerCase().replace(/[-_]+/g, ' ').replace(/\s+/g, ' ');
     const namaWs = rapikanTeks(activeWs.nama);
 
@@ -1467,7 +1467,6 @@ async function tarikDataGateway(kelasId) {
         const dataGateway = hasilFetch.flat();
         let hitungBerhasil = 0;
         let hitungDitolak = 0;
-        const contohDitolak = [];
         const siswaKelas = (AppState.db.siswa || []).filter(s => String(s.kelasId) === String(kelasTerpilih));
 
         dataGateway.forEach(absenGerbang => {
@@ -1475,6 +1474,8 @@ async function tarikDataGateway(kelasId) {
             const tglLog = String(absenGerbang.tanggal).trim().slice(0, 10);
 
             const rawQr = String(absenGerbang.qr || absenGerbang.nis || '').trim();
+            if (!rawQr) return;
+
             const parts = rawQr.split('|');
             const idAtauNis = (parts[0] || '').trim();
             const namaDariLog = rapikanTeks(absenGerbang.nama || parts[1] || '');
@@ -1487,21 +1488,28 @@ async function tarikDataGateway(kelasId) {
                 absenGerbang.kelas || absenGerbang.rombel || absenGerbang.kelasNama || absenGerbang.namaKelas || absenGerbang.nama_kelas || absenGerbang.subKelas || parts[2] || ''
             );
 
-            // 1. Kunci Ruang Kerja (NPSN & Nama Instansi)
-            if ((logNpsn && logNpsn !== npsn.toUpperCase()) || (logSekolah && namaWs && logSekolah !== namaWs)) {
+            // 1. Jika log membawa NPSN / Nama Sekolah, WAJIB sama dengan ruang kerja aktif
+            if ((logNpsn && logNpsn !== npsn) || (logSekolah && namaWs && logSekolah !== namaWs)) {
                 hitungDitolak++;
-                if (contohDitolak.length < 2) contohDitolak.push(`Instansi: ${logSekolah || logNpsn}`);
                 return;
             }
 
-            // 2. Kunci Kelas (WAJIB ada dan cocok dengan kelas yang sedang dibuka)
-            if (!logKelas || logKelas !== targetKodeKelas) {
+            // 2. Jika log membawa Nama Kelas, WAJIB sama dengan kelas yang dibuka
+            if (logKelas && logKelas !== targetKodeKelas) {
                 hitungDitolak++;
-                if (contohDitolak.length < 2) contohDitolak.push(`Kelas log: "${logKelas || 'kosong'}"`);
                 return;
             }
 
-            // 3. Kunci NIS / ID, No. Absen & Nama Siswa
+            // Cek apakah ini log format lama (sebelum 24/11: tidak punya NPSN, Kelas, maupun Nama)
+            const isFormatLamaPolos = !logNpsn && !logSekolah && !logKelas && !namaDariLog;
+
+            // 3. Pengaman log lama: nomor induk pendek (1-99 / 001-099) hanya milik PP. Al Hikam (P0NPESAK01)
+            if (isFormatLamaPolos && !isNaN(idAtauNis) && Number(idAtauNis) < 100 && npsn !== 'P0NPESAK01') {
+                hitungDitolak++;
+                return;
+            }
+
+            // 4. Cocokkan NIS / ID Siswa (dan Nama / No. Absen jika tersedia di log)
             const logNoAbsen = String(absenGerbang.noAbsen || absenGerbang.no_absen || absenGerbang.urut || '').trim();
 
             const siswaMatch = siswaKelas.find((s, idx) => {
@@ -1511,17 +1519,17 @@ async function tarikDataGateway(kelasId) {
                 const noAbsenSiswa = String(s.noAbsen || s.urut || (idx + 1)).trim();
 
                 if (logNoAbsen && logNoAbsen !== noAbsenSiswa) return false;
-                if (namaDariLog && dbNama && namaDariLog !== dbNama) return false;
+                if (namaDariLog && (!dbNama || dbNama !== namaDariLog)) return false;
 
                 if (dbId !== '' && idAtauNis !== '' && dbId === idAtauNis) return true;
 
                 if (dbNis !== '') {
                     const cocokNisTeks = dbNis === idAtauNis;
-                    const cocokNisAngka = idAtauNis !== '' && !isNaN(dbNis) && !isNaN(idAtauNis) && Number(dbNis) === Number(idAtauNis);
+                    const cocokNisAngka = !isNaN(dbNis) && !isNaN(idAtauNis) && Number(dbNis) === Number(idAtauNis);
                     return cocokNisTeks || cocokNisAngka;
                 }
 
-                return namaDariLog !== '' && dbNama === namaDariLog;
+                return false;
             });
 
             if (siswaMatch) {
@@ -1562,10 +1570,8 @@ async function tarikDataGateway(kelasId) {
             showAlert("Sinkronisasi Sukses!", `Berhasil menarik Hadir (H) sebanyak ${hitungBerhasil} catatan sah khusus kelas ${kelasObj.kode} (${activeWs.nama}).`, "success");
         } else {
             loadAbsensi();
-            const detailTolak = hitungDitolak > 0
-                ? ` (${hitungDitolak} log ditolak karena bukan kelas ${kelasObj.kode}${contohDitolak.length ? ' — ' + contohDitolak.join(', ') : ''}).`
-                : '.';
-            showAlert("Data Terkunci & Bersih", `Tidak ada catatan kehadiran Smart Gateway untuk kelas ${kelasObj.kode} di ${activeWs.nama}${detailTolak}`, "info");
+            const infoTolak = hitungDitolak > 0 ? ` (${hitungDitolak} catatan di luar kelas ${kelasObj.kode} dilewati).` : '.';
+            showAlert("Selesai", `Semua data kehadiran kelas ${kelasObj.kode} bulan ${bulanTerpilih} sudah sinkron${infoTolak}`, "info");
         }
     } catch (err) {
         showAlert("Koneksi Gagal", err.message, "error");
