@@ -916,37 +916,37 @@ function renderAbsensi(container) {
 
     container.innerHTML = `
         <!-- PEMILIHAN PERAN (ROLE) GURU -->
-        <div class="bg-white dark:bg-slate-900 p-6 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-800 mb-6 space-y-5 sticky top-0 z-30 shadow-md">
-            <div class="border-b border-slate-100 dark:border-slate-800 pb-4">
-                <label class="text-sm font-black text-slate-800 dark:text-white block mb-3">
-                    <i class="fa-solid fa-user-tie text-brand-500 mr-2"></i> Peran Anda Saat Ini:
+        <div class="bg-white dark:bg-slate-900 p-4 sm:p-6 rounded-2xl sm:rounded-3xl shadow-sm border border-slate-100 dark:border-slate-800 mb-4 sm:mb-6 space-y-3.5 sm:space-y-5 lg:sticky lg:top-0 lg:z-20">
+            <div class="border-b border-slate-100 dark:border-slate-800 pb-3 sm:pb-4">
+                <label class="text-xs sm:text-sm font-black text-slate-800 dark:text-white block mb-2 sm:mb-3">
+                    <i class="fa-solid fa-user-tie text-brand-500 mr-1.5 sm:mr-2"></i> Peran Anda Saat Ini:
                 </label>
-                <div class="flex flex-wrap items-center gap-3">
-                    <label class="inline-flex items-center cursor-pointer px-4 py-2.5 rounded-xl border border-brand-200 bg-brand-50 hover:bg-brand-100 dark:bg-emerald-900/30 dark:border-emerald-800 transition-all">
-                        <input type="radio" name="mode-absen" value="mapel" onchange="loadAbsensi()" checked class="w-5 h-5 accent-brand-600">
-                        <span class="ml-2 font-bold text-brand-800 dark:text-emerald-300 text-sm">Guru Mapel (Absen Harian)</span>
+                <div class="grid grid-cols-1 sm:flex sm:flex-wrap items-center gap-2 sm:gap-3">
+                    <label class="inline-flex items-center cursor-pointer px-3.5 py-2 sm:px-4 sm:py-2.5 rounded-xl border border-brand-200 bg-brand-50 hover:bg-brand-100 dark:bg-emerald-900/30 dark:border-emerald-800 transition-all">
+                        <input type="radio" name="mode-absen" value="mapel" onchange="loadAbsensi()" checked class="w-4 h-4 sm:w-5 sm:h-5 accent-brand-600">
+                        <span class="ml-2 font-bold text-brand-800 dark:text-emerald-300 text-xs sm:text-sm">Guru Mapel (Absen Harian)</span>
                     </label>
-                    <label class="inline-flex items-center cursor-pointer px-4 py-2.5 rounded-xl border border-indigo-200 bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-900/30 dark:border-indigo-800 transition-all">
-                        <input type="radio" name="mode-absen" value="walikelas" onchange="loadAbsensi()" class="w-5 h-5 accent-indigo-600">
-                        <span class="ml-2 font-bold text-indigo-800 dark:text-indigo-300 text-sm">Wali Kelas (Rekap 31 Hari)</span>
+                    <label class="inline-flex items-center cursor-pointer px-3.5 py-2 sm:px-4 sm:py-2.5 rounded-xl border border-indigo-200 bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-900/30 dark:border-indigo-800 transition-all">
+                        <input type="radio" name="mode-absen" value="walikelas" onchange="loadAbsensi()" class="w-4 h-4 sm:w-5 sm:h-5 accent-indigo-600">
+                        <span class="ml-2 font-bold text-indigo-800 dark:text-indigo-300 text-xs sm:text-sm">Wali Kelas (Rekap 31 Hari)</span>
                     </label>
                 </div>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-5">
                 <div id="wadah-tanggal-absen">
-                    <label class="text-xs font-bold text-slate-500 dark:text-slate-400 block mb-1.5">Pilih Tanggal</label>
-                    <input type="date" id="abs-tanggal" value="${today}" onchange="loadAbsensi()" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 outline-none dark:text-white text-sm">
+                    <label class="text-xs font-bold text-slate-500 dark:text-slate-400 block mb-1">Pilih Tanggal</label>
+                    <input type="date" id="abs-tanggal" value="${today}" onchange="loadAbsensi()" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3.5 py-2 sm:px-4 sm:py-2.5 outline-none dark:text-white text-xs sm:text-sm">
                 </div>
 
                 <div id="wadah-bulan-absen" style="display: none;">
-                    <label class="text-xs font-bold text-slate-500 dark:text-slate-400 block mb-1.5">Pilih Bulan (Rekap)</label>
-                    <input type="month" id="abs-bulan" value="${today.slice(0, 7)}" onchange="loadAbsensi()" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 outline-none dark:text-white text-sm">
+                    <label class="text-xs font-bold text-slate-500 dark:text-slate-400 block mb-1">Pilih Bulan (Rekap)</label>
+                    <input type="month" id="abs-bulan" value="${today.slice(0, 7)}" onchange="loadAbsensi()" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3.5 py-2 sm:px-4 sm:py-2.5 outline-none dark:text-white text-xs sm:text-sm">
                 </div>
 
                 <div>
-                    <label class="text-xs font-bold text-slate-500 dark:text-slate-400 block mb-1.5">Pilih Kelas</label>
-                    <select id="abs-kelas" onchange="loadAbsensi()" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 outline-none dark:text-white text-sm focus:ring-2 focus:ring-brand-500">
+                    <label class="text-xs font-bold text-slate-500 dark:text-slate-400 block mb-1">Pilih Kelas</label>
+                    <select id="abs-kelas" onchange="loadAbsensi()" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3.5 py-2 sm:px-4 sm:py-2.5 outline-none dark:text-white text-xs sm:text-sm focus:ring-2 focus:ring-brand-500">
                         <option value="">-- Pilih Kelas --</option>
                         ${kelasOpts}
                     </select>
@@ -976,13 +976,13 @@ function loadAbsensi() {
     }
 
     if(!kelasId) {
-        container.innerHTML = `<p class="text-slate-500 text-center py-10 bg-white dark:bg-slate-900 rounded-3xl border dark:border-slate-800">Pilih kelas untuk menampilkan daftar hadir.</p>`;
+        container.innerHTML = `<p class="text-slate-500 text-center py-8 sm:py-10 bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl border dark:border-slate-800 text-xs sm:text-sm">Pilih kelas untuk menampilkan daftar hadir.</p>`;
         return;
     }
 
     const siswaKelas = AppState.db.siswa.filter(s => s.kelasId === kelasId);
     if(siswaKelas.length === 0) {
-        container.innerHTML = `<p class="text-rose-500 text-center py-10 bg-rose-50 dark:bg-rose-950/40 rounded-3xl border border-rose-100 dark:border-slate-800">Belum ada siswa di kelas ini.</p>`;
+        container.innerHTML = `<p class="text-rose-500 text-center py-8 sm:py-10 bg-rose-50 dark:bg-rose-950/40 rounded-2xl sm:rounded-3xl border border-rose-100 dark:border-slate-800 text-xs sm:text-sm">Belum ada siswa di kelas ini.</p>`;
         return;
     }
 
@@ -991,25 +991,32 @@ function loadAbsensi() {
         let rows = siswaKelas.map((siswa, idx) => {
             let existing = AppState.db.absensi.find(a => a.siswaId === siswa.id && a.tanggal === tanggal && a.kelasId === kelasId);
             let status = existing ? existing.status : 'H';
-            const radio = (val, label, color) => `<label class="inline-flex items-center mr-4 cursor-pointer p-2 rounded-lg hover:bg-${color}-50 dark:hover:bg-slate-800"><input type="radio" name="abs-${siswa.id}" value="${val}" ${status === val ? 'checked' : ''} class="w-4 h-4 accent-brand-600"><span class="ml-2 text-sm font-bold text-slate-700 dark:text-slate-300">${label}</span></label>`;
-            return `<tr class="border-b border-slate-100 dark:border-slate-800"><td class="py-3 px-5 text-center">${idx+1}</td><td class="py-3 px-5 font-bold dark:text-white">${siswa.nama}</td><td class="py-3 px-5 bg-slate-50/30 dark:bg-slate-800/30">${radio('H','Hadir','emerald')}${radio('I','Izin','blue')}${radio('S','Sakit','amber')}${radio('A','Alpa','rose')}</td></tr>`;
+            const radio = (val, label, color) => `<label class="inline-flex items-center justify-center sm:justify-start cursor-pointer px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-lg border border-slate-200/80 dark:border-slate-700/80 hover:bg-${color}-50 dark:hover:bg-slate-800 transition-colors"><input type="radio" name="abs-${siswa.id}" value="${val}" ${status === val ? 'checked' : ''} class="w-3.5 h-3.5 sm:w-4 sm:h-4 accent-brand-600"><span class="ml-1.5 sm:ml-2 text-xs sm:text-sm font-bold text-slate-700 dark:text-slate-300">${label}</span></label>`;
+            return `<tr class="border-b border-slate-100 dark:border-slate-800"><td class="py-2.5 px-2.5 sm:py-3 sm:px-5 text-center text-xs sm:text-sm font-bold text-slate-500">${idx+1}</td><td class="py-2.5 px-2.5 sm:py-3 sm:px-5 font-bold text-xs sm:text-sm dark:text-white">${escapeHTML(siswa.nama)}</td><td class="py-2.5 px-2.5 sm:py-3 sm:px-5 bg-slate-50/30 dark:bg-slate-800/30"><div class="grid grid-cols-2 sm:flex sm:flex-wrap gap-1.5 sm:gap-2">${radio('H','Hadir','emerald')}${radio('I','Izin','blue')}${radio('S','Sakit','amber')}${radio('A','Alpa','rose')}</div></td></tr>`;
         }).join('');
 
         container.innerHTML = `
-            <div class="bg-white dark:bg-slate-900 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-800 overflow-hidden fade-in">
-                <div class="p-4 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-slate-50 dark:bg-slate-800/50">
-                    <h4 class="font-bold text-slate-800 dark:text-white text-sm"><i class="fa-solid fa-clipboard-user text-brand-500 mr-2"></i> Daftar Hadir</h4>
+            <div class="bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl shadow-sm border border-slate-100 dark:border-slate-800 overflow-hidden fade-in">
+                <div class="p-3.5 sm:p-4 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-slate-50 dark:bg-slate-800/50">
+                    <h4 class="font-bold text-slate-800 dark:text-white text-xs sm:text-sm"><i class="fa-solid fa-clipboard-user text-brand-500 mr-2"></i> Daftar Hadir</h4>
                 </div>
-                <table class="w-full text-left"><thead class="bg-slate-50 dark:bg-slate-800 text-slate-500 dark:text-slate-400 text-[11px] uppercase tracking-wider font-bold"><tr><th class="py-4 px-5 text-center w-16">No</th><th class="py-4 px-5">Siswa</th><th class="py-4 px-5">Status Kehadiran</th></tr></thead><tbody>${rows}</tbody></table>
-                <div class="p-5 bg-slate-50 dark:bg-slate-800/50 border-t dark:border-slate-800 flex justify-end">
-                    <button onclick="simpanAbsensi('${tanggal}', '${kelasId}')" class="bg-brand-600 hover:bg-brand-700 text-white font-bold py-3 px-8 rounded-xl shadow-lg transition-all">Simpan Kehadiran Harian</button>
+                <div class="overflow-x-auto custom-scrollbar">
+                    <table class="w-full text-left">
+                        <thead class="bg-slate-50 dark:bg-slate-800 text-slate-500 dark:text-slate-400 text-[10px] sm:text-[11px] uppercase tracking-wider font-bold">
+                            <tr><th class="py-3 px-2.5 sm:py-4 sm:px-5 text-center w-10 sm:w-16">No</th><th class="py-3 px-2.5 sm:py-4 sm:px-5">Siswa</th><th class="py-3 px-2.5 sm:py-4 sm:px-5">Status Kehadiran</th></tr>
+                        </thead>
+                        <tbody>${rows}</tbody>
+                    </table>
+                </div>
+                <div class="p-4 sm:p-5 bg-slate-50 dark:bg-slate-800/50 border-t dark:border-slate-800 flex justify-end">
+                    <button onclick="simpanAbsensi('${tanggal}', '${kelasId}')" class="w-full sm:w-auto bg-brand-600 hover:bg-brand-700 text-white font-bold py-3 px-6 sm:px-8 rounded-xl shadow-lg text-xs sm:text-sm transition-all">Simpan Kehadiran Harian</button>
                 </div>
             </div>
         `;
     } else {
         let headerTanggal = "";
         for (let i = 1; i <= 31; i++) {
-            headerTanggal += `<th class="border border-slate-200 dark:border-slate-700 p-1 min-w-[30px] text-center">${i}</th>`;
+            headerTanggal += `<th class="border border-slate-200 dark:border-slate-700 p-1 min-w-[28px] sm:min-w-[30px] text-center">${i}</th>`;
         }
 
         const nowDefault = new Date();
@@ -1033,35 +1040,35 @@ function loadAbsensi() {
 
                 let cellStyle = getStyleSelAbsenWali(stat);
 
-                tdAbsen += `<td id="abs-cell-${siswa.id}-${tglStr}" data-status="${stat}" onclick="bukaPickerAbsenWali(event, this, '${siswa.id}', '${tglStr}', '${kelasId}')" class="border border-slate-200 dark:border-slate-700 p-1 text-center text-xs cursor-pointer select-none hover:brightness-95 transition-colors duration-150 ${cellStyle}">${stat || '-'}</td>`;
+                tdAbsen += `<td id="abs-cell-${siswa.id}-${tglStr}" data-status="${stat}" onclick="bukaPickerAbsenWali(event, this, '${siswa.id}', '${tglStr}', '${kelasId}')" class="border border-slate-200 dark:border-slate-700 p-1 min-w-[28px] sm:min-w-[30px] text-center text-[11px] sm:text-xs cursor-pointer select-none hover:brightness-95 transition-colors duration-150 ${cellStyle}">${stat || '-'}</td>`;
             }
 
             return `
                 <tr class="hover:bg-slate-50/70 dark:hover:bg-slate-800/60">
-                    <td class="border border-slate-200 dark:border-slate-700 p-2 text-center text-xs font-bold text-slate-500 sticky left-0 bg-white dark:bg-slate-900 z-10 min-w-[38px]">${idx + 1}</td>
-                    <td class="border border-slate-200 dark:border-slate-700 p-2 text-xs font-bold whitespace-nowrap dark:text-white sticky left-[38px] bg-white dark:bg-slate-900 z-10 shadow-[2px_0_6px_-2px_rgba(15,23,42,0.08)]">${escapeHTML(siswa.nama)}</td>
+                    <td class="border border-slate-200 dark:border-slate-700 p-1.5 sm:p-2 text-center text-[11px] sm:text-xs font-bold text-slate-500 w-8 min-w-[32px] md:w-10 md:min-w-[38px] md:sticky md:left-0 bg-white dark:bg-slate-900 md:z-10">${idx + 1}</td>
+                    <td title="${escapeHTML(siswa.nama)}" class="border border-slate-200 dark:border-slate-700 p-1.5 sm:p-2 text-[11px] sm:text-xs font-bold max-w-[125px] sm:max-w-[180px] md:max-w-none truncate md:whitespace-nowrap dark:text-white md:w-48 md:sticky md:left-[38px] bg-white dark:bg-slate-900 md:z-10 md:shadow-[2px_0_6px_-2px_rgba(15,23,42,0.08)]">${escapeHTML(siswa.nama)}</td>
                     ${tdAbsen}
-                    <td id="abs-tot-H-${siswa.id}" class="border border-slate-200 dark:border-slate-700 p-2 text-center text-xs font-black text-emerald-500 bg-emerald-50 dark:bg-emerald-900/40">${totH}</td>
-                    <td id="abs-tot-S-${siswa.id}" class="border border-slate-200 dark:border-slate-700 p-2 text-center text-xs font-black text-amber-500 bg-amber-50 dark:bg-amber-900/40">${totS}</td>
-                    <td id="abs-tot-I-${siswa.id}" class="border border-slate-200 dark:border-slate-700 p-2 text-center text-xs font-black text-blue-500 bg-blue-50 dark:bg-blue-900/40">${totI}</td>
-                    <td id="abs-tot-A-${siswa.id}" class="border border-slate-200 dark:border-slate-700 p-2 text-center text-xs font-black text-rose-500 bg-rose-50 dark:bg-rose-900/40">${totA}</td>
+                    <td id="abs-tot-H-${siswa.id}" class="border border-slate-200 dark:border-slate-700 p-1.5 sm:p-2 text-center text-[11px] sm:text-xs font-black text-emerald-500 bg-emerald-50 dark:bg-emerald-900/40">${totH}</td>
+                    <td id="abs-tot-S-${siswa.id}" class="border border-slate-200 dark:border-slate-700 p-1.5 sm:p-2 text-center text-[11px] sm:text-xs font-black text-amber-500 bg-amber-50 dark:bg-amber-900/40">${totS}</td>
+                    <td id="abs-tot-I-${siswa.id}" class="border border-slate-200 dark:border-slate-700 p-1.5 sm:p-2 text-center text-[11px] sm:text-xs font-black text-blue-500 bg-blue-50 dark:bg-blue-900/40">${totI}</td>
+                    <td id="abs-tot-A-${siswa.id}" class="border border-slate-200 dark:border-slate-700 p-1.5 sm:p-2 text-center text-[11px] sm:text-xs font-black text-rose-500 bg-rose-50 dark:bg-rose-900/40">${totA}</td>
                 </tr>
             `;
         }).join('');
 
         container.innerHTML = `
-            <div class="bg-white dark:bg-slate-900 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-800 p-5">
-                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4 border-b border-slate-100 dark:border-slate-800 pb-3">
+            <div class="bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl shadow-sm border border-slate-100 dark:border-slate-800 p-3.5 sm:p-5">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2.5 sm:gap-3 mb-3 sm:mb-4 border-b border-slate-100 dark:border-slate-800 pb-3">
                     <div>
-                        <h4 class="font-bold text-slate-800 dark:text-white"><i class="fa-solid fa-calendar-days text-indigo-500 mr-2"></i> Rekap Kehadiran (31 Hari)</h4>
-                        <p class="text-xs text-slate-500 bg-slate-100 dark:bg-slate-800 px-3 py-1 rounded-lg mt-1.5">Sentuh kotak kosong untuk memilih <b>S / I / A / H</b> secara instan tanpa berkedip.</p>
+                        <h4 class="font-bold text-sm sm:text-base text-slate-800 dark:text-white"><i class="fa-solid fa-calendar-days text-indigo-500 mr-1.5 sm:mr-2"></i> Rekap Kehadiran (31 Hari)</h4>
+                        <p class="text-[11px] sm:text-xs text-slate-500 bg-slate-100 dark:bg-slate-800 px-2.5 py-1 rounded-lg mt-1">Sentuh kotak untuk memilih <b>S / I / A / H</b> secara instan tanpa berkedip.</p>
                     </div>
-                   <div class="flex flex-wrap items-center gap-2 shrink-0">
-                        <button onclick="resetAbsenHadirBulanIni('${kelasId}')" id="btn-reset-absen-h" class="bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/50 dark:hover:bg-rose-900/60 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-800/70 font-bold py-2.5 px-3.5 rounded-xl text-xs transition-all flex items-center shrink-0">
+                    <div class="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-2 w-full sm:w-auto shrink-0">
+                        <button onclick="resetAbsenHadirBulanIni('${kelasId}')" id="btn-reset-absen-h" class="justify-center bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/50 dark:hover:bg-rose-900/60 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-800/70 font-bold py-2.5 px-2.5 sm:px-3.5 rounded-xl text-[11px] sm:text-xs transition-all flex items-center">
                             <i class="fa-solid fa-rotate-left mr-1.5"></i> Reset H Bulan Ini
                         </button>
-                        <button onclick="tarikDataGateway('${kelasId}')" id="btn-tarik-gateway" class="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-bold py-2.5 px-4 rounded-xl text-xs shadow-md shadow-cyan-500/30 transition-all flex items-center shrink-0">
-                            <i class="fa-solid fa-satellite-dish mr-2 animate-pulse"></i> Tarik Data Smart Gateway
+                        <button onclick="tarikDataGateway('${kelasId}')" id="btn-tarik-gateway" class="justify-center bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-bold py-2.5 px-2.5 sm:px-4 rounded-xl text-[11px] sm:text-xs shadow-md shadow-cyan-500/30 transition-all flex items-center">
+                            <i class="fa-solid fa-satellite-dish mr-1.5 sm:mr-2 animate-pulse"></i> Tarik Data Gateway
                         </button>
                     </div>
                 </div>
@@ -1069,17 +1076,17 @@ function loadAbsensi() {
                     <table class="w-max min-w-full text-left border-collapse border border-slate-200 dark:border-slate-700">
                         <thead class="bg-indigo-50 dark:bg-indigo-950 text-indigo-800 dark:text-indigo-200 text-[10px] uppercase font-black">
                             <tr>
-                                <th rowspan="2" class="border border-slate-200 dark:border-slate-700 p-2 text-center w-10 min-w-[38px] sticky left-0 bg-indigo-50 dark:bg-indigo-950 z-20">No</th>
-                                <th rowspan="2" class="border border-slate-200 dark:border-slate-700 p-2 w-48 sticky left-[38px] bg-indigo-50 dark:bg-indigo-950 z-20 shadow-[2px_0_6px_-2px_rgba(15,23,42,0.08)]">Nama Lengkap Siswa</th>
+                                <th rowspan="2" class="border border-slate-200 dark:border-slate-700 p-1.5 sm:p-2 text-center w-8 min-w-[32px] md:w-10 md:min-w-[38px] md:sticky md:left-0 bg-indigo-50 dark:bg-indigo-950 md:z-20">No</th>
+                                <th rowspan="2" class="border border-slate-200 dark:border-slate-700 p-1.5 sm:p-2 max-w-[125px] sm:max-w-[180px] md:max-w-none md:w-48 md:sticky md:left-[38px] bg-indigo-50 dark:bg-indigo-950 md:z-20 md:shadow-[2px_0_6px_-2px_rgba(15,23,42,0.08)]">Nama Lengkap Siswa</th>
                                 <th colspan="31" class="border border-slate-200 dark:border-slate-700 p-1 text-center">Tanggal</th>
                                 <th colspan="4" class="border border-slate-200 dark:border-slate-700 p-1 text-center">Total</th>
                             </tr>
                             <tr>
                                 ${headerTanggal}
-                                <th class="border border-slate-200 dark:border-slate-700 p-1 text-center text-emerald-600 w-8">H</th>
-                                <th class="border border-slate-200 dark:border-slate-700 p-1 text-center text-amber-600 w-8">S</th>
-                                <th class="border border-slate-200 dark:border-slate-700 p-1 text-center text-blue-600 w-8">I</th>
-                                <th class="border border-slate-200 dark:border-slate-700 p-1 text-center text-rose-600 w-8">A</th>
+                                <th class="border border-slate-200 dark:border-slate-700 p-1 text-center text-emerald-600 w-7 sm:w-8">H</th>
+                                <th class="border border-slate-200 dark:border-slate-700 p-1 text-center text-amber-600 w-7 sm:w-8">S</th>
+                                <th class="border border-slate-200 dark:border-slate-700 p-1 text-center text-blue-600 w-7 sm:w-8">I</th>
+                                <th class="border border-slate-200 dark:border-slate-700 p-1 text-center text-rose-600 w-7 sm:w-8">A</th>
                             </tr>
                         </thead>
                         <tbody>${rowsWali}</tbody>
@@ -1089,7 +1096,6 @@ function loadAbsensi() {
         `;
     }
 }
-
 let html5QrcodeScanner = null;
 function bukaScannerQR(tanggal, kelasId) {
     if (typeof Html5QrcodeScanner === 'undefined') return showAlert("Tunggu", "Sedang mengunduh modul Kamera AI... Coba klik lagi dalam 3 detik.", "info");
@@ -1431,7 +1437,7 @@ async function tarikDataGateway(kelasId) {
     const btn = document.getElementById('btn-tarik-gateway');
     const originalText = btn ? btn.innerHTML : '';
     if (btn) {
-        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Menarik Data...';
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1.5"></i> Menarik Data...';
         btn.disabled = true;
     }
 
