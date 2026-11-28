@@ -1131,10 +1131,11 @@ function loadAbsensi() {
     } else {
         let headerTanggal = "";
         for (let i = 1; i <= 31; i++) {
-            headerTanggal += `<th class="border border-slate-200 dark:border-slate-700 p-1 min-w-[28px] text-center">${i}</th>`;
+            headerTanggal += `<th class="border border-slate-200 dark:border-slate-700 p-1 min-w-[30px] text-center">${i}</th>`;
         }
 
-        let currentMonthPrefix = new Date().toISOString().slice(0, 8);
+        const nowDefault = new Date();
+        let currentMonthPrefix = `${nowDefault.getFullYear()}-${String(nowDefault.getMonth() + 1).padStart(2, '0')}-`;
         const elemenBulan = document.getElementById('abs-bulan');
         if (elemenBulan && elemenBulan.value) currentMonthPrefix = elemenBulan.value + '-';
 
@@ -1142,57 +1143,51 @@ function loadAbsensi() {
             let tdAbsen = "";
             let totH = 0, totS = 0, totI = 0, totA = 0;
 
-            for(let i=1; i<=31; i++) {
+            for (let i = 1; i <= 31; i++) {
                 let tglStr = currentMonthPrefix + i.toString().padStart(2, '0');
                 let existing = AppState.db.absensi.find(a => a.siswaId === siswa.id && a.tanggal === tglStr && a.kelasId === kelasId);
                 let stat = existing ? existing.status : '';
-                
-                if(stat==='H') totH++;
-                if(stat==='S') totS++;
-                if(stat==='I') totI++;
-                if(stat==='A') totA++;
 
-                let txtColor = 'text-slate-300';
-                let bgCell = '';
-                if(stat==='S') { txtColor = 'text-amber-500 font-black'; bgCell = 'bg-amber-50 dark:bg-amber-900/20'; }
-                if(stat==='I') { txtColor = 'text-blue-500 font-black'; bgCell = 'bg-blue-50 dark:bg-blue-900/20'; }
-                if(stat==='A') { txtColor = 'text-rose-500 font-black'; bgCell = 'bg-rose-50 dark:bg-rose-900/20'; }
-                if(stat==='H') { stat = 'H'; txtColor = 'text-emerald-500 font-bold'; bgCell = 'bg-emerald-50 dark:bg-emerald-900/20'; } 
+                if (stat === 'H') totH++;
+                if (stat === 'S') totS++;
+                if (stat === 'I') totI++;
+                if (stat === 'A') totA++;
 
-                tdAbsen += `<td onclick="ubahAbsenWali('${siswa.id}', '${tglStr}', '${kelasId}')" class="border border-slate-200 dark:border-slate-700 p-1 text-center text-xs cursor-pointer hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors ${txtColor} ${bgCell}">${stat || '-'}</td>`;
+                let cellStyle = getStyleSelAbsenWali(stat);
+
+                tdAbsen += `<td id="abs-cell-${siswa.id}-${tglStr}" data-status="${stat}" onclick="bukaPickerAbsenWali(event, this, '${siswa.id}', '${tglStr}', '${kelasId}')" class="border border-slate-200 dark:border-slate-700 p-1 text-center text-xs cursor-pointer select-none hover:brightness-95 transition-colors duration-150 ${cellStyle}">${stat || '-'}</td>`;
             }
 
             return `
-                <tr class="hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
-                    <td class="border border-slate-200 dark:border-slate-700 p-2 text-center text-xs font-bold text-slate-500">${idx+1}</td>
-                    <td class="border border-slate-200 dark:border-slate-700 p-2 text-xs font-bold whitespace-nowrap dark:text-white">${siswa.nama}</td>
+                <tr class="hover:bg-slate-50/70 dark:hover:bg-slate-800/60">
+                    <td class="border border-slate-200 dark:border-slate-700 p-2 text-center text-xs font-bold text-slate-500 sticky left-0 bg-white dark:bg-slate-900 z-10 min-w-[38px]">${idx + 1}</td>
+                    <td class="border border-slate-200 dark:border-slate-700 p-2 text-xs font-bold whitespace-nowrap dark:text-white sticky left-[38px] bg-white dark:bg-slate-900 z-10 shadow-[2px_0_6px_-2px_rgba(15,23,42,0.08)]">${escapeHTML(siswa.nama)}</td>
                     ${tdAbsen}
-                    <td class="border border-slate-200 dark:border-slate-700 p-2 text-center text-xs font-black text-emerald-500 bg-emerald-50 dark:bg-emerald-900/40">${totH}</td>
-                    <td class="border border-slate-200 dark:border-slate-700 p-2 text-center text-xs font-black text-amber-500 bg-amber-50 dark:bg-amber-900/40">${totS}</td>
-                    <td class="border border-slate-200 dark:border-slate-700 p-2 text-center text-xs font-black text-blue-500 bg-blue-50 dark:bg-blue-900/40">${totI}</td>
-                    <td class="border border-slate-200 dark:border-slate-700 p-2 text-center text-xs font-black text-rose-500 bg-rose-50 dark:bg-rose-900/40">${totA}</td>
+                    <td id="abs-tot-H-${siswa.id}" class="border border-slate-200 dark:border-slate-700 p-2 text-center text-xs font-black text-emerald-500 bg-emerald-50 dark:bg-emerald-900/40">${totH}</td>
+                    <td id="abs-tot-S-${siswa.id}" class="border border-slate-200 dark:border-slate-700 p-2 text-center text-xs font-black text-amber-500 bg-amber-50 dark:bg-amber-900/40">${totS}</td>
+                    <td id="abs-tot-I-${siswa.id}" class="border border-slate-200 dark:border-slate-700 p-2 text-center text-xs font-black text-blue-500 bg-blue-50 dark:bg-blue-900/40">${totI}</td>
+                    <td id="abs-tot-A-${siswa.id}" class="border border-slate-200 dark:border-slate-700 p-2 text-center text-xs font-black text-rose-500 bg-rose-50 dark:bg-rose-900/40">${totA}</td>
                 </tr>
             `;
         }).join('');
 
         container.innerHTML = `
-            <div class="bg-white dark:bg-slate-900 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-800 p-5 fade-in">
+            <div class="bg-white dark:bg-slate-900 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-800 p-5">
                 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4 border-b border-slate-100 dark:border-slate-800 pb-3">
                     <div>
                         <h4 class="font-bold text-slate-800 dark:text-white"><i class="fa-solid fa-calendar-days text-indigo-500 mr-2"></i> Rekap Kehadiran (31 Hari)</h4>
-                        <p class="text-xs text-slate-500 bg-slate-100 dark:bg-slate-800 px-3 py-1 rounded-lg mt-1.5">Klik kotak untuk ubah manual, atau tekan tombol Tarik Data.</p>
+                        <p class="text-xs text-slate-500 bg-slate-100 dark:bg-slate-800 px-3 py-1 rounded-lg mt-1.5">Sentuh kotak kosong untuk memilih <b>S / I / A / H</b> secara instan tanpa berkedip.</p>
                     </div>
-                    <!-- TOMBOL TARIK DATA GATEWAY -->
                     <button onclick="tarikDataGateway('${kelasId}')" id="btn-tarik-gateway" class="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-bold py-2.5 px-4 rounded-xl text-xs shadow-md shadow-cyan-500/30 transition-all flex items-center shrink-0">
                         <i class="fa-solid fa-satellite-dish mr-2 animate-pulse"></i> Tarik Data Smart Gateway
                     </button>
                 </div>
-                <div class="overflow-x-auto custom-scrollbar pb-3">
+                <div id="absensi-table-scroll" class="overflow-x-auto custom-scrollbar pb-3">
                     <table class="w-max min-w-full text-left border-collapse border border-slate-200 dark:border-slate-700">
-                        <thead class="bg-indigo-50 dark:bg-indigo-900/30 text-indigo-800 dark:text-indigo-200 text-[10px] uppercase font-black">
+                        <thead class="bg-indigo-50 dark:bg-indigo-950 text-indigo-800 dark:text-indigo-200 text-[10px] uppercase font-black">
                             <tr>
-                                <th rowspan="2" class="border border-slate-200 dark:border-slate-700 p-2 text-center w-10">No</th>
-                                <th rowspan="2" class="border border-slate-200 dark:border-slate-700 p-2 w-48">Nama Lengkap Siswa</th>
+                                <th rowspan="2" class="border border-slate-200 dark:border-slate-700 p-2 text-center w-10 min-w-[38px] sticky left-0 bg-indigo-50 dark:bg-indigo-950 z-20">No</th>
+                                <th rowspan="2" class="border border-slate-200 dark:border-slate-700 p-2 w-48 sticky left-[38px] bg-indigo-50 dark:bg-indigo-950 z-20 shadow-[2px_0_6px_-2px_rgba(15,23,42,0.08)]">Nama Lengkap Siswa</th>
                                 <th colspan="31" class="border border-slate-200 dark:border-slate-700 p-1 text-center">Tanggal</th>
                                 <th colspan="4" class="border border-slate-200 dark:border-slate-700 p-1 text-center">Total</th>
                             </tr>
@@ -1210,8 +1205,6 @@ function loadAbsensi() {
             </div>
         `;
     }
-}
-
 let html5QrcodeScanner = null;
 function bukaScannerQR(tanggal, kelasId) {
     if (typeof Html5QrcodeScanner === 'undefined') return showAlert("Tunggu", "Sedang mengunduh modul Kamera AI... Coba klik lagi dalam 3 detik.", "info");
@@ -1277,31 +1270,167 @@ function prosesHasilScan(nisAtauId, tanggal, kelasId) {
     }
 }
 
-function ubahAbsenWali(siswaId, tanggal, kelasId) {
-    let existingIndex = AppState.db.absensi.findIndex(a => a.siswaId === siswaId && a.tanggal === tanggal && a.kelasId === kelasId);
-    let currentStatus = existingIndex >= 0 ? AppState.db.absensi[existingIndex].status : '';
-    let nextStatus = '';
-    
-    if (!currentStatus) nextStatus = 'H';
-    else if (currentStatus === 'H') nextStatus = 'S';
-    else if (currentStatus === 'S') nextStatus = 'I';
-    else if (currentStatus === 'I') nextStatus = 'A';
-    else if (currentStatus === 'A') nextStatus = ''; 
-    
-    if (nextStatus === '') {
-         if(existingIndex >= 0) AppState.db.absensi.splice(existingIndex, 1);
-    } else {
-         if (existingIndex >= 0) AppState.db.absensi[existingIndex].status = nextStatus;
-         else AppState.db.absensi.push({ id: generateId(), siswaId, kelasId, tanggal, status: nextStatus });
-    }
-    
-    localStorage.setItem(AppState.config.storageKey, JSON.stringify(AppState.db));
-    if (AppState.config.gasUrl && AppState.config.gasUrl.startsWith("http")) {
-        fetch(AppState.config.gasUrl, { method: "POST", mode: "no-cors", body: JSON.stringify(AppState.db) }).catch(()=>{});
-    }
-    loadAbsensi();
+let activeAbsenCellEl = null;
+let activeAbsenKey = '';
+
+function getStyleSelAbsenWali(stat) {
+    if (stat === 'S') return 'text-amber-600 dark:text-amber-400 font-black bg-amber-50 dark:bg-amber-900/25';
+    if (stat === 'I') return 'text-blue-600 dark:text-blue-400 font-black bg-blue-50 dark:bg-blue-900/25';
+    if (stat === 'A') return 'text-rose-600 dark:text-rose-400 font-black bg-rose-50 dark:bg-rose-900/25';
+    if (stat === 'H') return 'text-emerald-600 dark:text-emerald-400 font-bold bg-emerald-50 dark:bg-emerald-900/25';
+    return 'text-slate-300 dark:text-slate-600';
 }
 
+function ensureAbsenQuickPicker() {
+    if (document.getElementById('absen-quick-picker')) return;
+
+    document.body.insertAdjacentHTML('beforeend', `
+        <div id="absen-quick-picker" onclick="event.stopPropagation()" class="fixed z-[9995] hidden bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-2xl p-2 select-none transition-opacity duration-100">
+            <div id="absen-picker-label" class="text-[10px] font-bold text-slate-500 dark:text-slate-400 px-1.5 pb-1.5 mb-1.5 border-b border-slate-100 dark:border-slate-800 truncate max-w-[230px]"></div>
+            <div id="absen-picker-buttons" class="flex items-center gap-1.5"></div>
+        </div>
+    `);
+
+    document.addEventListener('pointerdown', (e) => {
+        const picker = document.getElementById('absen-quick-picker');
+        if (!picker || picker.classList.contains('hidden')) return;
+        if (!picker.contains(e.target) && (!activeAbsenCellEl || !activeAbsenCellEl.contains(e.target))) {
+            tutupPickerAbsenWali();
+        }
+    });
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') tutupPickerAbsenWali();
+    });
+
+    window.addEventListener('scroll', tutupPickerAbsenWali, true);
+}
+
+function tutupPickerAbsenWali() {
+    const picker = document.getElementById('absen-quick-picker');
+    if (picker) picker.classList.add('hidden');
+    if (activeAbsenCellEl) {
+        activeAbsenCellEl.classList.remove('ring-2', 'ring-indigo-500', 'z-20');
+        activeAbsenCellEl = null;
+    }
+    activeAbsenKey = '';
+}
+
+function bukaPickerAbsenWali(event, cellEl, siswaId, tanggal, kelasId) {
+    if (event) event.stopPropagation();
+    ensureAbsenQuickPicker();
+
+    const key = `${siswaId}_${tanggal}_${kelasId}`;
+    if (activeAbsenKey === key) {
+        tutupPickerAbsenWali();
+        return;
+    }
+
+    tutupPickerAbsenWali();
+    activeAbsenCellEl = cellEl;
+    activeAbsenKey = key;
+    cellEl.classList.add('ring-2', 'ring-indigo-500', 'z-20');
+
+    const siswaObj = (AppState.db.siswa || []).find(s => String(s.id) === String(siswaId));
+    const tglAngka = parseInt(tanggal.slice(-2), 10);
+    const currentStatus = cellEl.dataset.status || '';
+
+    const labelEl = document.getElementById('absen-picker-label');
+    if (labelEl) {
+        labelEl.textContent = `${siswaObj ? siswaObj.nama : 'Siswa'} • Tgl ${tglAngka}`;
+    }
+
+    const opsi = [
+        { val: 'H', text: 'H', title: 'Hadir', cls: 'bg-emerald-600 hover:bg-emerald-500 text-white' },
+        { val: 'S', text: 'S', title: 'Sakit', cls: 'bg-amber-500 hover:bg-amber-400 text-slate-950' },
+        { val: 'I', text: 'I', title: 'Izin', cls: 'bg-blue-600 hover:bg-blue-500 text-white' },
+        { val: 'A', text: 'A', title: 'Alpa', cls: 'bg-rose-600 hover:bg-rose-500 text-white' },
+        { val: '',  text: '×', title: 'Kosongkan', cls: 'bg-slate-200 hover:bg-slate-300 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200' }
+    ];
+
+    const btnContainer = document.getElementById('absen-picker-buttons');
+    btnContainer.innerHTML = opsi.map(o => {
+        const isSelected = currentStatus === o.val && o.val !== '';
+        const activeRing = isSelected ? 'ring-2 ring-offset-2 ring-slate-900 dark:ring-white scale-105' : '';
+        return `<button type="button" title="${o.title}" onclick="pilihStatusAbsenWali('${siswaId}', '${tanggal}', '${kelasId}', '${o.val}')" class="w-9 h-9 rounded-xl font-black text-xs shadow-sm active:scale-95 transition-transform flex items-center justify-center ${o.cls} ${activeRing}">${o.text}</button>`;
+    }).join('');
+
+    const picker = document.getElementById('absen-quick-picker');
+    picker.classList.remove('hidden');
+
+    const rect = cellEl.getBoundingClientRect();
+    const pickerW = picker.offsetWidth || 226;
+    const pickerH = picker.offsetHeight || 76;
+
+    let left = rect.left + (rect.width / 2) - (pickerW / 2);
+    left = Math.max(8, Math.min(window.innerWidth - pickerW - 8, left));
+
+    let top = rect.top - pickerH - 8;
+    if (top < 8) {
+        top = rect.bottom + 8;
+    }
+
+    picker.style.left = `${left}px`;
+    picker.style.top = `${top}px`;
+}
+
+function pilihStatusAbsenWali(siswaId, tanggal, kelasId, nextStatus) {
+    tutupPickerAbsenWali();
+
+    let existingIndex = AppState.db.absensi.findIndex(a => a.siswaId === siswaId && a.tanggal === tanggal && a.kelasId === kelasId);
+
+    if (nextStatus === '') {
+        if (existingIndex >= 0) AppState.db.absensi.splice(existingIndex, 1);
+    } else {
+        if (existingIndex >= 0) AppState.db.absensi[existingIndex].status = nextStatus;
+        else AppState.db.absensi.push({ id: generateId(), siswaId, kelasId, tanggal, status: nextStatus });
+    }
+
+    // 1. Perbarui HANYA kotak yang disentuh secara instan tanpa memuat ulang tabel
+    const cellEl = document.getElementById(`abs-cell-${siswaId}-${tanggal}`);
+    if (cellEl) {
+        cellEl.dataset.status = nextStatus;
+        cellEl.textContent = nextStatus || '-';
+        cellEl.className = `border border-slate-200 dark:border-slate-700 p-1 text-center text-xs cursor-pointer select-none hover:brightness-95 transition-colors duration-150 ${getStyleSelAbsenWali(nextStatus)}`;
+    }
+
+    // 2. Perbarui HANYA kolom Total H/S/I/A pada baris siswa tersebut
+    const elemenBulan = document.getElementById('abs-bulan');
+    const nowDefault = new Date();
+    const monthPrefix = (elemenBulan && elemenBulan.value)
+        ? elemenBulan.value + '-'
+        : `${nowDefault.getFullYear()}-${String(nowDefault.getMonth() + 1).padStart(2, '0')}-`;
+
+    let totH = 0, totS = 0, totI = 0, totA = 0;
+    AppState.db.absensi.forEach(a => {
+        if (a.siswaId === siswaId && a.kelasId === kelasId && String(a.tanggal || '').startsWith(monthPrefix)) {
+            if (a.status === 'H') totH++;
+            else if (a.status === 'S') totS++;
+            else if (a.status === 'I') totI++;
+            else if (a.status === 'A') totA++;
+        }
+    });
+
+    const elH = document.getElementById(`abs-tot-H-${siswaId}`);
+    const elS = document.getElementById(`abs-tot-S-${siswaId}`);
+    const elI = document.getElementById(`abs-tot-I-${siswaId}`);
+    const elA = document.getElementById(`abs-tot-A-${siswaId}`);
+    if (elH) elH.textContent = totH;
+    if (elS) elS.textContent = totS;
+    if (elI) elI.textContent = totI;
+    if (elA) elA.textContent = totA;
+
+    // 3. Simpan ke penyimpanan lokal & sinkronkan ke cloud secara diam-diam
+    localStorage.setItem(AppState.config.storageKey, JSON.stringify(AppState.db));
+    if (AppState.config.gasUrl && AppState.config.gasUrl.startsWith("http")) {
+        fetch(AppState.config.gasUrl, { method: "POST", mode: "no-cors", body: JSON.stringify(AppState.db) }).catch(() => {});
+    }
+}
+
+function ubahAbsenWali(siswaId, tanggal, kelasId) {
+    const cellEl = document.getElementById(`abs-cell-${siswaId}-${tanggal}`);
+    if (cellEl) bukaPickerAbsenWali(null, cellEl, siswaId, tanggal, kelasId);
+}
 function simpanAbsensi(tanggal, kelasId) {
     const siswaKelas = AppState.db.siswa.filter(s => s.kelasId === kelasId);
     siswaKelas.forEach(siswa => {
