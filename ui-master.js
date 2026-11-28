@@ -1467,6 +1467,7 @@ async function tarikDataGateway(kelasId) {
         const dataGateway = hasilFetch.flat();
         let hitungBerhasil = 0;
         let hitungDitolak = 0;
+        const tanggalMasukSet = new Set();
         const siswaKelas = (AppState.db.siswa || []).filter(s => String(s.kelasId) === String(kelasTerpilih));
 
         dataGateway.forEach(absenGerbang => {
@@ -1488,45 +1489,41 @@ async function tarikDataGateway(kelasId) {
                 absenGerbang.kelas || absenGerbang.rombel || absenGerbang.kelasNama || absenGerbang.namaKelas || absenGerbang.nama_kelas || absenGerbang.subKelas || parts[2] || ''
             );
 
-            // 1. Jika log membawa NPSN / Nama Sekolah, wajib cocok dengan ruang kerja aktif
-            if ((logNpsn && logNpsn !== npsn) || (logSekolah && namaWs && logSekolah !== namaWs)) {
+            // 1. Wajib ada NPSN yang cocok persis dengan ruang kerja aktif
+            if (!logNpsn || logNpsn !== npsn) {
+                hitungDitolak++;
+                return;
+            }
+            if (logSekolah && namaWs && logSekolah !== namaWs) {
                 hitungDitolak++;
                 return;
             }
 
-            // 2. Jika log membawa Nama Kelas, wajib cocok dengan kelas yang sedang dibuka
-            if (logKelas && logKelas !== targetKodeKelas) {
+            // 2. Wajib ada Nama Kelas yang cocok persis dengan kelas yang sedang dibuka
+            if (!logKelas || logKelas !== targetKodeKelas) {
                 hitungDitolak++;
                 return;
             }
 
-            // 3. Pengaman log format lama (tanpa NPSN/Kelas/Nama): nomor pendek 1-99 hanya milik PP. Al Hikam (P0NPESAK01)
-            const isFormatLamaPolos = !logNpsn && !logSekolah && !logKelas && !namaDariLog;
-            if (isFormatLamaPolos && !isNaN(idAtauNis) && Number(idAtauNis) < 100 && npsn !== 'P0NPESAK01') {
+            // 3. Wajib cocok NIS / ID Siswa dan Nama Siswa
+            if (!idAtauNis || !namaDariLog) {
                 hitungDitolak++;
                 return;
             }
 
-            // 4. Cocokkan NIS / ID Siswa (dan Nama / No. Absen jika tersedia di log)
-            const logNoAbsen = String(absenGerbang.noAbsen || absenGerbang.no_absen || absenGerbang.urut || '').trim();
-
-            const siswaMatch = siswaKelas.find((s, idx) => {
+            const siswaMatch = siswaKelas.find(s => {
                 const dbNis = String(s.nis || '').trim();
                 const dbId = String(s.id || '').trim();
                 const dbNama = rapikanTeks(s.nama);
-                const noAbsenSiswa = String(s.noAbsen || s.urut || (idx + 1)).trim();
 
-                if (logNoAbsen && logNoAbsen !== noAbsenSiswa) return false;
-                if (namaDariLog && (!dbNama || dbNama !== namaDariLog)) return false;
-
-                if (dbId !== '' && idAtauNis !== '' && dbId === idAtauNis) return true;
+                if (!dbNama || dbNama !== namaDariLog) return false;
+                if (dbId !== '' && dbId === idAtauNis) return true;
 
                 if (dbNis !== '') {
                     const cocokNisTeks = dbNis === idAtauNis;
                     const cocokNisAngka = !isNaN(dbNis) && !isNaN(idAtauNis) && Number(dbNis) === Number(idAtauNis);
                     return cocokNisTeks || cocokNisAngka;
                 }
-
                 return false;
             });
 
@@ -1536,6 +1533,7 @@ async function tarikDataGateway(kelasId) {
                     if (AppState.db.absensi[idx].status !== 'H') {
                         AppState.db.absensi[idx].status = 'H';
                         hitungBerhasil++;
+                        tanggalMasukSet.add(parseInt(tglLog.slice(-2), 10));
                     }
                 } else {
                     AppState.db.absensi.push({
@@ -1546,6 +1544,7 @@ async function tarikDataGateway(kelasId) {
                         status: 'H'
                     });
                     hitungBerhasil++;
+                    tanggalMasukSet.add(parseInt(tglLog.slice(-2), 10));
                 }
             } else {
                 hitungDitolak++;
@@ -1565,11 +1564,16 @@ async function tarikDataGateway(kelasId) {
                 fetch(AppState.config.gasUrl, { method: "POST", mode: "no-cors", body: JSON.stringify(AppState.db) }).catch(() => {});
             }
             loadAbsensi();
-            showAlert("Sinkronisasi Sukses!", `Berhasil menarik Hadir (H) sebanyak ${hitungBerhasil} catatan untuk kelas ${kelasObj.kode} (${activeWs.nama}).`, "success");
+            const daftarTglMasuk = Array.from(tanggalMasukSet).sort((a, b) => a - b).join(', ');
+            showAlert(
+                "Sinkronisasi Sukses!",
+                `Berhasil menarik Hadir (H) sebanyak ${hitungBerhasil} catatan sah untuk ${activeWs.nama} kelas ${kelasObj.kode} (Tanggal: ${daftarTglMasuk}).`,
+                "success"
+            );
         } else {
             loadAbsensi();
-            const infoTolak = hitungDitolak > 0 ? ` (${hitungDitolak} catatan di luar kelas ${kelasObj.kode} dilewati).` : '.';
-            showAlert("Selesai", `Semua data kehadiran kelas ${kelasObj.kode} bulan ${bulanTerpilih} sudah sinkron${infoTolak}`, "info");
+            const infoTolak = hitungDitolak > 0 ? ` (${hitungDitolak} baris di luar kelas ${kelasObj.kode} atau log lama tanpa identitas ditolak).` : '.';
+            showAlert("Data Terkunci & Bersih", `Tidak ada catatan kehadiran baru untuk ${activeWs.nama} kelas ${kelasObj.kode}${infoTolak}`, "info");
         }
     } catch (err) {
         showAlert("Koneksi Gagal", err.message, "error");
