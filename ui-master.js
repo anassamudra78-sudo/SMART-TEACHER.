@@ -61,8 +61,8 @@ function renderCRUD(container, type) {
     if (type === 'siswa') {
         const currentFilter = AppState.ui.filterKelasSiswa || '';
         const opsiKelas = AppState.db.kelas.map(k => `<option value="${k.id}" ${currentFilter === k.id ? 'selected' : ''}>${k.kode}</option>`).join('');
-        
-       filterDropdownHtml = `
+
+        filterDropdownHtml = `
             <select onchange="AppState.ui.filterKelasSiswa = this.value; renderCRUD(document.getElementById('main-content'), '${type}')" class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 font-bold py-2 px-3 rounded-xl text-xs shadow-sm transition-all outline-none focus:ring-2 focus:ring-indigo-500 max-w-[130px] truncate shrink-0">
                 <option value="">-- Semua Kelas --</option>
                 ${opsiKelas}
@@ -70,7 +70,7 @@ function renderCRUD(container, type) {
         `;
         if (currentFilter) data = data.filter(item => item.kelasId === currentFilter);
     }
-    
+
     const dataAsliUtuh = AppState.db[type] || [];
     const kamusRelasi = {};
     config.fields.forEach(f => {
@@ -80,7 +80,7 @@ function renderCRUD(container, type) {
         }
     });
 
-    let tableRows = data.length === 0 
+    let tableRows = data.length === 0
         ? `<tr><td colspan="${config.fields.length+3}" class="text-center py-12 text-slate-400 font-medium text-sm">Belum ada data ${config.title}.</td></tr>`
         : data.map((item, idx) => {
             let tdFields = config.fields.map(f => {
@@ -92,7 +92,7 @@ function renderCRUD(container, type) {
                 let amanVal = String(val).includes('<span class="text-rose-400') ? val : escapeHTML(val);
                 return `<td class="py-4 px-4 text-sm font-semibold text-slate-700 dark:text-slate-300 max-w-[180px] truncate">${amanVal}</td>`;
             }).join('');
-            
+
             return `
             <tr class="border-b border-slate-100 dark:border-slate-800 hover:bg-brand-50/40 dark:hover:bg-slate-800/40 transition-colors">
                 <td class="py-4 px-4 text-center"><input type="checkbox" value="${item.id}" onchange="updateBatchDeleteUI('${type}')" class="crud-cb-${type} w-4 h-4 accent-brand-600 rounded cursor-pointer"></td>
@@ -105,7 +105,7 @@ function renderCRUD(container, type) {
                 </td>
             </tr>`;
         }).join('');
-    
+
     const editingItem = AppState.ui.editingId ? dataAsliUtuh.find(i => i.id === AppState.ui.editingId) : null;
 
     let formFields = config.fields.map(f => {
@@ -120,10 +120,10 @@ function renderCRUD(container, type) {
         } else if(f.type === 'date' || f.type === 'time') {
             inputHtml = `<input type="${f.type}" id="form-${f.id}" value="${currentVal}" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-brand-500 dark:text-white text-sm shadow-sm">`;
         } else if(f.type === 'number') {
-         inputHtml = `<input type="number" id="form-${f.id}" value="${currentVal}" min="0" max="100" placeholder="${f.placeholder || ''}" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-brand-500 dark:text-white text-sm shadow-sm">`;
-     } else {
-         inputHtml = `<input type="text" id="form-${f.id}" value="${currentVal}" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-brand-500 dark:text-white text-sm shadow-sm">`;
-     }
+            inputHtml = `<input type="number" id="form-${f.id}" value="${currentVal}" min="0" max="100" placeholder="${f.placeholder || ''}" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-brand-500 dark:text-white text-sm shadow-sm">`;
+        } else {
+            inputHtml = `<input type="text" id="form-${f.id}" value="${currentVal}" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-brand-500 dark:text-white text-sm shadow-sm">`;
+        }
         return `<div><label class="block text-sm font-bold text-slate-600 dark:text-slate-300 mb-2">${f.label}</label>${inputHtml}</div>`;
     }).join('');
 
@@ -141,7 +141,7 @@ function renderCRUD(container, type) {
                     </button>
                 </div>
             </div>
-            
+
             <div class="w-full lg:w-2/3 bg-white dark:bg-slate-900 rounded-[2rem] shadow-md border border-slate-100 dark:border-slate-800 overflow-hidden">
                 <div class="flex flex-col xl:flex-row justify-between items-start xl:items-center p-6 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 gap-4">
                     <h4 class="font-black text-lg text-slate-800 dark:text-white"><i class="fa-solid fa-table-list mr-2 text-indigo-500"></i>Daftar ${config.title}</h4>
@@ -150,14 +150,14 @@ function renderCRUD(container, type) {
                         <button id="btn-batch-delete-${type}" onclick="deleteBatchCRUD('${type}')" class="hidden bg-rose-600 hover:bg-rose-700 text-white font-bold py-2.5 px-5 rounded-xl text-sm shadow-md transition-all flex items-center shrink-0">
                             <i class="fa-solid fa-trash-can mr-2"></i> Hapus (<span id="batch-count-${type}">0</span>)
                         </button>
-                       <button onclick="exportExcel('${type}')" class="flex-1 sm:flex-none bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:text-emerald-600 hover:border-emerald-300 font-bold py-2.5 px-4 rounded-xl text-sm shadow-sm transition-all"><i class="fa-solid fa-file-excel mr-1.5 text-emerald-500"></i> Ekspor Excel</button>
+                        <button onclick="exportExcel('${type}')" class="flex-1 sm:flex-none bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:text-emerald-600 hover:border-emerald-300 font-bold py-2.5 px-4 rounded-xl text-sm shadow-sm transition-all"><i class="fa-solid fa-file-excel mr-1.5 text-emerald-500"></i> Ekspor Excel</button>
                         <button onclick="openImportModal('${type}')" class="flex-1 sm:flex-none bg-purple-600 hover:bg-purple-700 text-white font-bold py-2.5 px-5 rounded-xl text-sm shadow-md shadow-purple-500/30 transition-all"><i class="fa-solid fa-file-excel mr-1.5"></i> Impor Excel</button>
                     </div>
                 </div>
                 <div class="overflow-x-auto p-2 custom-scrollbar max-h-[75vh] overflow-y-auto relative">
                     <table class="w-full text-left border-collapse min-w-max">
                         <thead class="bg-slate-100 dark:bg-slate-800/80 text-slate-500 dark:text-slate-400 text-xs uppercase tracking-wider font-extrabold sticky top-0 z-10 shadow-sm">
-                            <tr class="bg-slate-100 dark:bg-slate-800/80 text-slate-500 dark:text-slate-400 text-xs uppercase tracking-wider font-extrabold">                                        
+                            <tr class="bg-slate-100 dark:bg-slate-800/80 text-slate-500 dark:text-slate-400 text-xs uppercase tracking-wider font-extrabold">
                                 <th class="py-4 px-4 w-12 text-center rounded-l-xl"><input type="checkbox" id="select-all-${type}" onchange="toggleSelectAllCRUD('${type}', this.checked)" class="w-4 h-4 accent-brand-600 rounded cursor-pointer" title="Pilih Semua"></th>
                                 <th class="py-4 px-4 w-14 text-center">No</th>
                                 ${config.fields.map(f => `<th class="py-4 px-4">${f.label}</th>`).join('')}
@@ -176,6 +176,7 @@ function editCRUD(type, id) {
     AppState.ui.editingId = id;
     renderCRUD(document.getElementById('main-content'), type);
 }
+
 function batalEdit(type) {
     AppState.ui.editingId = null;
     renderCRUD(document.getElementById('main-content'), type);
@@ -188,7 +189,7 @@ function saveCRUD(type) {
 
     let itemData = {};
     let hasData = false;
-    
+
     config.fields.forEach(f => {
         const el = document.getElementById(`form-${f.id}`);
         let val = el ? el.value : '';
@@ -307,14 +308,14 @@ function exportExcel(type) {
 
     let dataToExport = [headers, ...rows];
     const worksheet = XLSX.utils.aoa_to_sheet(dataToExport);
-    const wscols = [{wch: 5}]; 
-    config.fields.forEach(() => wscols.push({wch: 25})); 
+    const wscols = [{wch: 5}];
+    config.fields.forEach(() => wscols.push({wch: 25}));
     worksheet['!cols'] = wscols;
 
     const workbook = XLSX.utils.book_new();
     let namaSheet = `Data_${config.title}`;
     let namaFile = `Data_${config.title}_SmartTeacher.xlsx`;
-    
+
     if (type === 'siswa' && AppState.ui.filterKelasSiswa) {
         const refKelas = AppState.db.kelas.find(k => k.id === AppState.ui.filterKelasSiswa);
         if (refKelas) {
@@ -325,106 +326,6 @@ function exportExcel(type) {
     XLSX.utils.book_append_sheet(workbook, worksheet, namaSheet);
     XLSX.writeFile(workbook, namaFile);
     showAlert("Berhasil", `File Excel ${namaSheet} berhasil diunduh!`, "success");
-}
-
-function renderPenilaian(container) {
-    let kelasOpts = AppState.db.kelas.map(k => `<option value="${k.id}">${k.kode}</option>`).join('');
-    let mapelOpts = AppState.db.mapel.map(m => `<option value="${m.id}">${m.nama}</option>`).join('');
-
-    container.innerHTML = `
-        <div class="bg-white dark:bg-slate-900 p-6 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-800 mb-6 grid grid-cols-1 md:grid-cols-3 gap-5">
-            <div><label class="text-xs font-bold text-slate-500 dark:text-slate-400 block mb-1.5">Pilih Kelas</label>
-                 <select id="penilaian-kelas" onchange="loadFormPenilaian()" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 outline-none focus:ring-2 dark:text-white"><option value="">-- Pilih --</option>${kelasOpts}</select></div>
-            <div><label class="text-xs font-bold text-slate-500 dark:text-slate-400 block mb-1.5">Mata Pelajaran</label>
-                 <select id="penilaian-mapel" onchange="loadFormPenilaian()" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 outline-none focus:ring-2 dark:text-white"><option value="">-- Pilih --</option>${mapelOpts}</select></div>
-            <div><label class="text-xs font-bold text-slate-500 dark:text-slate-400 block mb-1.5">Jenis Penilaian</label>
-                 <select id="penilaian-jenis" onchange="loadFormPenilaian()" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 outline-none focus:ring-2 dark:text-white">
-                     <option value="" disabled selected>-- Pilih Jenis Penilaian --</option>
-<option value="Tugas TP 1">Tugas (TP/Bab 1)</option>
-<option value="Sumatif TP 1">Sumatif (TP/Bab 1)</option>
-<option value="Tugas TP 2">Tugas (TP/Bab 2)</option>
-<option value="Sumatif TP 2">Sumatif (TP/Bab 2)</option>
-<option value="Tugas TP 3">Tugas (TP/Bab 3)</option>
-<option value="Sumatif TP 3">Sumatif (TP/Bab 3)</option>
-<option value="Tugas TP 4">Tugas (TP/Bab 4)</option>
-<option value="Sumatif TP 4">Sumatif (TP/Bab 4)</option>
-<option value="Tugas TP 5">Tugas (TP/Bab 5)</option>
-<option value="Sumatif TP 5">Sumatif (TP/Bab 5)</option>
-<option value="Tugas TP 6">Tugas (TP/Bab 6)</option>
-<option value="Sumatif TP 6">Sumatif (TP/Bab 6)</option>
-<option value="Tugas TP 7">Tugas (TP/Bab 7)</option>
-<option value="Sumatif TP 7">Sumatif (TP/Bab 7)</option>
-<option value="STS">STS (Sumatif Tengah Semester)</option>
-<option value="SAS">SAS (Sumatif Akhir Semester)</option>
-                 </select></div>
-        </div>
-        <div id="penilaian-form-container"></div>
-    `;
-    loadFormPenilaian();
-}
-
-function loadFormPenilaian() {
-    const kelasId = document.getElementById('penilaian-kelas').value;
-    const mapelId = document.getElementById('penilaian-mapel').value;
-    const jenis = document.getElementById('penilaian-jenis').value;
-    const formContainer = document.getElementById('penilaian-form-container');
-
-    if(!kelasId || !mapelId) { formContainer.innerHTML = `<p class="text-slate-500 text-center py-10 bg-white dark:bg-slate-900 rounded-3xl border dark:border-slate-800">Pilih kelas dan mapel.</p>`; return; }
-
-    const siswaKelas = AppState.db.siswa.filter(s => s.kelasId === kelasId);
-    if(siswaKelas.length === 0) { formContainer.innerHTML = `<p class="text-rose-500 text-center py-10 bg-rose-50 dark:bg-rose-950/40 rounded-3xl border border-rose-100 dark:border-rose-900">Belum ada siswa di kelas ini.</p>`; return; }
-
-    let rows = siswaKelas.map((siswa, idx) => {
-        let existing = AppState.db.penilaian.find(p => p.siswaId === siswa.id && p.mapelId === mapelId && p.jenis === jenis);
-        let val = existing ? existing.nilai : '';
-        return `
-            <tr class="border-b border-slate-100 dark:border-slate-800 hover:bg-slate-50/50 dark:hover:bg-slate-800/50">
-                <td class="py-3 px-5 text-slate-500 text-sm w-12 text-center">${idx+1}</td>
-                <td class="py-3 px-5 text-sm font-bold text-slate-800 dark:text-white">${siswa.nama}</td>
-                <td class="py-3 px-5 text-center">
-                    <input type="number" id="nilai-${siswa.id}" value="${val}" min="0" max="100" class="w-24 bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 outline-none focus:border-brand-500 text-center font-black text-brand-700 dark:text-brand-300">
-                </td>
-            </tr>
-        `;
-    }).join('');
-
-    formContainer.innerHTML = `
-       <div class="bg-white dark:bg-slate-900 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-800 overflow-hidden fade-in relative max-h-[60vh] overflow-y-auto custom-scrollbar">
-            <table class="w-full text-left">
-                <thead class="bg-slate-50 dark:bg-slate-800 text-slate-500 dark:text-slate-400 text-[11px] uppercase tracking-wider font-bold sticky top-0 z-10 shadow-sm">
-                    <tr><th class="py-4 px-5 text-center">No</th><th class="py-4 px-5">Nama Lengkap Siswa</th><th class="py-4 px-5 text-center w-40">Input Nilai</th></tr>
-                </thead>
-                <tbody>${rows}</tbody>
-            </table>
-            <div class="p-5 bg-slate-50 dark:bg-slate-800/50 border-t dark:border-slate-800 flex justify-end">
-                <button onclick="simpanPenilaian('${kelasId}', '${mapelId}', '${jenis}')" class="bg-brand-600 hover:bg-brand-700 text-white font-bold py-3 px-8 rounded-xl shadow-lg">Simpan Nilai ${jenis}</button>
-            </div>
-        </div>
-    `;
-}
-
-function simpanPenilaian(kelasId, mapelId, jenis) {
-    const siswaKelas = AppState.db.siswa.filter(s => s.kelasId === kelasId);
-    siswaKelas.forEach(siswa => {
-        let input = document.getElementById(`nilai-${siswa.id}`);
-        if(input && input.value !== '') {
-            let val = parseFloat(input.value);
-            let existingIndex = AppState.db.penilaian.findIndex(p => p.siswaId === siswa.id && p.mapelId === mapelId && p.jenis === jenis);
-            if(existingIndex >= 0) AppState.db.penilaian[existingIndex].nilai = val;
-            else AppState.db.penilaian.push({ id: generateId(), siswaId: siswa.id, mapelId: mapelId, kelasId: kelasId, jenis: jenis, nilai: val });
-        }
-    });
-    forceSaveNotification();
-}
-
-function ambilNilaiKategori(siswaId, mapelId, daftarAlias) {
-    const data = AppState.db.penilaian.find(p =>
-        p.siswaId === siswaId &&
-        p.mapelId === mapelId &&
-        daftarAlias.includes(p.jenis) &&
-        p.nilai !== "" && p.nilai !== null && !isNaN(p.nilai)
-    );
-    return data ? Number(data.nilai) : null;
 }
 
 function getKKMMapel(mapelId) {
@@ -446,7 +347,6 @@ function simpanKKMMapelLangsung(mapelId, nilaiBaru) {
         fetch(AppState.config.gasUrl, { method: "POST", mode: "no-cors", body: JSON.stringify(AppState.db) }).catch(() => {});
     }
 
-    // Perbarui warna merah/normal seluruh input nilai yang sedang terbuka secara langsung
     document.querySelectorAll('#penilaian-form-container input[id^="nilai-"]').forEach(inp => {
         cekWarnaInputKKM(inp, kkmAngka);
     });
@@ -520,7 +420,6 @@ function loadFormPenilaian() {
     const mapelObj = (AppState.db.mapel || []).find(m => String(m.id) === String(mapelId));
     const kkm = getKKMMapel(mapelId);
 
-    // Bilah KKM sekali atur per Mapel (otomatis tersimpan ke database Mapel)
     const barKKM = `
         <div class="bg-white dark:bg-slate-900 px-6 py-4 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 mb-4 flex flex-wrap items-center justify-between gap-3">
             <div class="flex items-center gap-3">
@@ -612,7 +511,6 @@ function hitungNilaiProporsional(siswaId, mapelId) {
         const sum = ambilNilaiKategori(siswaId, mapelId, [`Sumatif TP ${i}`, `Sumatif (TP/Bab ${i})`]);
         const tgs = ambilNilaiKategori(siswaId, mapelId, [`Tugas TP ${i}`, `Tugas (TP/Bab ${i})`]);
 
-        // Rumus Excel: =(60%*Sumatif)+(40%*Tugas)
         let tpRaw = null;
         if (sum !== null && tgs !== null) {
             tpRaw = (0.6 * sum) + (0.4 * tgs);
@@ -644,7 +542,6 @@ function hitungNilaiProporsional(siswaId, mapelId) {
     const nSTSRaw = ambilNilaiKategori(siswaId, mapelId, ['STS', 'UTS']);
     const nSASRaw = ambilNilaiKategori(siswaId, mapelId, ['SAS', 'UAS']);
 
-    // Rumus Excel: =(2xRerata TP + STS + SAS) / 4
     let pembilang = 0;
     let pembagi = 0;
     if (duaKaliRataTPRaw !== null) { pembilang += duaKaliRataTPRaw; pembagi += 2; }
@@ -724,7 +621,6 @@ function loadRekap() {
         `;
     }
 
-    // Helper warna merah untuk setiap nilai yang di bawah KKM
     const cekMerah = (val, batas = kkmMapel) => {
         if (val !== '-' && val !== '' && !isNaN(Number(val)) && Number(val) < batas) {
             return 'text-rose-600 dark:text-rose-400 font-extrabold bg-rose-500/10';
@@ -802,7 +698,6 @@ function exportRekapExcel() {
         return showAlert("Info", "Belum ada data siswa pada kelas ini.", "info");
     }
 
-    // 1. Ambil Metadata Sekolah, Kelas, Mapel & Guru dari DB
     const sek = AppState.db.sekolah || {};
     const namaSekolah = String(sek.nama || 'NAMA SEKOLAH').toUpperCase();
     const infoAlamat = [
@@ -822,7 +717,6 @@ function exportRekapExcel() {
     const namaMapel = mapelObj ? mapelObj.nama : '-';
     const kkmMapel = getKKMMapel(mapelId);
 
-    // Cari Guru Pengampu Mapel dari Jadwal -> Guru
     let namaGuru = '-';
     const jadwalCocok = (AppState.db.jadwal || []).find(j => String(j.kelasId) === String(kelasId) && String(j.mapelId) === String(mapelId));
     if (jadwalCocok && jadwalCocok.guruId) {
@@ -832,34 +726,30 @@ function exportRekapExcel() {
         namaGuru = AppState.db.guru[0].nama;
     }
 
-    // 2. Susun Matriks Baris (Kolom A..AF = 32 kolom, tabel utama B..AF)
     const TOTAL_COLS = 32;
     const buatBarisKosong = () => new Array(TOTAL_COLS).fill('');
     const aoa = [];
 
-    // Baris 1–6: Kop Sekolah & Judul Laporan
-    aoa.push(buatBarisKosong()); // Row 1
-    const rKopNama = buatBarisKosong(); rKopNama[1] = namaSekolah; aoa.push(rKopNama); // Row 2
-    const rKopAlamat = buatBarisKosong(); rKopAlamat[1] = infoAlamat; aoa.push(rKopAlamat); // Row 3
-    aoa.push(buatBarisKosong()); // Row 4
-    const rJudul1 = buatBarisKosong(); rJudul1[1] = 'HASIL PENILAIAN KEGIATAN KURIKULUM'; aoa.push(rJudul1); // Row 5
-    const rJudul2 = buatBarisKosong(); rJudul2[1] = `TAHUN PELAJARAN ${tahunAjaran}${semester}`; aoa.push(rJudul2); // Row 6
-    aoa.push(buatBarisKosong()); // Row 7
+    aoa.push(buatBarisKosong());
+    const rKopNama = buatBarisKosong(); rKopNama[1] = namaSekolah; aoa.push(rKopNama);
+    const rKopAlamat = buatBarisKosong(); rKopAlamat[1] = infoAlamat; aoa.push(rKopAlamat);
+    aoa.push(buatBarisKosong());
+    const rJudul1 = buatBarisKosong(); rJudul1[1] = 'HASIL PENILAIAN KEGIATAN KURIKULUM'; aoa.push(rJudul1);
+    const rJudul2 = buatBarisKosong(); rJudul2[1] = `TAHUN PELAJARAN ${tahunAjaran}${semester}`; aoa.push(rJudul2);
+    aoa.push(buatBarisKosong());
 
-    // Baris 8–9: Identitas Mapel, Guru, Kelas & Wali Kelas
     const rId1 = buatBarisKosong();
     rId1[1] = 'MATA PELAJARAN'; rId1[3] = `: ${namaMapel}`;
     rId1[10] = 'GURU MAPEL';    rId1[13] = `: ${namaGuru}`;
-    aoa.push(rId1); // Row 8
+    aoa.push(rId1);
 
     const rId2 = buatBarisKosong();
     rId2[1] = 'KELAS';          rId2[3] = `: ${namaKelas}`;
     rId2[10] = 'WALI KELAS';    rId2[13] = `: ${waliKelas}`;
-    aoa.push(rId2); // Row 9
+    aoa.push(rId2);
 
-    aoa.push(buatBarisKosong()); // Row 10
+    aoa.push(buatBarisKosong());
 
-    // Baris 11–13: Header Tabel 3 Tingkat (Persis Template Excel)
     const h1 = buatBarisKosong();
     const h2 = buatBarisKosong();
     const h3 = buatBarisKosong();
@@ -886,9 +776,8 @@ function exportRekapExcel() {
     h1[30] = 'NILAI RAPOR';
     h1[31] = 'PREDIKAT';
 
-    aoa.push(h1, h2, h3); // Row 11, 12, 13
+    aoa.push(h1, h2, h3);
 
-    // Helper huruf kolom (0 -> A, 1 -> B, ...)
     const colLetter = (idx) => {
         let s = '', n = idx + 1;
         while (n > 0) {
@@ -899,7 +788,6 @@ function exportRekapExcel() {
         return s;
     };
 
-    // Baris 14+: Data Siswa & Rumus Otomatis
     const startDataRow = 14;
     siswaKelas.forEach((siswa, idx) => {
         const rNum = startDataRow + idx;
@@ -929,32 +817,26 @@ function exportRekapExcel() {
                 : { t: 'n', f: formulaTP };
         }
 
-        // AA: Rerata TP
         const formulaRerata = `IF(COUNT(H${rNum},K${rNum},N${rNum},Q${rNum},T${rNum},W${rNum},Z${rNum})=0,"",ROUND(AVERAGE(H${rNum},K${rNum},N${rNum},Q${rNum},T${rNum},W${rNum},Z${rNum}),0))`;
         row[26] = calc.rataTP !== '-' ? { t: 'n', f: formulaRerata, v: Number(calc.rataTP) } : { t: 'n', f: formulaRerata };
 
-        // AB: 2xRerata TP
         const formula2x = `IF(AA${rNum}="","",2*AA${rNum})`;
         row[27] = calc.duaKaliRataTP !== '-' ? { t: 'n', f: formula2x, v: Number(calc.duaKaliRataTP) } : { t: 'n', f: formula2x };
 
-        // AC: STS & AD: SAS
         const stsVal = ambilNilaiKategori(siswa.id, mapelId, ['STS', 'UTS']);
         const sasVal = ambilNilaiKategori(siswa.id, mapelId, ['SAS', 'UAS']);
         row[28] = stsVal !== null ? Number(stsVal) : '';
         row[29] = sasVal !== null ? Number(sasVal) : '';
 
-        // AE: NILAI RAPOR
         const formulaRapor = `IF(AND(AB${rNum}="",AC${rNum}="",AD${rNum}=""),"",ROUND((N(AB${rNum})+N(AC${rNum})+N(AD${rNum}))/(IF(AB${rNum}<>"",2,0)+IF(AC${rNum}<>"",1,0)+IF(AD${rNum}<>"",1,0)),0))`;
         row[30] = calc.akhir > 0 ? { t: 'n', f: formulaRapor, v: Number(calc.akhir) } : { t: 'n', f: formulaRapor };
 
-        // AF: PREDIKAT
         const formulaPred = `IF(AE${rNum}="","-",IF(AE${rNum}>=90,"A",IF(AE${rNum}>=80,"B",IF(AE${rNum}>=E${rNum},"C","D"))))`;
         row[31] = { t: 's', f: formulaPred, v: calc.predikat || '-' };
 
         aoa.push(row);
     });
 
-    // Blok Tanda Tangan di Bagian Bawah
     aoa.push(buatBarisKosong());
     aoa.push(buatBarisKosong());
     const rTtd1 = buatBarisKosong(); rTtd1[3] = 'Mengetahui,'; aoa.push(rTtd1);
@@ -965,54 +847,50 @@ function exportRekapExcel() {
     const rTtdNama = buatBarisKosong(); rTtdNama[3] = kepsek; rTtdNama[22] = namaGuru; aoa.push(rTtdNama);
     const rTtdNip  = buatBarisKosong(); rTtdNip[3] = `NIP. ${nipKepsek}`; aoa.push(rTtdNip);
 
-    // 3. Buat Worksheet, Merge Sel & Atur Lebar Kolom
     const ws = XLSX.utils.aoa_to_sheet(aoa);
 
     ws['!merges'] = [
-        // Kop & Judul
         { s: { r: 1, c: 1 }, e: { r: 1, c: 31 } },
         { s: { r: 2, c: 1 }, e: { r: 2, c: 31 } },
         { s: { r: 4, c: 1 }, e: { r: 4, c: 31 } },
         { s: { r: 5, c: 1 }, e: { r: 5, c: 31 } },
-        // Identitas
         { s: { r: 7, c: 1 }, e: { r: 7, c: 2 } },
         { s: { r: 7, c: 10 }, e: { r: 7, c: 12 } },
         { s: { r: 8, c: 1 }, e: { r: 8, c: 2 } },
         { s: { r: 8, c: 10 }, e: { r: 8, c: 12 } },
-        // Header Tabel
-        { s: { r: 10, c: 1 }, e: { r: 10, c: 2 } },   // NOMOR
-        { s: { r: 11, c: 1 }, e: { r: 12, c: 1 } },   // URUT
-        { s: { r: 11, c: 2 }, e: { r: 12, c: 2 } },   // INDUK
-        { s: { r: 10, c: 3 }, e: { r: 12, c: 3 } },   // NAMA SISWA
-        { s: { r: 10, c: 4 }, e: { r: 12, c: 4 } },   // KKM
-        { s: { r: 10, c: 5 }, e: { r: 10, c: 29 } },  // PENGETAHUAN
-        { s: { r: 11, c: 26 }, e: { r: 12, c: 26 } }, // Rerata TP
-        { s: { r: 11, c: 27 }, e: { r: 12, c: 27 } }, // 2xRerata TP
-        { s: { r: 11, c: 28 }, e: { r: 12, c: 28 } }, // STS
-        { s: { r: 11, c: 29 }, e: { r: 12, c: 29 } }, // SAS
-        { s: { r: 10, c: 30 }, e: { r: 12, c: 30 } }, // NILAI RAPOR
-        { s: { r: 10, c: 31 }, e: { r: 12, c: 31 } }  // PREDIKAT
+        { s: { r: 10, c: 1 }, e: { r: 10, c: 2 } },
+        { s: { r: 11, c: 1 }, e: { r: 12, c: 1 } },
+        { s: { r: 11, c: 2 }, e: { r: 12, c: 2 } },
+        { s: { r: 10, c: 3 }, e: { r: 12, c: 3 } },
+        { s: { r: 10, c: 4 }, e: { r: 12, c: 4 } },
+        { s: { r: 10, c: 5 }, e: { r: 10, c: 29 } },
+        { s: { r: 11, c: 26 }, e: { r: 12, c: 26 } },
+        { s: { r: 11, c: 27 }, e: { r: 12, c: 27 } },
+        { s: { r: 11, c: 28 }, e: { r: 12, c: 28 } },
+        { s: { r: 11, c: 29 }, e: { r: 12, c: 29 } },
+        { s: { r: 10, c: 30 }, e: { r: 12, c: 30 } },
+        { s: { r: 10, c: 31 }, e: { r: 12, c: 31 } }
     ];
 
     for (let i = 0; i < 7; i++) {
         const cStart = 5 + i * 3;
-        ws['!merges'].push({ s: { r: 11, c: cStart }, e: { r: 11, c: cStart + 1 } });     // TP/BAB n
-        ws['!merges'].push({ s: { r: 11, c: cStart + 2 }, e: { r: 12, c: cStart + 2 } }); // TPn
+        ws['!merges'].push({ s: { r: 11, c: cStart }, e: { r: 11, c: cStart + 1 } });
+        ws['!merges'].push({ s: { r: 11, c: cStart + 2 }, e: { r: 12, c: cStart + 2 } });
     }
 
     ws['!cols'] = [
-        { wch: 3 },  // A
-        { wch: 6 },  // B: URUT
-        { wch: 13 }, // C: INDUK
-        { wch: 32 }, // D: NAMA SISWA
-        { wch: 6 },  // E: KKM
-        ...new Array(21).fill({ wch: 7 }), // F..Z: Nilai TP/BAB 1..7
-        { wch: 10 }, // AA: Rerata TP
-        { wch: 12 }, // AB: 2xRerata TP
-        { wch: 7 },  // AC: STS
-        { wch: 7 },  // AD: SAS
-        { wch: 12 }, // AE: NILAI RAPOR
-        { wch: 10 }  // AF: PREDIKAT
+        { wch: 3 },
+        { wch: 6 },
+        { wch: 13 },
+        { wch: 32 },
+        { wch: 6 },
+        ...new Array(21).fill({ wch: 7 }),
+        { wch: 10 },
+        { wch: 12 },
+        { wch: 7 },
+        { wch: 7 },
+        { wch: 12 },
+        { wch: 10 }
     ];
 
     ws['!rows'] = [];
@@ -1060,7 +938,7 @@ function renderAbsensi(container) {
                     <label class="text-xs font-bold text-slate-500 dark:text-slate-400 block mb-1.5">Pilih Tanggal</label>
                     <input type="date" id="abs-tanggal" value="${today}" onchange="loadAbsensi()" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 outline-none dark:text-white text-sm">
                 </div>
-                
+
                 <div id="wadah-bulan-absen" style="display: none;">
                     <label class="text-xs font-bold text-slate-500 dark:text-slate-400 block mb-1.5">Pilih Bulan (Rekap)</label>
                     <input type="month" id="abs-bulan" value="${today.slice(0, 7)}" onchange="loadAbsensi()" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 outline-none dark:text-white text-sm">
@@ -1097,22 +975,22 @@ function loadAbsensi() {
         if (wadahBulan) wadahBulan.style.display = 'none';
     }
 
-    if(!kelasId) { 
-        container.innerHTML = `<p class="text-slate-500 text-center py-10 bg-white dark:bg-slate-900 rounded-3xl border dark:border-slate-800">Pilih kelas untuk menampilkan daftar hadir.</p>`; 
-        return; 
+    if(!kelasId) {
+        container.innerHTML = `<p class="text-slate-500 text-center py-10 bg-white dark:bg-slate-900 rounded-3xl border dark:border-slate-800">Pilih kelas untuk menampilkan daftar hadir.</p>`;
+        return;
     }
 
     const siswaKelas = AppState.db.siswa.filter(s => s.kelasId === kelasId);
-    if(siswaKelas.length === 0) { 
-        container.innerHTML = `<p class="text-rose-500 text-center py-10 bg-rose-50 dark:bg-rose-950/40 rounded-3xl border border-rose-100 dark:border-slate-800">Belum ada siswa di kelas ini.</p>`; 
-        return; 
+    if(siswaKelas.length === 0) {
+        container.innerHTML = `<p class="text-rose-500 text-center py-10 bg-rose-50 dark:bg-rose-950/40 rounded-3xl border border-rose-100 dark:border-slate-800">Belum ada siswa di kelas ini.</p>`;
+        return;
     }
 
     if (mode === 'mapel') {
         if(!tanggal) return;
         let rows = siswaKelas.map((siswa, idx) => {
             let existing = AppState.db.absensi.find(a => a.siswaId === siswa.id && a.tanggal === tanggal && a.kelasId === kelasId);
-            let status = existing ? existing.status : 'H'; 
+            let status = existing ? existing.status : 'H';
             const radio = (val, label, color) => `<label class="inline-flex items-center mr-4 cursor-pointer p-2 rounded-lg hover:bg-${color}-50 dark:hover:bg-slate-800"><input type="radio" name="abs-${siswa.id}" value="${val}" ${status === val ? 'checked' : ''} class="w-4 h-4 accent-brand-600"><span class="ml-2 text-sm font-bold text-slate-700 dark:text-slate-300">${label}</span></label>`;
             return `<tr class="border-b border-slate-100 dark:border-slate-800"><td class="py-3 px-5 text-center">${idx+1}</td><td class="py-3 px-5 font-bold dark:text-white">${siswa.nama}</td><td class="py-3 px-5 bg-slate-50/30 dark:bg-slate-800/30">${radio('H','Hadir','emerald')}${radio('I','Izin','blue')}${radio('S','Sakit','amber')}${radio('A','Alpa','rose')}</td></tr>`;
         }).join('');
@@ -1205,6 +1083,8 @@ function loadAbsensi() {
             </div>
         `;
     }
+}
+
 let html5QrcodeScanner = null;
 function bukaScannerQR(tanggal, kelasId) {
     if (typeof Html5QrcodeScanner === 'undefined') return showAlert("Tunggu", "Sedang mengunduh modul Kamera AI... Coba klik lagi dalam 3 detik.", "info");
@@ -1233,35 +1113,35 @@ function bukaScannerQR(tanggal, kelasId) {
 function tutupScannerQR() {
     if (html5QrcodeScanner) html5QrcodeScanner.clear().catch(e => console.log(e));
     document.getElementById('qr-modal-scanner').classList.add('hidden');
-    loadAbsensi(); 
+    loadAbsensi();
 }
 
 function prosesHasilScan(nisAtauId, tanggal, kelasId) {
     html5QrcodeScanner.pause();
     const siswa = AppState.db.siswa.find(s => s.kelasId === kelasId && (s.nis === nisAtauId || s.id === nisAtauId));
     const toast = document.getElementById('scan-result-toast');
-    
+
     if (siswa) {
         let existingIndex = AppState.db.absensi.findIndex(a => a.siswaId === siswa.id && a.tanggal === tanggal && a.kelasId === kelasId);
         if (existingIndex >= 0) AppState.db.absensi[existingIndex].status = 'H';
         else AppState.db.absensi.push({ id: generateId(), siswaId: siswa.id, kelasId, tanggal, status: 'H' });
-        
+
         localStorage.setItem(AppState.config.storageKey, JSON.stringify(AppState.db));
-        if (typeof playTick === 'function') playTick(800); 
+        if (typeof playTick === 'function') playTick(800);
 
         toast.className = "mt-4 p-3 bg-emerald-500 text-white font-black rounded-xl text-sm flex items-center justify-center shadow-[0_0_20px_rgba(16,185,129,0.5)] transform scale-100 transition-all h-12";
         toast.innerHTML = `<i class="fa-solid fa-circle-check mr-2 text-lg"></i> ${siswa.nama} (HADIR)`;
-        
+
         setTimeout(() => {
             toast.classList.add('hidden');
             toast.classList.replace('scale-100', 'scale-90');
-            html5QrcodeScanner.resume(); 
+            html5QrcodeScanner.resume();
         }, 1500);
     } else {
-        if (typeof playTick === 'function') playTick(200); 
+        if (typeof playTick === 'function') playTick(200);
         toast.className = "mt-4 p-3 bg-rose-500 text-white font-black rounded-xl text-sm flex items-center justify-center shadow-[0_0_20px_rgba(244,63,94,0.5)] transform scale-100 transition-all h-12";
         toast.innerHTML = `<i class="fa-solid fa-circle-xmark mr-2 text-lg"></i> NIS tidak terdaftar!`;
-        
+
         setTimeout(() => {
             toast.classList.add('hidden');
             toast.classList.replace('scale-100', 'scale-90');
@@ -1386,7 +1266,6 @@ function pilihStatusAbsenWali(siswaId, tanggal, kelasId, nextStatus) {
         else AppState.db.absensi.push({ id: generateId(), siswaId, kelasId, tanggal, status: nextStatus });
     }
 
-    // 1. Perbarui HANYA kotak yang disentuh secara instan tanpa memuat ulang tabel
     const cellEl = document.getElementById(`abs-cell-${siswaId}-${tanggal}`);
     if (cellEl) {
         cellEl.dataset.status = nextStatus;
@@ -1394,7 +1273,6 @@ function pilihStatusAbsenWali(siswaId, tanggal, kelasId, nextStatus) {
         cellEl.className = `border border-slate-200 dark:border-slate-700 p-1 text-center text-xs cursor-pointer select-none hover:brightness-95 transition-colors duration-150 ${getStyleSelAbsenWali(nextStatus)}`;
     }
 
-    // 2. Perbarui HANYA kolom Total H/S/I/A pada baris siswa tersebut
     const elemenBulan = document.getElementById('abs-bulan');
     const nowDefault = new Date();
     const monthPrefix = (elemenBulan && elemenBulan.value)
@@ -1420,7 +1298,6 @@ function pilihStatusAbsenWali(siswaId, tanggal, kelasId, nextStatus) {
     if (elI) elI.textContent = totI;
     if (elA) elA.textContent = totA;
 
-    // 3. Simpan ke penyimpanan lokal & sinkronkan ke cloud secara diam-diam
     localStorage.setItem(AppState.config.storageKey, JSON.stringify(AppState.db));
     if (AppState.config.gasUrl && AppState.config.gasUrl.startsWith("http")) {
         fetch(AppState.config.gasUrl, { method: "POST", mode: "no-cors", body: JSON.stringify(AppState.db) }).catch(() => {});
@@ -1431,6 +1308,7 @@ function ubahAbsenWali(siswaId, tanggal, kelasId) {
     const cellEl = document.getElementById(`abs-cell-${siswaId}-${tanggal}`);
     if (cellEl) bukaPickerAbsenWali(null, cellEl, siswaId, tanggal, kelasId);
 }
+
 function simpanAbsensi(tanggal, kelasId) {
     const siswaKelas = AppState.db.siswa.filter(s => s.kelasId === kelasId);
     siswaKelas.forEach(siswa => {
@@ -1473,7 +1351,7 @@ function generateRapor() {
 
     const siswa = AppState.db.siswa.find(s => s.id === siswaId);
     const kelas = AppState.db.kelas.find(k => k.id === siswa.kelasId);
-    
+
     let barisMapel = AppState.db.mapel.map((mapel, idx) => {
         const calc = hitungNilaiProporsional(siswa.id, mapel.id);
         let deskripsi = calc.akhir >= 90 ? `Sangat mahir dalam memahami seluruh kompetensi ${mapel.nama}.` : (calc.akhir >= 80 ? `Baik dalam menguasai kompetensi dasar ${mapel.nama}.` : (calc.akhir > 0 ? `Perlu bimbingan lebih lanjut pada beberapa materi ${mapel.nama}.` : '-'));
@@ -1527,7 +1405,6 @@ async function tarikDataGateway(kelasId) {
     const npsn = activeWs.npsn;
     if (!npsn) return showAlert("NPSN Kosong", "Kode Sekolah / NPSN untuk ruang kerja '" + activeWs.nama + "' belum diatur. Silakan buat/edit ruang kerjanya.", "error");
 
-    // 1. KUNCI POSISI FILTER SAAT INI AGAR TIDAK MENTAL KE AWAL
     const bulanInput = document.getElementById('abs-bulan');
     const bulanTerpilih = (bulanInput && bulanInput.value)
         ? bulanInput.value
@@ -1542,7 +1419,6 @@ async function tarikDataGateway(kelasId) {
     }
 
     try {
-        // 2. SUSUN DAFTAR TANGGAL DARI TANGGAL 1 S/D HARI INI PADA BULAN YANG DIPILIH
         const [tahunStr, bulanStr] = bulanTerpilih.split('-');
         const tahunNum = parseInt(tahunStr, 10);
         const bulanNum = parseInt(bulanStr, 10);
@@ -1557,7 +1433,6 @@ async function tarikDataGateway(kelasId) {
             daftarTanggal.push(`${tahunStr}-${bulanStr}-${String(d).padStart(2, '0')}`);
         }
 
-        // 3. TARIK DATA SECARA PARALEL UNTUK SELURUH TANGGAL PADA BULAN TERSEBUT
         const hasilFetch = await Promise.all(
             daftarTanggal.map(async (tglStr) => {
                 try {
@@ -1576,14 +1451,13 @@ async function tarikDataGateway(kelasId) {
         let hitungBerhasil = 0;
         const siswaKelas = AppState.db.siswa.filter(s => s.kelasId === kelasTerpilih);
 
-      dataGateway.forEach(absenGerbang => {
+        dataGateway.forEach(absenGerbang => {
             if (absenGerbang.tanggal) {
                 const rawQr = String(absenGerbang.qr || absenGerbang.nis || '').trim();
                 const parts = rawQr.split('|');
                 const idAtauNis = (parts[0] || '').trim();
                 const namaDariLog = (parts[1] || '').trim().toLowerCase();
 
-                // Cocokkan berdasarkan: (1) NIS teks persis, (2) NIS angka (abaikan nol di depan), (3) ID siswa, atau (4) Nama lengkap
                 const siswaMatch = siswaKelas.find(s => {
                     const dbNis = String(s.nis || '').trim();
                     const dbId = String(s.id || '').trim();
@@ -1617,7 +1491,7 @@ async function tarikDataGateway(kelasId) {
                 }
             }
         });
-        // 4. PASTIKAN POSISI WALI KELAS, BULAN & KELAS TETAP TERKUNCI SEBELUM RENDER ULANG
+
         const radioWali = document.querySelector('input[name="mode-absen"][value="walikelas"]');
         if (radioWali) radioWali.checked = true;
         const elBulan = document.getElementById('abs-bulan');
@@ -1627,10 +1501,10 @@ async function tarikDataGateway(kelasId) {
 
         loadAbsensi();
 
-       if (hitungBerhasil > 0) {
+        if (hitungBerhasil > 0) {
             localStorage.setItem(AppState.config.storageKey, JSON.stringify(AppState.db));
             if (AppState.config.gasUrl && AppState.config.gasUrl.startsWith("http")) {
-                fetch(AppState.config.gasUrl, { method: "POST", mode: "no-cors", body: JSON.stringify(AppState.db) }).catch(()=>{});
+                fetch(AppState.config.gasUrl, { method: "POST", mode: "no-cors", body: JSON.stringify(AppState.db) }).catch(() => {});
             }
             loadAbsensi();
             showAlert("Sinkronisasi Sukses!", `Berhasil menarik Hadir (H) sebanyak ${hitungBerhasil} catatan kehadiran sepanjang bulan ${bulanTerpilih}!`, "success");
