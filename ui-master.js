@@ -1431,7 +1431,7 @@ async function tarikDataGateway(kelasId) {
     const btn = document.getElementById('btn-tarik-gateway');
     const originalText = btn ? btn.innerHTML : '';
     if (btn) {
-        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Memverifikasi Data...';
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Menarik Data...';
         btn.disabled = true;
     }
 
@@ -1488,22 +1488,20 @@ async function tarikDataGateway(kelasId) {
                 absenGerbang.kelas || absenGerbang.rombel || absenGerbang.kelasNama || absenGerbang.namaKelas || absenGerbang.nama_kelas || absenGerbang.subKelas || parts[2] || ''
             );
 
-            // 1. Jika log membawa NPSN / Nama Sekolah, WAJIB sama dengan ruang kerja aktif
+            // 1. Jika log membawa NPSN / Nama Sekolah, wajib cocok dengan ruang kerja aktif
             if ((logNpsn && logNpsn !== npsn) || (logSekolah && namaWs && logSekolah !== namaWs)) {
                 hitungDitolak++;
                 return;
             }
 
-            // 2. Jika log membawa Nama Kelas, WAJIB sama dengan kelas yang dibuka
+            // 2. Jika log membawa Nama Kelas, wajib cocok dengan kelas yang sedang dibuka
             if (logKelas && logKelas !== targetKodeKelas) {
                 hitungDitolak++;
                 return;
             }
 
-            // Cek apakah ini log format lama (sebelum 24/11: tidak punya NPSN, Kelas, maupun Nama)
+            // 3. Pengaman log format lama (tanpa NPSN/Kelas/Nama): nomor pendek 1-99 hanya milik PP. Al Hikam (P0NPESAK01)
             const isFormatLamaPolos = !logNpsn && !logSekolah && !logKelas && !namaDariLog;
-
-            // 3. Pengaman log lama: nomor induk pendek (1-99 / 001-099) hanya milik PP. Al Hikam (P0NPESAK01)
             if (isFormatLamaPolos && !isNaN(idAtauNis) && Number(idAtauNis) < 100 && npsn !== 'P0NPESAK01') {
                 hitungDitolak++;
                 return;
@@ -1567,7 +1565,7 @@ async function tarikDataGateway(kelasId) {
                 fetch(AppState.config.gasUrl, { method: "POST", mode: "no-cors", body: JSON.stringify(AppState.db) }).catch(() => {});
             }
             loadAbsensi();
-            showAlert("Sinkronisasi Sukses!", `Berhasil menarik Hadir (H) sebanyak ${hitungBerhasil} catatan sah khusus kelas ${kelasObj.kode} (${activeWs.nama}).`, "success");
+            showAlert("Sinkronisasi Sukses!", `Berhasil menarik Hadir (H) sebanyak ${hitungBerhasil} catatan untuk kelas ${kelasObj.kode} (${activeWs.nama}).`, "success");
         } else {
             loadAbsensi();
             const infoTolak = hitungDitolak > 0 ? ` (${hitungDitolak} catatan di luar kelas ${kelasObj.kode} dilewati).` : '.';
@@ -1583,7 +1581,6 @@ async function tarikDataGateway(kelasId) {
         }
     }
 }
-
 function resetAbsenHadirBulanIni(kelasId) {
     const activeWs = typeof getActiveWorkspace === 'function' ? getActiveWorkspace() : { nama: 'Ruang Kerja Aktif' };
     const bulanInput = document.getElementById('abs-bulan');
