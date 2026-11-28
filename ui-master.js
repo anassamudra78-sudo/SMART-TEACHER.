@@ -1413,11 +1413,13 @@ function lihatQRSiswa(id) {
 
 async function tarikDataGateway(kelasId) {
     const activeWs = getActiveWorkspace();
-    const npsn = String(activeWs.npsn || '').trim().toUpperCase();
-    const rapikanTeks = (teks) => String(teks || '').trim().toLowerCase().replace(/[-_]+/g, ' ').replace(/\s+/g, ' ');
+    const normNpsn = (val) => String(val || '').trim().toUpperCase().replace(/O/g, '0');
+    const npsnRaw = String(activeWs.npsn || '').trim().toUpperCase();
+    const npsnNorm = normNpsn(npsnRaw);
+    const rapikanTeks = (teks) => String(teks || '').trim().toLowerCase().replace(/[.’'`]/g, '').replace(/[-_]+/g, ' ').replace(/\s+/g, ' ');
     const namaWs = rapikanTeks(activeWs.nama);
 
-    if (!npsn) {
+    if (!npsnRaw) {
         return showAlert("NPSN Kosong", "Kode Sekolah / NPSN untuk ruang kerja '" + activeWs.nama + "' belum diatur. Silakan buat/edit ruang kerjanya.", "error");
     }
 
@@ -1459,7 +1461,7 @@ async function tarikDataGateway(kelasId) {
         const hasilFetch = await Promise.all(
             daftarTanggal.map(async (tglStr) => {
                 try {
-                    const urlTarik = `${URL_GATEWAY_PUSAT}?action=getLogs&npsn=${encodeURIComponent(npsn)}&tanggal=${encodeURIComponent(tglStr)}`;
+                    const urlTarik = `${URL_GATEWAY_PUSAT}?action=getLogs&npsn=${encodeURIComponent(npsnRaw)}&tanggal=${encodeURIComponent(tglStr)}`;
                     const res = await fetch(urlTarik);
                     const txt = await res.text();
                     const json = JSON.parse(txt);
@@ -1487,16 +1489,17 @@ async function tarikDataGateway(kelasId) {
             const idAtauNis = (parts[0] || '').trim();
             const namaDariLog = rapikanTeks(absenGerbang.nama || parts[1] || '');
 
-            const logNpsn = String(
+            const logNpsnRaw = String(
                 absenGerbang.npsn || absenGerbang.kodeSekolah || absenGerbang.kode_sekolah || parts[3] || ''
             ).trim().toUpperCase();
+            const logNpsnNorm = normNpsn(logNpsnRaw);
             const logSekolah = rapikanTeks(absenGerbang.sekolah || absenGerbang.instansi || absenGerbang.workspace || '');
             const logKelas = rapikanTeks(
                 absenGerbang.kelas || absenGerbang.rombel || absenGerbang.kelasNama || absenGerbang.namaKelas || absenGerbang.nama_kelas || absenGerbang.subKelas || parts[2] || ''
             );
 
-            // 1. Wajib ada NPSN yang cocok dengan ruang kerja aktif
-            if (!logNpsn || logNpsn !== npsn) {
+            // 1. Jika server menyertakan NPSN, samakan huruf O dan angka 0 (PONPESAK01 == P0NPESAK01)
+            if (logNpsnNorm && logNpsnNorm !== npsnNorm) {
                 hitungDitolak++;
                 return;
             }
@@ -1505,13 +1508,13 @@ async function tarikDataGateway(kelasId) {
                 return;
             }
 
-            // 2. Wajib ada Nama Kelas yang cocok persis dengan kelas yang sedang dibuka
+            // 2. Wajib ada Nama Kelas (dari NIS|NAMA|KELAS) dan cocok dengan kelas yang dibuka
             if (!logKelas || logKelas !== targetKodeKelas) {
                 hitungDitolak++;
                 return;
             }
 
-            // 3. Wajib ada NIS / ID Siswa dan Nama Siswa yang cocok
+            // 3. Wajib cocok Nama Siswa dan NIS / ID (jika NIS diisi di Data Siswa)
             if (!idAtauNis || !namaDariLog) {
                 hitungDitolak++;
                 return;
@@ -1530,7 +1533,9 @@ async function tarikDataGateway(kelasId) {
                     const cocokNisAngka = !isNaN(dbNis) && !isNaN(idAtauNis) && Number(dbNis) === Number(idAtauNis);
                     return cocokNisTeks || cocokNisAngka;
                 }
-                return false;
+
+                // Jika kolom NIS siswa di Smart Teacher masih kosong, tetap cocok berdasarkan Kelas + Nama lengkap
+                return true;
             });
 
             if (siswaMatch) {
@@ -1591,6 +1596,7 @@ async function tarikDataGateway(kelasId) {
         }
     }
 }
+
 function resetAbsenHadirBulanIni(kelasId) {
     const activeWs = typeof getActiveWorkspace === 'function' ? getActiveWorkspace() : { nama: 'Ruang Kerja Aktif' };
     const bulanInput = document.getElementById('abs-bulan');
