@@ -1056,9 +1056,14 @@ function loadAbsensi() {
                         <h4 class="font-bold text-slate-800 dark:text-white"><i class="fa-solid fa-calendar-days text-indigo-500 mr-2"></i> Rekap Kehadiran (31 Hari)</h4>
                         <p class="text-xs text-slate-500 bg-slate-100 dark:bg-slate-800 px-3 py-1 rounded-lg mt-1.5">Sentuh kotak kosong untuk memilih <b>S / I / A / H</b> secara instan tanpa berkedip.</p>
                     </div>
-                    <button onclick="tarikDataGateway('${kelasId}')" id="btn-tarik-gateway" class="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-bold py-2.5 px-4 rounded-xl text-xs shadow-md shadow-cyan-500/30 transition-all flex items-center shrink-0">
-                        <i class="fa-solid fa-satellite-dish mr-2 animate-pulse"></i> Tarik Data Smart Gateway
-                    </button>
+                   <div class="flex flex-wrap items-center gap-2 shrink-0">
+                        <button onclick="resetAbsenHadirBulanIni('${kelasId}')" id="btn-reset-absen-h" class="bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/50 dark:hover:bg-rose-900/60 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-800/70 font-bold py-2.5 px-3.5 rounded-xl text-xs transition-all flex items-center shrink-0">
+                            <i class="fa-solid fa-rotate-left mr-1.5"></i> Reset H Bulan Ini
+                        </button>
+                        <button onclick="tarikDataGateway('${kelasId}')" id="btn-tarik-gateway" class="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-bold py-2.5 px-4 rounded-xl text-xs shadow-md shadow-cyan-500/30 transition-all flex items-center shrink-0">
+                            <i class="fa-solid fa-satellite-dish mr-2 animate-pulse"></i> Tarik Data Smart Gateway
+                        </button>
+                    </div>
                 </div>
                 <div id="absensi-table-scroll" class="overflow-x-auto custom-scrollbar pb-3">
                     <table class="w-max min-w-full text-left border-collapse border border-slate-200 dark:border-slate-700">
@@ -1402,8 +1407,10 @@ function lihatQRSiswa(id) {
 
 async function tarikDataGateway(kelasId) {
     const activeWs = getActiveWorkspace();
-    const npsn = activeWs.npsn;
-    if (!npsn) return showAlert("NPSN Kosong", "Kode Sekolah / NPSN untuk ruang kerja '" + activeWs.nama + "' belum diatur. Silakan buat/edit ruang kerjanya.", "error");
+    const npsn = String(activeWs.npsn || '').trim();
+    if (!npsn) {
+        return showAlert("NPSN Kosong", "Kode Sekolah / NPSN untuk ruang kerja '" + activeWs.nama + "' belum diatur. Silakan buat/edit ruang kerjanya.", "error");
+    }
 
     const bulanInput = document.getElementById('abs-bulan');
     const bulanTerpilih = (bulanInput && bulanInput.value)
@@ -1411,10 +1418,13 @@ async function tarikDataGateway(kelasId) {
         : (new Date().getFullYear() + "-" + String(new Date().getMonth() + 1).padStart(2, '0'));
     const kelasTerpilih = kelasId || (document.getElementById('abs-kelas')?.value || '');
 
+    const kelasObj = (AppState.db.kelas || []).find(k => String(k.id) === String(kelasTerpilih));
+    const targetKodeKelas = String(kelasObj ? kelasObj.kode : '').trim().toLowerCase();
+
     const btn = document.getElementById('btn-tarik-gateway');
     const originalText = btn ? btn.innerHTML : '';
     if (btn) {
-        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Menarik Data Bulan Ini...';
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Menarik Data Valid...';
         btn.disabled = true;
     }
 
@@ -1449,45 +1459,70 @@ async function tarikDataGateway(kelasId) {
 
         const dataGateway = hasilFetch.flat();
         let hitungBerhasil = 0;
-        const siswaKelas = AppState.db.siswa.filter(s => s.kelasId === kelasTerpilih);
+        const siswaKelas = AppState.db.siswa.filter(s => String(s.kelasId) === String(kelasTerpilih));
 
         dataGateway.forEach(absenGerbang => {
-            if (absenGerbang.tanggal) {
-                const rawQr = String(absenGerbang.qr || absenGerbang.nis || '').trim();
-                const parts = rawQr.split('|');
-                const idAtauNis = (parts[0] || '').trim();
-                const namaDariLog = (parts[1] || '').trim().toLowerCase();
+            if (!absenGerbang || !absenGerbang.tanggal) return;
 
-                const siswaMatch = siswaKelas.find(s => {
-                    const dbNis = String(s.nis || '').trim();
-                    const dbId = String(s.id || '').trim();
-                    const dbNama = String(s.nama || '').trim().toLowerCase();
+            // LAPIS 1: Kunci Ruang Kerja / NPSN (tolak jika log berasal dari sekolah/lembaga lain)
+            const logNpsn = String(absenGerbang.npsn || absenGerbang.kodeSekolah || absenGerbang.kode_sekolah || '').trim().toUpperCase();
+            if (logNpsn && logNpsn !== npsn.toUpperCase()) return;
 
-                    const cocokNisTeks = dbNis !== '' && dbNis === idAtauNis;
-                    const cocokNisAngka = dbNis !== '' && idAtauNis !== '' && !isNaN(dbNis) && !isNaN(idAtauNis) && Number(dbNis) === Number(idAtauNis);
-                    const cocokId = dbId !== '' && dbId === idAtauNis;
-                    const cocokNama = namaDariLog !== '' && dbNama === namaDariLog;
+            const rawQr = String(absenGerbang.qr || absenGerbang.nis || '').trim();
+            const parts = rawQr.split('|');
+            const idAtauNis = (parts[0] || '').trim();
+            const namaDariLog = String(absenGerbang.nama || parts[1] || '').trim().toLowerCase();
 
-                    return cocokNisTeks || cocokNisAngka || cocokId || cocokNama;
-                });
+            // LAPIS 2: Kunci Kelas / Rombel (tolak jika kelas di log berbeda dengan kelas yang dibuka)
+            const logKelas = String(absenGerbang.kelas || absenGerbang.rombel || parts[2] || '').trim().toLowerCase();
+            if (logKelas && targetKodeKelas && logKelas !== targetKodeKelas) return;
 
-                if (siswaMatch) {
-                    const idx = AppState.db.absensi.findIndex(a => a.siswaId === siswaMatch.id && a.tanggal === absenGerbang.tanggal && a.kelasId === kelasTerpilih);
-                    if (idx >= 0) {
-                        if (AppState.db.absensi[idx].status !== 'H') {
-                            AppState.db.absensi[idx].status = 'H';
-                            hitungBerhasil++;
-                        }
-                    } else {
-                        AppState.db.absensi.push({
-                            id: generateId(),
-                            siswaId: siswaMatch.id,
-                            kelasId: kelasTerpilih,
-                            tanggal: absenGerbang.tanggal,
-                            status: 'H'
-                        });
+            // LAPIS 3 & 4: Kunci NIS / ID & Nomor Absen (jangan lolos hanya karena nama sama di lembaga lain)
+            const logNoAbsen = String(absenGerbang.noAbsen || absenGerbang.no_absen || absenGerbang.urut || '').trim();
+
+            const siswaMatch = siswaKelas.find((s, idx) => {
+                const dbNis = String(s.nis || '').trim();
+                const dbId = String(s.id || '').trim();
+                const dbNama = String(s.nama || '').trim().toLowerCase();
+                const noAbsenSiswa = String(s.noAbsen || s.urut || (idx + 1)).trim();
+
+                // Jika log menyertakan nomor absen, wajib cocok
+                if (logNoAbsen && logNoAbsen !== noAbsenSiswa) return false;
+
+                // Prioritas 1: Cocokkan ID unik siswa di ruang kerja ini
+                if (dbId !== '' && idAtauNis !== '' && dbId === idAtauNis) return true;
+
+                // Prioritas 2: Jika siswa punya NIS, NIS wajib sama persis (nama sama dengan NIS beda akan ditolak)
+                if (dbNis !== '') {
+                    const cocokNisTeks = dbNis === idAtauNis;
+                    const cocokNisAngka = idAtauNis !== '' && !isNaN(dbNis) && !isNaN(idAtauNis) && Number(dbNis) === Number(idAtauNis);
+                    if (!cocokNisTeks && !cocokNisAngka) return false;
+                    // Jika log juga membawa nama, pastikan nama tidak bertabrakan
+                    if (namaDariLog && dbNama && namaDariLog !== dbNama) return false;
+                    return true;
+                }
+
+                // Prioritas 3 (Cadangan jika siswa belum diisi NIS): hanya boleh cocok nama jika NPSN atau Kelas sudah terverifikasi
+                const terverifikasiRuangAtauKelas = (logNpsn === npsn.toUpperCase()) || (logKelas !== '' && logKelas === targetKodeKelas);
+                return terverifikasiRuangAtauKelas && namaDariLog !== '' && dbNama === namaDariLog;
+            });
+
+            if (siswaMatch) {
+                const idx = AppState.db.absensi.findIndex(a => a.siswaId === siswaMatch.id && a.tanggal === absenGerbang.tanggal && String(a.kelasId) === String(kelasTerpilih));
+                if (idx >= 0) {
+                    if (AppState.db.absensi[idx].status !== 'H') {
+                        AppState.db.absensi[idx].status = 'H';
                         hitungBerhasil++;
                     }
+                } else {
+                    AppState.db.absensi.push({
+                        id: generateId(),
+                        siswaId: siswaMatch.id,
+                        kelasId: kelasTerpilih,
+                        tanggal: absenGerbang.tanggal,
+                        status: 'H'
+                    });
+                    hitungBerhasil++;
                 }
             }
         });
@@ -1507,9 +1542,9 @@ async function tarikDataGateway(kelasId) {
                 fetch(AppState.config.gasUrl, { method: "POST", mode: "no-cors", body: JSON.stringify(AppState.db) }).catch(() => {});
             }
             loadAbsensi();
-            showAlert("Sinkronisasi Sukses!", `Berhasil menarik Hadir (H) sebanyak ${hitungBerhasil} catatan kehadiran sepanjang bulan ${bulanTerpilih}!`, "success");
+            showAlert("Sinkronisasi Sukses!", `Berhasil menarik Hadir (H) sebanyak ${hitungBerhasil} catatan sah untuk ${activeWs.nama} (${kelasObj ? kelasObj.kode : ''}) bulan ${bulanTerpilih}.`, "success");
         } else {
-            showAlert("Selesai", `Semua data kehadiran bulan ${bulanTerpilih} sudah sinkron. Tidak ada data baru.`, "info");
+            showAlert("Data Terkunci & Bersih", `Tidak ada catatan kehadiran Smart Gateway yang cocok untuk ruang kerja ${activeWs.nama} kelas ${kelasObj ? kelasObj.kode : ''} pada bulan ${bulanTerpilih}.`, "info");
         }
     } catch (err) {
         showAlert("Koneksi Gagal", err.message, "error");
@@ -1520,4 +1555,56 @@ async function tarikDataGateway(kelasId) {
             btnBaru.disabled = false;
         }
     }
+}
+
+function resetAbsenHadirBulanIni(kelasId) {
+    const activeWs = typeof getActiveWorkspace === 'function' ? getActiveWorkspace() : { nama: 'Ruang Kerja Aktif' };
+    const bulanInput = document.getElementById('abs-bulan');
+    const bulanTerpilih = (bulanInput && bulanInput.value)
+        ? bulanInput.value
+        : (new Date().getFullYear() + "-" + String(new Date().getMonth() + 1).padStart(2, '0'));
+    const kelasTerpilih = kelasId || (document.getElementById('abs-kelas')?.value || '');
+
+    if (!kelasTerpilih) {
+        return showAlert("Pilih Kelas", "Silakan pilih kelas terlebih dahulu.", "warning");
+    }
+
+    const kelasObj = (AppState.db.kelas || []).find(k => String(k.id) === String(kelasTerpilih));
+    const namaKelas = kelasObj ? kelasObj.kode : 'kelas ini';
+    const prefixBulan = bulanTerpilih + '-';
+
+    const jumlahH = (AppState.db.absensi || []).filter(a =>
+        String(a.kelasId) === String(kelasTerpilih) &&
+        String(a.tanggal || '').startsWith(prefixBulan) &&
+        a.status === 'H'
+    ).length;
+
+    if (jumlahH === 0) {
+        return showAlert("Sudah Bersih", `Tidak ada tanda Hadir (H) pada bulan ${bulanTerpilih} untuk kelas ${namaKelas}.`, "info");
+    }
+
+    if (!confirm(`Hapus semua (${jumlahH}) tanda Hadir (H) pada bulan ${bulanTerpilih} untuk kelas ${namaKelas} di ${activeWs.nama}?\n\nCatatan: Status Sakit (S), Izin (I), dan Alpa (A) tidak akan ikut terhapus.`)) {
+        return;
+    }
+
+    AppState.db.absensi = (AppState.db.absensi || []).filter(a => !(
+        String(a.kelasId) === String(kelasTerpilih) &&
+        String(a.tanggal || '').startsWith(prefixBulan) &&
+        a.status === 'H'
+    ));
+
+    localStorage.setItem(AppState.config.storageKey, JSON.stringify(AppState.db));
+    if (AppState.config.gasUrl && AppState.config.gasUrl.startsWith("http")) {
+        fetch(AppState.config.gasUrl, { method: "POST", mode: "no-cors", body: JSON.stringify(AppState.db) }).catch(() => {});
+    }
+
+    const radioWali = document.querySelector('input[name="mode-absen"][value="walikelas"]');
+    if (radioWali) radioWali.checked = true;
+    const elBulan = document.getElementById('abs-bulan');
+    if (elBulan) elBulan.value = bulanTerpilih;
+    const elKelas = document.getElementById('abs-kelas');
+    if (elKelas) elKelas.value = kelasTerpilih;
+
+    loadAbsensi();
+    showAlert("Berhasil Direset", `Sebanyak ${jumlahH} tanda Hadir (H) pada bulan ${bulanTerpilih} untuk kelas ${namaKelas} telah dibersihkan.`, "success");
 }
